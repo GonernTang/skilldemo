@@ -105,6 +105,11 @@ def parse_args(project_root: Path) -> argparse.Namespace:
             "when it exists, otherwise uses configs/rl_llb_config.yaml."
         ),
     )
+    p.add_argument(
+        "--disable_memory",
+        action="store_true",
+        help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
     return p.parse_args()
 
 
@@ -236,24 +241,28 @@ def main():
         logger.info("Config:\n%s", config.model_dump_json(indent=2))
 
         # 4. Initialize MemoryService with the config path and providers
-        memory_service = MemoryService(
-            mos_config_path=mos_config_path,
-            llm_provider=llm_provider,
-            embedding_provider=embedding_provider,
-            strategy_config=StrategyConfiguration(
-                build_strategy, retrieve_strategy, update_strategy
-            ),
-            user_id=user_id,
-            num_workers=config.experiment.batch_size,
-            max_keywords=config.memory.max_keywords,
-            add_similarity_threshold=config.memory.add_similarity_threshold,
-            enable_value_driven=enable_value_driven,
-            rl_config=rl_config,
-            # LLB-only: optionally disable z-score normalization for retrieval scoring.
-            use_z_score_normalization=bool(config.experiment.llb_use_z_score_normalization),
-            # LLB-only: optionally deduplicate final top-k retrieved memories by task_id.
-            dedup_by_task_id=bool(getattr(config.experiment, "llb_dedup_by_task_id", False)),
-        )
+        if args.disable_memory:
+            logger.info("Memory retrieval disabled (using NullMemoryService)")
+            memory_service = NullMemoryService()
+        else:
+            memory_service = MemoryService(
+                mos_config_path=mos_config_path,
+                llm_provider=llm_provider,
+                embedding_provider=embedding_provider,
+                strategy_config=StrategyConfiguration(
+                    build_strategy, retrieve_strategy, update_strategy
+                ),
+                user_id=user_id,
+                num_workers=config.experiment.batch_size,
+                max_keywords=config.memory.max_keywords,
+                add_similarity_threshold=config.memory.add_similarity_threshold,
+                enable_value_driven=enable_value_driven,
+                rl_config=rl_config,
+                # LLB-only: optionally disable z-score normalization for retrieval scoring.
+                use_z_score_normalization=bool(config.experiment.llb_use_z_score_normalization),
+                # LLB-only: optionally deduplicate final top-k retrieved memories by task_id.
+                dedup_by_task_id=bool(getattr(config.experiment, "llb_dedup_by_task_id", False)),
+            )
 
         # Load from checkpoint if configured
         resumed_section = 0  # Default: start from beginning

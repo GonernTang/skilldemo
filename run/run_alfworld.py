@@ -54,6 +54,11 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--temperature", type=float, default=None)
     p.add_argument("--max_tokens", type=int, default=None)
+    p.add_argument(
+        "--disable_memory",
+        action="store_true",
+        help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
     return p.parse_args()
 
 
@@ -140,21 +145,25 @@ def main():
 
         user_id = f"alf_{os.getpid()}"
 
-        memory_service = MemoryService(
-            mos_config_path=mos_config_path,
-            llm_provider=llm_provider,
-            embedding_provider=embedding_provider,
-            strategy_config=StrategyConfiguration(build_strategy, retrieve_strategy, update_strategy),
-            user_id=user_id,
-            num_workers=cfg.experiment.batch_size,
-            max_keywords=cfg.memory.max_keywords,
-            add_similarity_threshold=getattr(cfg.memory, "add_similarity_threshold", 0.9),
-            enable_value_driven=enable_value_driven,
-            rl_config=rl_config,
-            db_max_concurrency=4,
-            sim_norm_mean=getattr(cfg.memory, "sim_norm_mean", None),
-            sim_norm_std=getattr(cfg.memory, "sim_norm_std", None),
-        )
+        if args.disable_memory:
+            logger.info("Memory retrieval disabled (using NullMemoryService)")
+            memory_service = NullMemoryService()
+        else:
+            memory_service = MemoryService(
+                mos_config_path=mos_config_path,
+                llm_provider=llm_provider,
+                embedding_provider=embedding_provider,
+                strategy_config=StrategyConfiguration(build_strategy, retrieve_strategy, update_strategy),
+                user_id=user_id,
+                num_workers=cfg.experiment.batch_size,
+                max_keywords=cfg.memory.max_keywords,
+                add_similarity_threshold=getattr(cfg.memory, "add_similarity_threshold", 0.9),
+                enable_value_driven=enable_value_driven,
+                rl_config=rl_config,
+                db_max_concurrency=4,
+                sim_norm_mean=getattr(cfg.memory, "sim_norm_mean", None),
+                sim_norm_std=getattr(cfg.memory, "sim_norm_std", None),
+            )
 
         with open(project_root / cfg.experiment.few_shot_path, "r", encoding="utf-8") as f:
             few_shot_examples = json.load(f)

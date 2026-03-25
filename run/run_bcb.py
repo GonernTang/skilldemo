@@ -114,6 +114,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--temperature", type=float, default=None)
     p.add_argument("--max_tokens", type=int, default=None)
     p.add_argument("--retrieve_k", type=int, default=None)
+    p.add_argument(
+        "--disable_memory",
+        action="store_true",
+        help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
     p.add_argument("--eval_timeout", type=float, default=60.0)
     p.add_argument("--untrusted_hard_timeout", type=float, default=120.0)
     return p.parse_args()
@@ -209,25 +214,29 @@ def main() -> None:
     with open(mos_config_path, "w", encoding="utf-8") as f:
         _json.dump(mos_config, f)
 
-    memsvc = MemoryService(
-        mos_config_path=mos_config_path,
-        llm_provider=llm,
-        embedding_provider=embedder,
-        strategy_config=StrategyConfiguration(
-            BuildStrategy(cfg.memory.build_strategy),
-            RetrieveStrategy(cfg.memory.retrieve_strategy),
-            UpdateStrategy(cfg.memory.update_strategy),
-        ),
-        user_id=user_id,
-        num_workers=cfg.experiment.batch_size,
-        max_keywords=cfg.memory.max_keywords,
-        add_similarity_threshold=getattr(cfg.memory, "add_similarity_threshold", 0.9),
-        enable_value_driven=cfg.experiment.enable_value_driven,
-        rl_config=cfg.rl_config,
-        db_max_concurrency=4,
-        sim_norm_mean=getattr(cfg.memory, "sim_norm_mean", 0.1856827586889267),
-        sim_norm_std=getattr(cfg.memory, "sim_norm_std", 0.09407906234264374),
-    )
+    if args.disable_memory:
+        logger.info("Memory retrieval disabled (using NullMemoryService)")
+        memsvc = NullMemoryService()
+    else:
+        memsvc = MemoryService(
+            mos_config_path=mos_config_path,
+            llm_provider=llm,
+            embedding_provider=embedder,
+            strategy_config=StrategyConfiguration(
+                BuildStrategy(cfg.memory.build_strategy),
+                RetrieveStrategy(cfg.memory.retrieve_strategy),
+                UpdateStrategy(cfg.memory.update_strategy),
+            ),
+            user_id=user_id,
+            num_workers=cfg.experiment.batch_size,
+            max_keywords=cfg.memory.max_keywords,
+            add_similarity_threshold=getattr(cfg.memory, "add_similarity_threshold", 0.9),
+            enable_value_driven=cfg.experiment.enable_value_driven,
+            rl_config=cfg.rl_config,
+            db_max_concurrency=4,
+            sim_norm_mean=getattr(cfg.memory, "sim_norm_mean", 0.1856827586889267),
+            sim_norm_std=getattr(cfg.memory, "sim_norm_std", 0.09407906234264374),
+        )
 
     sel = BCBSelection(
         subset=args.subset,
