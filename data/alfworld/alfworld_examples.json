@@ -1,0 +1,12 @@
+[
+  {
+    "id": "example_1",
+    "task": "Put a apple in to countertop",
+    "task_type": "pick_and_place",
+    "trajectory": [
+      {"role": "user", "content": "Interact with a household environment to solve a task."},
+      {"role": "user", "content": "Put a apple in to countertop"},
+      {"role": "assistant", "content": "Thought: I need to find an apple first.\nAction: look around"}
+    ]
+  }
+]
