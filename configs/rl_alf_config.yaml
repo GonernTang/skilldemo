@@ -1,18 +1,18 @@
 # LLM provider configuration
 llm:
   provider: "openai"
-  api_key: "sk-REPLACE_ME"
-  base_url: "https://api.openai.com/v1"
-  model: "gpt-5-mini"
+  api_key: "sk-8df0848b28d94066a0f03ea5b388e74c"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  model: "qwen3.5-flash"
   temperature: 0
   max_tokens: 4096
 
 # Embedding provider configuration  
 embedding:
   provider: "openai"
-  api_key: "sk-REPLACE_ME"
-  base_url: "https://api.openai.com/v1"
-  model: "text-embedding-3-large"
+  api_key: "sk-8df0848b28d94066a0f03ea5b388e74c"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  model: "text-embedding-v4"
   max_text_len: 4096
 
 # Memory system configuration

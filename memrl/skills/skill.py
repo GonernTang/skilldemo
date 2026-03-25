@@ -84,8 +84,8 @@ class Skill:
             "name": self.name,
             "description": self.description,
             "task_type": self.task_type,
-            "trigger_keywords": self.trigger_keywords,
-            "applicable_observations": self.applicable_observations,
+            "trigger_keywords": list(self.trigger_keywords),
+            "applicable_observations": list(self.applicable_observations),
             "steps": [
                 {
                     "action": step.action,
@@ -101,9 +101,9 @@ class Skill:
             "last_used_at": self.last_used_at,
             "created_at": self.created_at,
             "source_trajectory_id": self.source_trajectory_id,
-            "failure_scenarios": self.failure_scenarios,
-            "antipatterns": self.antipatterns,
-            "constraints": self.constraints,
+            "failure_scenarios": list(self.failure_scenarios),
+            "antipatterns": list(self.antipatterns),
+            "constraints": list(self.constraints),
             "deprecated": self.deprecated,
         }
 
