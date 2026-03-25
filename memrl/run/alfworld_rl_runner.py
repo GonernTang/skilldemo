@@ -1,4 +1,5 @@
 # memrl/run/alfworld_rl_runner.py
+import copy
 import logging
 from pathlib import Path
 from typing import Dict, Set, Any
@@ -25,6 +26,7 @@ from memrl.agent.memp_agent import MempAgent
 from memrl.agent.history import EpisodeHistory
 from memrl.service.base_memory_service import BaseMemoryService
 from memrl.service.value_driven import RLConfig
+from memrl.skills.integration import SkillIntegrator
 from alfworld.agents.environment.alfred_tw_env import (  # type: ignore
     AlfredTWEnv,
     AlfredDemangler,
@@ -60,7 +62,8 @@ class AlfworldRunner(BaseRunner):
                  num_section: int, batch_size: int, max_steps: int, rl_config, ck_dir:str, retrieve_k: int=1, mode: str='train',
                  valid_interval: int=2, test_interval: int=2, dataset_ratio: float=1.0, random_seed: int=42, bon: int=0,
                  ckpt_resume_enabled: bool = False, ckpt_resume_path: Optional[str] = None, ckpt_resume_epoch: Optional[int] = None,
-                 baseline_mode: Optional[str] = None, baseline_k: int = 10):
+                 baseline_mode: Optional[str] = None, baseline_k: int = 10,
+                 skill_integrator: Optional[SkillIntegrator] = None):
         self.agent = agent
         self.root = root
         self.memory_service = memory_service
@@ -85,7 +88,7 @@ class AlfworldRunner(BaseRunner):
         self.baseline_k = max(1, int(baseline_k))
         
         self.rl_config: Optional[RLConfig] = rl_config
-
+        self.skill_integrator = skill_integrator
 
         env_controller = AlfredTWEnv(self.env_config, train_eval="train")
         all_train_game_files = env_controller.game_files
@@ -831,9 +834,33 @@ class AlfworldRunner(BaseRunner):
                     def submit_with_retry(slot_idx=i):
                         for attempt in range(1, MAX_RETRIES + 1):
                             try:
+                                # Prepare messages with optional skill injection
+                                messages_for_act = messages_per_slot[slot_idx]
+                                if self.skill_integrator is not None:
+                                    # Retrieve relevant skills and inject into messages
+                                    skills = self.skill_integrator.retrieve_skills(
+                                        task_description=current_task_descs[slot_idx],
+                                        task_type=task_types[slot_idx],
+                                        observation=current_observations[slot_idx],
+                                    )
+                                    if skills:
+                                        messages_for_act = copy.deepcopy(messages_per_slot[slot_idx])
+                                        skills_text = self.skill_integrator.format_skills_for_context(skills)
+                                        if skills_text:
+                                            # Insert skills as a system message after the first system message
+                                            skill_msg = {"role": "system", "content": f"\n{skills_text}"}
+                                            inserted = False
+                                            for msg_idx, msg in enumerate(messages_for_act):
+                                                if msg.get("role") == "system":
+                                                    messages_for_act.insert(msg_idx + 1, skill_msg)
+                                                    inserted = True
+                                                    break
+                                            if not inserted:
+                                                messages_for_act.insert(0, skill_msg)
+
                                 return self.agent.act(
                                     observation=current_observations[slot_idx],
-                                    history_messages=messages_per_slot[slot_idx],
+                                    history_messages=messages_for_act,
                                     first_step=(step == 0)
                                 )
                             except Exception as e:
@@ -892,7 +919,25 @@ class AlfworldRunner(BaseRunner):
                 if result['done']:
                     success = result.get('reward', 0) > 0
                     logger.info(f"Slot {i} finished a game. Success: {success}")
-                    
+
+                    # Extract skill from successful trajectory
+                    if success and self.skill_integrator is not None:
+                        try:
+                            # Format trajectory for skill extraction
+                            trajectory_for_extraction = [
+                                {"role": msg.get("role", "user"), "content": msg.get("content", "")}
+                                for msg in messages_per_slot[i]
+                            ]
+                            self.skill_integrator.extract_and_save_skill(
+                                trajectory=trajectory_for_extraction,
+                                task_description=current_task_descs[i],
+                                task_type=task_types[i],
+                                success=True,
+                            )
+                            logger.info(f"Skill extraction completed for slot {i}")
+                        except Exception as e:
+                            logger.warning(f"Failed to extract skill from slot {i}: {e}")
+
                     completed_experiences.append({
                         "task_description": current_task_descs[i],
                         "trajectory": messages_per_slot[i], # The full conversation is the trajectory

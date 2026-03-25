@@ -18,6 +18,7 @@ from memrl.service.base_memory_service import BaseMemoryService, NullMemoryServi
 from memrl.service.memory_service import MemoryService
 from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
 from memrl.agent.memp_agent import MempAgent
+from memrl.skills.integration import create_skill_integrator
 from memrl.run.alfworld_rl_runner import AlfworldRunner
 
 
@@ -58,6 +59,11 @@ def parse_args() -> argparse.Namespace:
         "--disable_memory",
         action="store_true",
         help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
+    p.add_argument(
+        "--disable_skills",
+        action="store_true",
+        help="Disable skill layer (don't retrieve or extract skills)",
     )
     return p.parse_args()
 
@@ -169,6 +175,26 @@ def main():
             few_shot_examples = json.load(f)
         agent = MempAgent(llm_provider=llm_provider, few_shot_examples=few_shot_examples)
 
+        # Initialize SkillIntegrator if skills are enabled
+        skill_integrator = None
+        if not args.disable_skills:
+            skill_config_dict = getattr(cfg, 'skill', {})
+            if skill_config_dict.get('enabled', False):
+                skill_integrator = create_skill_integrator(
+                    config_dict={'skill': skill_config_dict},
+                    llm=llm_provider,
+                    embedder=embedding_provider,
+                )
+                if skill_integrator:
+                    skill_integrator.initialize()
+                    logger.info("Skill layer enabled and initialized")
+                else:
+                    logger.info("Skill layer disabled via config")
+            else:
+                logger.info("Skill layer disabled via config")
+        else:
+            logger.info("Skill layer disabled via --disable_skills flag")
+
         alfworld_config_path = project_root / "configs" / "envs" / "alfworld.yaml"
         runner = AlfworldRunner(
             agent=agent,
@@ -193,6 +219,7 @@ def main():
             ckpt_resume_epoch=getattr(cfg.experiment, "ckpt_resume_epoch", None),
             baseline_mode=getattr(cfg.experiment, "baseline_mode", None),
             baseline_k=getattr(cfg.experiment, "baseline_k", 10),
+            skill_integrator=skill_integrator,
         )
         runner.run()
 

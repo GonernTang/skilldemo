@@ -80,3 +80,13 @@ rl_config:
   q_min_threshold: -10
   weight_sim: 0.5        # weight for similarity in combined score
   weight_q: 0.5          # weight for Q-value in combined score
+
+# Skill Layer configuration
+skill:
+  enabled: false  # Set to true to enable skill layer
+  storage_dir: "skills"  # Directory for skill storage
+  retrieval_method: "llm"  # Retrieval method: llm, keyword, vector, hybrid
+  extract_threshold: 0.7  # Success rate threshold for extraction
+  retrieve_k: 3  # Number of skills to retrieve
+  auto_extract: true  # Automatically extract skills from successful trajectories
+  auto_analyze_failure: true  # Automatically analyze and update skills from failed trajectories
