@@ -175,6 +175,8 @@ class ExperimentConfig(BaseModel):
     valid_interval: int = Field(default=1, description="Run evaluation on the validation set every N sections. Set to 0 to disable.")
     test_interval: int = Field(default=1, description="Run evaluation on the test set every N sections. Set to 0 to disable.")
     dataset_ratio: float = Field(default=0.7, description="Proportion of files randomly selected for training (rest used for validation)")
+    valid_ratio: float = Field(default=1.0, description="Proportion of files randomly selected for validation set")
+    test_ratio: float = Field(default=1.0, description="Proportion of files randomly selected for test set")
     few_shot_path: str = Field(default='data/alfworld/alfworld_examples.json', description="Path for alfworld examples")
     bon: int = Field(default=0, description="Run BoN-evaluation on the val/test for N trails")
     hle_categories: Optional[List[str]] = Field(default=None, description="Subset of HLE categories to keep")

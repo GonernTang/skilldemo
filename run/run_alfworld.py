@@ -214,6 +214,8 @@ def main():
             valid_interval=cfg.experiment.valid_interval,
             test_interval=cfg.experiment.test_interval,
             dataset_ratio=cfg.experiment.dataset_ratio,
+            valid_ratio=getattr(cfg.experiment, 'valid_ratio', 1.0),
+            test_ratio=getattr(cfg.experiment, 'test_ratio', 1.0),
             ckpt_resume_enabled=getattr(cfg.experiment, "ckpt_resume_enabled", False),
             ckpt_resume_path=getattr(cfg.experiment, "ckpt_resume_path", None),
             ckpt_resume_epoch=getattr(cfg.experiment, "ckpt_resume_epoch", None),

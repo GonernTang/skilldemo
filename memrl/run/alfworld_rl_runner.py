@@ -60,7 +60,8 @@ class AlfworldRunner(BaseRunner):
     """
     def __init__(self, agent: MempAgent, root: str, env_config: str, memory_service: BaseMemoryService, exp_name: str,
                  num_section: int, batch_size: int, max_steps: int, rl_config, ck_dir:str, retrieve_k: int=1, mode: str='train',
-                 valid_interval: int=2, test_interval: int=2, dataset_ratio: float=1.0, random_seed: int=42, bon: int=0,
+                 valid_interval: int=2, test_interval: int=2, dataset_ratio: float=1.0, valid_ratio: float=1.0, test_ratio: float=1.0,
+                 random_seed: int=42, bon: int=0,
                  ckpt_resume_enabled: bool = False, ckpt_resume_path: Optional[str] = None, ckpt_resume_epoch: Optional[int] = None,
                  baseline_mode: Optional[str] = None, baseline_k: int = 10,
                  skill_integrator: Optional[SkillIntegrator] = None):
@@ -110,11 +111,39 @@ class AlfworldRunner(BaseRunner):
             logger.info(f"Using the full training set of {len(all_train_game_files)} games.")
             self.train_game_files = all_train_game_files
 
+        self.valid_ratio = valid_ratio
+        if not 0.0 < self.valid_ratio <= 1.0:
+            raise ValueError(f"valid_ratio must be between 0.0 and 1.0, but got {self.valid_ratio}")
+
+        self.test_ratio = test_ratio
+        if not 0.0 < self.test_ratio <= 1.0:
+            raise ValueError(f"test_ratio must be between 0.0 and 1.0, but got {self.test_ratio}")
+
         env_controller = AlfredTWEnv(self.env_config, train_eval='eval_in_distribution')
-        self.valid_game_files = env_controller.game_files
+        all_valid_game_files = env_controller.game_files
+
+        if self.valid_ratio < 1.0:
+            num_total_valid = len(all_valid_game_files)
+            num_valid_to_sample = int(num_total_valid * self.valid_ratio)
+            logger.info(f"Randomly sampling {num_valid_to_sample} games from the {num_total_valid} validation games ({self.valid_ratio:.2%})...")
+            random.seed(self.random_seed)
+            self.valid_game_files = random.sample(all_valid_game_files, k=num_valid_to_sample)
+        else:
+            logger.info(f"Using the full validation set of {len(all_valid_game_files)} games.")
+            self.valid_game_files = all_valid_game_files
 
         env_controller = AlfredTWEnv(self.env_config, train_eval='eval_out_of_distribution')
-        self.test_game_files = env_controller.game_files
+        all_test_game_files = env_controller.game_files
+
+        if self.test_ratio < 1.0:
+            num_total_test = len(all_test_game_files)
+            num_test_to_sample = int(num_total_test * self.test_ratio)
+            logger.info(f"Randomly sampling {num_test_to_sample} games from the {num_total_test} test games ({self.test_ratio:.2%})...")
+            random.seed(self.random_seed)
+            self.test_game_files = random.sample(all_test_game_files, k=num_test_to_sample)
+        else:
+            logger.info(f"Using the full test set of {len(all_test_game_files)} games.")
+            self.test_game_files = all_test_game_files
 
         # --- [TENSORBOARD] Initialize SummaryWriter ---
         # Create a unique, timestamped directory for this experiment's logs
