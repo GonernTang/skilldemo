@@ -130,8 +130,8 @@ class Skill:
             name=data["name"],
             description=data["description"],
             task_type=data["task_type"],
-            trigger_keywords=data["trigger_keywords"],
-            applicable_observations=data["applicable_observations"],
+            trigger_keywords=list(data["trigger_keywords"]),
+            applicable_observations=list(data["applicable_observations"]),
             steps=steps,
             skill_type=data.get("skill_type", "primitive"),
             parent_skill_id=data.get("parent_skill_id"),
@@ -140,9 +140,9 @@ class Skill:
             last_used_at=data.get("last_used_at"),
             created_at=data.get("created_at", ""),
             source_trajectory_id=data.get("source_trajectory_id"),
-            failure_scenarios=data.get("failure_scenarios", []),
-            antipatterns=data.get("antipatterns", []),
-            constraints=data.get("constraints", []),
+            failure_scenarios=list(data.get("failure_scenarios", [])),
+            antipatterns=list(data.get("antipatterns", [])),
+            constraints=list(data.get("constraints", [])),
             deprecated=data.get("deprecated", False),
         )
 
