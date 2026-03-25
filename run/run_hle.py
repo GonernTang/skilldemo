@@ -12,6 +12,7 @@ sys.path.insert(0, str(project_root))
 from memrl.configs.config import MempConfig
 from memrl.providers.llm import OpenAILLM
 from memrl.providers.embedding import OpenAIEmbedder
+from memrl.service.base_memory_service import NullMemoryService
 from memrl.service.memory_service import MemoryService
 from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
 from memrl.run.hle_runner import HLERunner, HLESelection

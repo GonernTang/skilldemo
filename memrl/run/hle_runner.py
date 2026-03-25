@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from .base_runner import BaseRunner
 from memrl.providers.llm import OpenAILLM
-from memrl.service.memory_service import MemoryService
+from memrl.service.base_memory_service import BaseMemoryService
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class HLERunner(BaseRunner):
         llm_judge: Optional[OpenAILLM],
         selection: 'HLESelection',
         output_dir: Path,
-        memory_service: Optional[MemoryService] = None,
+        memory_service: Optional[BaseMemoryService] = None,
         run_id: Optional[str] = None,
         temperature: float = 0.0,
         max_tokens: int = 512,

@@ -101,6 +101,7 @@ logger = logging.getLogger(__name__)
 from ..providers.base import BaseLLM, BaseEmbedder
 
 from .value_driven import RLConfig, ValueAwareSelector, QValueUpdater, MemoryCurator
+from .base_memory_service import BaseMemoryService
 
 
 def _now_iso() -> str:
@@ -254,7 +255,7 @@ def _coerce_success(value: Any) -> Optional[bool]:
     return None
 
 
-class MemoryService:
+class MemoryService(BaseMemoryService):
     """
     Core memory service implementing the Memp procedural memory algorithms.
 

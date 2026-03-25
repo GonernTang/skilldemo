@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover - optional dependency
 import contextlib
 
 from .base_runner import BaseRunner
-from memrl.service.memory_service import MemoryService
+from memrl.service.base_memory_service import BaseMemoryService
 from memrl.service.value_driven import RLConfig
 from memrl.providers.llm import OpenAILLM
 from memrl.providers.embedding import OpenAIEmbedder
@@ -102,7 +102,7 @@ class LLBRunner(BaseRunner):
     def __init__(
         self,
         root: Path,
-        memory_service: MemoryService,
+        memory_service: BaseMemoryService,
         llm_provider: OpenAILLM,
         embedding_provider: OpenAIEmbedder,
         exp_name: str,

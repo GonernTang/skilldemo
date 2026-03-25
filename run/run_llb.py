@@ -46,6 +46,7 @@ if str(LLB_ROOT) not in sys.path:
 
 # --- Import all our components ---
 from memrl.configs.config import MempConfig
+from memrl.service.base_memory_service import NullMemoryService
 from memrl.service.memory_service import MemoryService
 from memrl.service.strategies import (
     BuildStrategy,
