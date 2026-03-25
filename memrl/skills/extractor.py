@@ -410,6 +410,7 @@ class SkillConfig:
         retrieve_k: int = 3,
         auto_extract: bool = True,
         auto_analyze_failure: bool = True,
+        enabled: bool = True,
     ):
         """Initialize SkillConfig.
 
@@ -421,6 +422,7 @@ class SkillConfig:
             retrieve_k: Number of skills to retrieve.
             auto_extract: Whether to automatically extract from success.
             auto_analyze_failure: Whether to automatically analyze failures.
+            enabled: Whether the skill layer is enabled.
         """
         self.llm = llm
         self.storage_dir = storage_dir
@@ -429,3 +431,4 @@ class SkillConfig:
         self.retrieve_k = retrieve_k
         self.auto_extract = auto_extract
         self.auto_analyze_failure = auto_analyze_failure
+        self.enabled = enabled
