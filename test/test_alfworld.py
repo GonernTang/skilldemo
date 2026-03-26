@@ -31,7 +31,7 @@ from memrl.agent.memp_agent import MempAgent
 from memrl.service.base_memory_service import BaseMemoryService, NullMemoryService
 from memrl.service.memory_service import MemoryService
 from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
-from memrl.skills.integration import create_skill_integrator
+from memrl.skills.batch_integration import BatchSkillIntegrator
 from memrl.envs.alfworld_env import AlfWorldEnv, load_config_from_path
 
 
@@ -170,21 +170,21 @@ class TestRunner:
             few_shot_examples=self.few_shot_examples
         )
 
-        # Setup skill integrator
+        # Setup skill integrator (batch mode)
         self.skill_integrator = None
+        self.batch_skill_integrator = None
         if not disable_skills:
             skill_config = getattr(self.cfg, 'skill', None)
             if skill_config and skill_config.enabled:
-                # Convert Pydantic model to dict for create_skill_integrator
-                skill_config_dict = skill_config.model_dump()
-                self.skill_integrator = create_skill_integrator(
-                    config_dict={'skill': skill_config_dict},
+                # Get extract_interval from config, default to 10
+                extract_interval = getattr(skill_config, 'extract_interval', 10)
+                self.batch_skill_integrator = BatchSkillIntegrator(
                     llm=self.llm_provider,
-                    embedder=self.embedding_provider,
+                    extract_interval=extract_interval,
+                    trajectory_dir=str(project_root / "trajectories"),
+                    skills_dir=str(project_root / "skills"),
                 )
-                if self.skill_integrator:
-                    self.skill_integrator.initialize()
-                    print("Skill layer enabled and initialized")
+                print(f"Batch skill layer enabled (extract_interval={extract_interval})")
 
         # Load environment and select random tasks
         self.env_config_path = str(project_root / "configs" / "envs" / "alfworld.yaml")
@@ -323,19 +323,6 @@ class TestRunner:
                 else:
                     retrieved_mems = []
 
-            # Retrieve skills (track which skills were retrieved for precise failure analysis)
-            retrieved_skill_ids = []
-            if self.skill_integrator:
-                retrieved_skills = self.skill_integrator.retrieve_skills(
-                    task_description=task_desc,
-                    task_type=task_type,
-                    k=self.cfg.skill.retrieve_k if hasattr(self.cfg, 'skill') else 3
-                )
-                retrieved_skill_ids = [s.skill_id for s in retrieved_skills]
-                if retrieved_skills:
-                    skill_context = self.skill_integrator.format_skills_for_context(retrieved_skills)
-                    print(f"\nRetrieved {len(retrieved_skills)} skills for this task")
-
             # Construct initial messages for the agent
             messages = self.agent._construct_messages(
                 task_description=task_desc,
@@ -394,37 +381,39 @@ class TestRunner:
                     print(f"{'='*40}")
                     break
 
-            # Process skill layer
-            if self.skill_integrator:
-                # Convert trajectory format for skill extractor
-                # SkillExtractor expects: [{"role": "assistant", "content": "...Action: ..."}, {"role": "user", "content": "Observation: ..."}]
+            # Process skill layer (batch mode)
+            if self.batch_skill_integrator:
+                # Convert trajectory format for batch skill extractor
                 skill_trajectory = []
                 for step in result.trajectory:
                     action = step.get("action", "")
                     observation = step.get("observation", "")
-                    skill_trajectory.append({"role": "assistant", "content": f"Action: {action}"})
-                    skill_trajectory.append({"role": "user", "content": f"Observation: {observation}"})
+                    skill_trajectory.append({"action": action, "observation": observation})
 
-                if result.success:
-                    # Extract skill from successful trajectory
-                    skill = self.skill_integrator.extract_and_save_skill(
-                        trajectory=skill_trajectory,
-                        task_description=task_desc,
-                        task_type=task_type,
-                        success=True
+                # Add trajectory to buffer - will trigger batch extraction when N reached
+                batch_result = self.batch_skill_integrator.add_trajectory(
+                    trajectory=skill_trajectory,
+                    task_description=task_desc,
+                    task_type=task_type,
+                    success=result.success,
+                )
+
+                if batch_result:
+                    # Batch extraction was triggered
+                    total_skills = (
+                        len(batch_result.get("general_skills", [])) +
+                        sum(len(v) for v in batch_result.get("task_specific_skills", {}).values())
                     )
-                    if skill:
-                        result.skills_extracted.append(skill.name)
-                        print(f"\nExtracted skill: {skill.name}")
-                else:
-                    # Analyze failure and update only the retrieved skills (precise update)
-                    self.skill_integrator.analyze_failure_and_update(
-                        failed_trajectory=skill_trajectory,
-                        task_description=task_desc,
-                        task_type=task_type,
-                        skill_ids=retrieved_skill_ids if retrieved_skill_ids else None,
-                    )
-                    print(f"\nAnalyzed failure and updated {len(retrieved_skill_ids) if retrieved_skill_ids else 0} skill(s)")
+                    result.skills_extracted = [f"batch_{total_skills}_skills"]
+                    print(f"\nBatch skill extraction triggered!")
+                    print(f"  General skills: {len(batch_result.get('general_skills', []))}")
+                    for task_type, skills in batch_result.get("task_specific_skills", {}).items():
+                        print(f"  {task_type}: {len(skills)} skills")
+                    print(f"  Common mistakes: {len(batch_result.get('common_mistakes', []))}")
+
+                pending = self.batch_skill_integrator.pending_count
+                if pending > 0:
+                    print(f"  [Pending {pending} trajectories before next extraction]")
 
         except Exception as e:
             result.error = str(e)

@@ -227,6 +227,20 @@ class RLConfig(BaseModel):
     weight_sim: float = Field(default=0.5, description="Weight for similarity in combined score")
     weight_q: float = Field(default=0.5, description="Weight for Q-value in combined score")
 
+
+class SkillConfig(BaseModel):
+    """Configuration for the skill layer."""
+
+    enabled: bool = Field(default=False, description="Whether the skill layer is enabled")
+    storage_dir: str = Field(default="skills", description="Directory for skill storage")
+    retrieval_method: str = Field(default="llm", description="Retrieval method: llm, keyword, vector, hybrid")
+    extract_threshold: float = Field(default=0.7, description="Success rate threshold for extraction")
+    extract_interval: int = Field(default=10, description="Number of trajectories to accumulate before batch extraction")
+    retrieve_k: int = Field(default=3, description="Number of skills to retrieve")
+    auto_extract: bool = Field(default=True, description="Automatically extract skills from successful trajectories")
+    auto_analyze_failure: bool = Field(default=True, description="Automatically analyze and update skills from failed trajectories")
+
+
 class MempConfig(BaseModel):
     """Main configuration class for the Memp system."""
     
@@ -237,6 +251,7 @@ class MempConfig(BaseModel):
     environment: EnvironmentConfig = Field(default_factory=EnvironmentConfig)
     experiment: ExperimentConfig = Field(default_factory=ExperimentConfig)
     rl_config: RLConfig = Field(default_factory=RLConfig)
+    skill: SkillConfig = Field(default_factory=SkillConfig)
     # Global settings
     project_name: str = Field(default="memp", description="Project name")
     version: str = Field(default="0.1.0", description="Project version")
