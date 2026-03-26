@@ -88,8 +88,7 @@ skill:
   enabled: true  # Set to true to enable skill layer
   storage_dir: "skills"  # Directory for skill storage
   retrieval_method: "llm"  # Retrieval method: llm, keyword, vector, hybrid
-  extract_threshold: 0.7  # Success rate threshold for extraction
-  extract_interval: 3  # Number of trajectories to accumulate before batch extraction
+  extract_interval: 5  # Number of trajectories to accumulate before batch extraction
   retrieve_k: 3  # Number of skills to retrieve
   auto_extract: true  # Automatically extract skills from successful trajectories
   auto_analyze_failure: true  # Automatically analyze and update skills from failed trajectories

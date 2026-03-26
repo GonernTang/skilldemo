@@ -234,7 +234,6 @@ class SkillConfig(BaseModel):
     enabled: bool = Field(default=False, description="Whether the skill layer is enabled")
     storage_dir: str = Field(default="skills", description="Directory for skill storage")
     retrieval_method: str = Field(default="llm", description="Retrieval method: llm, keyword, vector, hybrid")
-    extract_threshold: float = Field(default=0.7, description="Success rate threshold for extraction")
     extract_interval: int = Field(default=10, description="Number of trajectories to accumulate before batch extraction")
     retrieve_k: int = Field(default=3, description="Number of skills to retrieve")
     auto_extract: bool = Field(default=True, description="Automatically extract skills from successful trajectories")

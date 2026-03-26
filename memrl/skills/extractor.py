@@ -233,13 +233,11 @@ class SkillExtractor:
     def batch_extract(
         self,
         trajectories: List[Tuple[List[Dict[str, str]], str, str]],
-        success_threshold: float = 0.7,
     ) -> List[Skill]:
         """Extract skills from multiple successful trajectories.
 
         Args:
             trajectories: List of (trajectory, task_description, task_type) tuples.
-            success_threshold: Threshold for batch extraction.
 
         Returns:
             List of extracted Skill objects.
@@ -406,7 +404,6 @@ class SkillConfig:
         llm: BaseLLM,
         storage_dir: str = "skills",
         retrieval_method: str = "llm",
-        extract_threshold: float = 0.7,
         retrieve_k: int = 3,
         auto_extract: bool = True,
         auto_analyze_failure: bool = True,
@@ -418,7 +415,6 @@ class SkillConfig:
             llm: LLM provider for extraction and retrieval.
             storage_dir: Directory for skill storage.
             retrieval_method: Method for retrieval (llm, keyword, vector, hybrid).
-            extract_threshold: Success rate threshold for extraction.
             retrieve_k: Number of skills to retrieve.
             auto_extract: Whether to automatically extract from success.
             auto_analyze_failure: Whether to automatically analyze failures.
@@ -427,7 +423,6 @@ class SkillConfig:
         self.llm = llm
         self.storage_dir = storage_dir
         self.retrieval_method = retrieval_method
-        self.extract_threshold = extract_threshold
         self.retrieve_k = retrieve_k
         self.auto_extract = auto_extract
         self.auto_analyze_failure = auto_analyze_failure

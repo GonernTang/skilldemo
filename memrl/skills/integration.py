@@ -183,7 +183,6 @@ def load_skill_config_from_dict(config: Dict[str, Any], llm: BaseLLM) -> SkillCo
         llm=llm,
         storage_dir=config.get("storage_dir", "skills"),
         retrieval_method=config.get("retrieval_method", "llm"),
-        extract_threshold=config.get("extract_threshold", 0.7),
         retrieve_k=config.get("retrieve_k", 3),
         auto_extract=config.get("auto_extract", True),
         auto_analyze_failure=config.get("auto_analyze_failure", True),
