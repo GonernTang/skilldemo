@@ -97,6 +97,7 @@ class SkillIntegrator:
         failed_trajectory: List[Dict[str, Any]],
         task_description: str,
         task_type: str,
+        skill_ids: Optional[List[str]] = None,
     ) -> None:
         """Analyze a failed trajectory and update relevant skills.
 
@@ -104,6 +105,8 @@ class SkillIntegrator:
             failed_trajectory: Failed execution trajectory.
             task_description: Task description.
             task_type: Task type/category.
+            skill_ids: Optional list of specific skill IDs to update. If None,
+                       all skills of the same task_type will be updated (legacy behavior).
         """
         if not self.skill_manager:
             return
@@ -111,6 +114,7 @@ class SkillIntegrator:
             failed_trajectory=failed_trajectory,
             task_description=task_description,
             task_type=task_type,
+            skill_ids=skill_ids,
         )
 
     def format_skills_for_context(self, skills: List[Skill]) -> str:

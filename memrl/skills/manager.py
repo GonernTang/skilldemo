@@ -200,6 +200,7 @@ class SkillManager:
         failed_trajectory: List[Dict[str, Any]],
         task_description: str,
         task_type: str,
+        skill_ids: Optional[List[str]] = None,
     ) -> List[SkillUpdate]:
         """Analyze a failed trajectory and update relevant skills.
 
@@ -207,6 +208,8 @@ class SkillManager:
             failed_trajectory: Failed execution trajectory.
             task_description: Task description.
             task_type: Task type/category.
+            skill_ids: Optional list of specific skill IDs to update. If None,
+                       all skills of the same task_type will be updated (legacy behavior).
 
         Returns:
             List of SkillUpdate objects that were applied.
@@ -221,8 +224,14 @@ class SkillManager:
         if not analysis:
             return []
 
-        # Step 2: Get related skills
-        related_skills = self.store.get_skills_by_type(task_type)
+        # Step 2: Get skills to update
+        if skill_ids:
+            # Precise mode: only update the specified skills
+            related_skills = [self.store.load(sid) for sid in skill_ids]
+            related_skills = [s for s in related_skills if s is not None]
+        else:
+            # Legacy mode: update all skills of the same task_type
+            related_skills = self.store.get_skills_by_type(task_type)
 
         # Step 3: Generate updates
         updates = self.failure_analyzer.generate_updates(analysis, related_skills)
