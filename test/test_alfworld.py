@@ -431,7 +431,7 @@ class TestRunner:
         print(f"Number of tasks: {self.num_tasks}")
         print(f"Random seed: {self.random_seed}")
         print(f"Memory: {'Disabled' if isinstance(self.memory_service, NullMemoryService) else 'Enabled'}")
-        print(f"Skills: {'Disabled' if not self.skill_integrator else 'Enabled'}")
+        print(f"Skills: {'Disabled' if not self.batch_skill_integrator else 'Enabled'}")
         print("="*60)
 
         # Create token log directory
