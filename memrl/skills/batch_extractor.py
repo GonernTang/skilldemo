@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from memrl.providers.base import BaseLLM
-from memrl.skills.skill import Skill, SkillStep
 
 
 class TrajectoryBuffer:
@@ -173,17 +172,24 @@ class BatchSkillExtractor:
 
 Analyze these successful and failed trajectories from an embodied AI agent operating in household environments (ALFWorld).
 
+You are given {len(success_patterns)} successful trajectories and {len(failure_patterns)} failed trajectories.
+
 SUCCESSFUL TRAJECTORIES:
 {success_text}
 
 FAILED TRAJECTORIES:
 {failure_text}
 
-Generate 8-12 GENERAL SKILLS that apply across ALL task types. These should be:
+Your task:
+Based on the patterns you observe in these trajectories, extract the MOST IMPORTANT and ACTIONABLE general skills that apply across ALL task types.
+
+Quality over quantity - only extract skills that are clearly demonstrated by the data. If there are fewer distinct patterns, generate fewer skills.
+
+Requirements:
 1. **Concise** - Each skill should be 1-2 sentences max
 2. **Actionable** - Clear what to do, not vague principles
-3. **Transferable** - Apply to pick_and_place, heat, cool, clean, examine, look_at_obj_in_light tasks
-4. **Failure-aware** - Derived from what went wrong in failures
+3. **Transferable** - Apply to multiple task types (pick_and_place, heat, cool, clean, examine, look_at_obj_in_light)
+4. **Evidence-based** - Must be supported by the trajectories above
 
 Format as JSON array:
 [
@@ -194,13 +200,6 @@ Format as JSON array:
         "when_to_apply": "Specific trigger condition"
     }}
 ]
-
-Focus on:
-- Navigation and exploration strategies
-- Object manipulation principles
-- State tracking and goal decomposition
-- Error recovery patterns
-- Container/furniture interaction rules
 
 Return ONLY the JSON array, no other text."""
 
@@ -251,17 +250,24 @@ Return ONLY the JSON array, no other text."""
 Task Type: {task_type.upper()}
 Description: {self.TASK_TYPES.get(task_type, '')}
 
+You are given {len(success_patterns)} successful trajectories and {len(failure_patterns)} failed trajectories for this task type.
+
 SUCCESSFUL TRAJECTORIES:
 {success_text}
 
 FAILED TRAJECTORIES:
 {failure_text}
 
-Generate 4-6 TASK-SPECIFIC SKILLS for {task_type} tasks. These should be:
+Your task:
+Based on the patterns you observe in these trajectories, extract the MOST IMPORTANT and ACTIONABLE skills specific to {task_type} tasks.
+
+Quality over quantity - only extract skills that are clearly demonstrated by the data. If there are fewer distinct patterns, generate fewer skills.
+
+Requirements:
 1. **Concise** - 1-2 sentences max per skill
 2. **Specific** - Apply specifically to {task_type} tasks
 3. **Actionable** - Clear steps or decision rules
-4. **Pattern-based** - Identify what makes success vs failure
+4. **Evidence-based** - Must be supported by the trajectories above
 
 Format as JSON array:
 [
@@ -302,11 +308,27 @@ Return ONLY the JSON array, no other text."""
 
         prompt = f"""You are an expert at analyzing agent failures and distilling them into avoidable mistakes.
 
-Analyze these failure patterns from an embodied AI agent:
+You are given {len(failed_trajs)} failed trajectories to analyze.
 
 {failure_text}
 
-Generate 8-12 COMMON MISTAKES to avoid. Format as JSON array:
+Your task:
+Based on the failure patterns you observe, extract the MOST IMPORTANT mistakes to avoid.
+
+Quality over quantity - only extract mistakes that are clearly demonstrated by the data. If there are fewer distinct failure patterns, generate fewer mistakes.
+
+Requirements:
+1. **Clear description** - What the mistake is (1 sentence)
+2. **Root cause** - Why agents make this mistake (1 sentence)
+3. **Actionable fix** - Concrete fix to avoid this mistake (1-2 sentences)
+
+Focus on:
+- Exploration failures (getting stuck, not finding objects)
+- State management errors (forgetting what you're holding)
+- Goal misunderstanding (wrong object, incomplete task)
+- Inefficient action sequences
+
+Format as JSON array:
 [
     {{
         "mistake_id": "err_001",
@@ -315,12 +337,6 @@ Generate 8-12 COMMON MISTAKES to avoid. Format as JSON array:
         "how_to_avoid": "Concrete actionable fix (1-2 sentences)"
     }}
 ]
-
-Focus on:
-- Exploration failures (getting stuck, not finding objects)
-- State management errors (forgetting what you're holding)
-- Goal misunderstanding (wrong object, incomplete task)
-- Inefficient action sequences
 
 Return ONLY the JSON array, no other text."""
 

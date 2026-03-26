@@ -31,7 +31,7 @@ from memrl.agent.memp_agent import MempAgent
 from memrl.service.base_memory_service import BaseMemoryService, NullMemoryService
 from memrl.service.memory_service import MemoryService
 from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
-from memrl.skills.batch_integration import BatchSkillIntegrator
+from memrl.skills.integration import create_skill_integrator
 from memrl.envs.alfworld_env import AlfWorldEnv, load_config_from_path
 
 
@@ -172,19 +172,13 @@ class TestRunner:
 
         # Setup skill integrator (batch mode)
         self.skill_integrator = None
-        self.batch_skill_integrator = None
         if not disable_skills:
-            skill_config = getattr(self.cfg, 'skill', None)
-            if skill_config and skill_config.enabled:
-                # Get extract_interval from config, default to 10
-                extract_interval = getattr(skill_config, 'extract_interval', 10)
-                self.batch_skill_integrator = BatchSkillIntegrator(
-                    llm=self.llm_provider,
-                    extract_interval=extract_interval,
-                    trajectory_dir=str(project_root / "trajectories"),
-                    skills_dir=str(project_root / "skills"),
-                )
-                print(f"Batch skill layer enabled (extract_interval={extract_interval})")
+            self.skill_integrator = create_skill_integrator(
+                config_dict={'skill': self.cfg.skill.model_dump() if hasattr(self.cfg, 'skill') else {}},
+                llm=self.llm_provider,
+            )
+            if self.skill_integrator:
+                print(f"Batch skill layer enabled (extract_interval={self.cfg.skill.extract_interval})")
 
         # Load environment and select random tasks
         self.env_config_path = str(project_root / "configs" / "envs" / "alfworld.yaml")
@@ -323,12 +317,30 @@ class TestRunner:
                 else:
                     retrieved_mems = []
 
+            # Retrieve skills
+            retrieved_skills = []
+            if self.skill_integrator:
+                retrieved_skills = self.skill_integrator.retrieve_skills(
+                    task_description=task_desc,
+                    task_type=task_type,
+                    observation=initial_obs,
+                    k=self.cfg.skill.retrieve_k if hasattr(self.cfg, 'skill') else 3
+                )
+                if retrieved_skills:
+                    print(f"\nRetrieved {len(retrieved_skills)} relevant skills for this task")
+
             # Construct initial messages for the agent
             messages = self.agent._construct_messages(
                 task_description=task_desc,
                 retrieved_memories={'successed': retrieved_mems, 'failed': []},
                 task_type=task_type
             )
+
+            # Add retrieved skills to context
+            if retrieved_skills:
+                skills_context = self.skill_integrator.format_skills_for_context(retrieved_skills)
+                if skills_context:
+                    messages.append({"role": "system", "content": skills_context})
 
             # Main execution loop
             current_obs = initial_obs
@@ -382,7 +394,7 @@ class TestRunner:
                     break
 
             # Process skill layer (batch mode)
-            if self.batch_skill_integrator:
+            if self.skill_integrator:
                 # Convert trajectory format for batch skill extractor
                 skill_trajectory = []
                 for step in result.trajectory:
@@ -391,7 +403,7 @@ class TestRunner:
                     skill_trajectory.append({"action": action, "observation": observation})
 
                 # Add trajectory to buffer - will trigger batch extraction when N reached
-                batch_result = self.batch_skill_integrator.add_trajectory(
+                batch_result = self.skill_integrator.add_trajectory(
                     trajectory=skill_trajectory,
                     task_description=task_desc,
                     task_type=task_type,
@@ -411,7 +423,7 @@ class TestRunner:
                         print(f"  {task_type}: {len(skills)} skills")
                     print(f"  Common mistakes: {len(batch_result.get('common_mistakes', []))}")
 
-                pending = self.batch_skill_integrator.pending_count
+                pending = self.skill_integrator.pending_count
                 if pending > 0:
                     print(f"  [Pending {pending} trajectories before next extraction]")
 
@@ -431,7 +443,7 @@ class TestRunner:
         print(f"Number of tasks: {self.num_tasks}")
         print(f"Random seed: {self.random_seed}")
         print(f"Memory: {'Disabled' if isinstance(self.memory_service, NullMemoryService) else 'Enabled'}")
-        print(f"Skills: {'Disabled' if not self.batch_skill_integrator else 'Enabled'}")
+        print(f"Skills: {'Disabled' if not self.skill_integrator else 'Enabled'}")
         print("="*60)
 
         # Create token log directory

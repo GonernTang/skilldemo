@@ -141,7 +141,7 @@ class MempAgent(BaseAgent):
 
         # 2. Add the selected few-shot example as a complete dialogue
         example_dialogue = self._get_examples_for_task(task_type)
-        if example_dialogue:
+        if example_dialogue and isinstance(example_dialogue, list):
             # Modify the first user message in the example to introduce it
             example_dialogue[0]['content'] = "Here is an example of how to solve the task:\n" + example_dialogue[0]['content']
             messages.extend(example_dialogue)

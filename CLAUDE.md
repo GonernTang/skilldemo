@@ -6,9 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MemRL 是一个基于情节记忆的运行时强化学习系统，通过"构建-检索-更新"三阶段记忆管理策略实现智能体的自我演进。核心特点是不更新模型权重，而是通过记忆管理实现持续改进。
 
+### always do
+```bash
+
+# 激活环境
+conda activate memoryrl
+```
+创建一个开发日志，每次修改代码时在开发日志里记录这次修改的内容。（什么时候修改的，具体修改或新增了哪些功能）
+
+
 ## 开发命令
 
 ```bash
+
+# 激活环境
+conda activate memoryrl
+
 # 安装依赖
 pip install -r requirements.txt
 
