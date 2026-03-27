@@ -235,9 +235,13 @@ class SkillConfig(BaseModel):
     storage_dir: str = Field(default="skills", description="Directory for skill storage")
     retrieval_method: str = Field(default="llm", description="Retrieval method: llm, keyword, vector, hybrid")
     extract_interval: int = Field(default=10, description="Number of trajectories to accumulate before batch extraction")
-    retrieve_k: int = Field(default=3, description="Number of skills to retrieve")
+    retrieve_general: int = Field(default=1, description="Number of general skills to retrieve")
+    retrieve_task_specific: int = Field(default=1, description="Number of task-specific skills to retrieve")
+    retrieve_common_mistakes: int = Field(default=1, description="Number of common mistakes to retrieve")
     auto_extract: bool = Field(default=True, description="Automatically extract skills from successful trajectories")
     auto_analyze_failure: bool = Field(default=True, description="Automatically analyze and update skills from failed trajectories")
+    value_alpha: float = Field(default=0.5, description="Learning rate for skill value Q-learning update (alpha)")
+    value_lambda: float = Field(default=0.5, description="Weight for skill value in hybrid retrieval score (lambda)")
 
 
 class MempConfig(BaseModel):
