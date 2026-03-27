@@ -3,14 +3,24 @@
 import json
 import time
 import hashlib
+import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from memrl.providers.base import BaseLLM
+from memrl.skills.prompts import (
+    build_general_skill_prompt,
+    build_task_specific_skill_prompt,
+    build_common_mistakes_prompt,
+)
 
 
 class TrajectoryBuffer:
-    """Buffer to store trajectories locally before batch extraction."""
+    """Buffer to store trajectories locally before batch extraction.
+
+    Trajectories are persisted to disk and tracked by extraction status.
+    Extracted trajectories remain on disk but won't be re-extracted.
+    """
 
     def __init__(self, storage_dir: str = "trajectories"):
         """Initialize the trajectory buffer.
@@ -20,21 +30,56 @@ class TrajectoryBuffer:
         """
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
+
+        # Track extracted trajectory IDs to avoid re-extraction
+        self.extracted_ids_file = self.storage_dir / ".extracted_ids.json"
+        self.extracted_ids: set = set()
+        self._load_extracted_ids()
+
+        # Buffer for pending (unextracted) trajectories
         self.buffer: List[Dict[str, Any]] = []
         self._load_existing()
 
+    def _load_extracted_ids(self):
+        """Load previously extracted trajectory IDs from disk."""
+        if self.extracted_ids_file.exists():
+            try:
+                with open(self.extracted_ids_file, 'r') as f:
+                    self.extracted_ids = set(json.load(f))
+            except Exception:
+                self.extracted_ids = set()
+
+    def _save_extracted_ids(self):
+        """Save extracted trajectory IDs to disk."""
+        with open(self.extracted_ids_file, 'w') as f:
+            json.dump(list(self.extracted_ids), f)
+
     def _load_existing(self):
-        """Load existing trajectories from storage."""
+        """Load existing unextracted trajectories from storage.
+
+        Only loads trajectories that haven't been extracted yet.
+        """
         for traj_file in sorted(self.storage_dir.glob("trajectory_*.json")):
+            # Skip the extracted IDs tracking file
+            if traj_file.name == ".extracted_ids.json":
+                continue
             try:
                 with open(traj_file, 'r') as f:
-                    self.buffer.append(json.load(f))
+                    traj = json.load(f)
+                # Only add if not already extracted
+                if traj.get("traj_id") not in self.extracted_ids:
+                    self.buffer.append(traj)
             except Exception:
                 pass
 
     @property
     def count(self) -> int:
-        """Return current buffer count."""
+        """Return current buffer count (unextracted trajectories)."""
+        return len(self.buffer)
+
+    @property
+    def pending_count(self) -> int:
+        """Return number of pending (unextracted) trajectories."""
         return len(self.buffer)
 
     def add(
@@ -74,8 +119,22 @@ class TrajectoryBuffer:
         return len(self.buffer)
 
     def get_all(self) -> List[Dict[str, Any]]:
-        """Get all buffered trajectories."""
+        """Get all buffered trajectories (unextracted only)."""
         return self.buffer
+
+    def mark_extracted(self, traj_ids: List[str]):
+        """Mark trajectories as extracted and remove from buffer.
+
+        Trajectories remain on disk but won't be included in future
+        extractions.
+
+        Args:
+            traj_ids: List of trajectory IDs to mark as extracted.
+        """
+        self.extracted_ids.update(traj_ids)
+        self._save_extracted_ids()
+        # Remove extracted trajectories from buffer (files remain on disk)
+        self.buffer = [t for t in self.buffer if t.get("traj_id") not in self.extracted_ids]
 
     def get_by_type(self, task_type: str) -> List[Dict[str, Any]]:
         """Get trajectories filtered by task type."""
@@ -99,33 +158,59 @@ class TrajectoryBuffer:
 class BatchSkillExtractor:
     """Extract skills in batch from accumulated trajectories."""
 
-    # Task type definitions
-    TASK_TYPES = {
-        "pick_and_place": "任务类型：拾取物体并放置到指定位置",
-        "look_at_obj_in_light": "任务类型：用光源照射物体进行检查",
-        "clean": "任务类型：清洁物体后放置",
-        "heat": "任务类型：加热物体",
-        "cool": "任务类型：冷却物体",
-        "examine": "任务类型：用特定物体检查另一个物体",
+    # Task type to category mapping
+    TASK_TYPE_CATEGORIES = {
+        "pick_and_place": "alfworld/pick_and_place",
+        "look_at_obj_in_light": "alfworld/look_at_obj_in_light",
+        "clean": "alfworld/clean",
+        "heat": "alfworld/heat",
+        "cool": "alfworld/cool",
+        "examine": "alfworld/examine",
     }
 
-    def __init__(self, llm: BaseLLM, storage_dir: str = "skills"):
+    # Available categories
+    CATEGORIES = [
+        "general",
+        "alfworld/pick_and_place",
+        "alfworld/look_at_obj_in_light",
+        "alfworld/clean",
+        "alfworld/heat",
+        "alfworld/cool",
+        "alfworld/examine",
+        "common_mistakes",
+    ]
+
+    def __init__(
+        self,
+        llm: BaseLLM,
+        storage_dir: str = "skills",
+        on_skills_extracted: Optional[callable] = None,
+    ):
         """Initialize the batch skill extractor.
 
         Args:
             llm: LLM provider for skill extraction.
             storage_dir: Directory to save extracted skills.
+            on_skills_extracted: Optional callback(skills_dict) called after
+                batch extraction with the newly extracted skills dict.
+                The dict has keys: general_skills, task_specific_skills, common_mistakes.
         """
         self.llm = llm
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.index_path = self.storage_dir / "batch_skills_index.json"
+        self.markdown_dir = self.storage_dir / "markdown"
+        self._on_skills_extracted = on_skills_extracted
         self._init_index()
 
     def _init_index(self):
         """Initialize the skills index."""
         if not self.index_path.exists():
-            self._save_index({"general_skills": [], "task_specific_skills": {}, "common_mistakes": []})
+            self._save_index({
+                "general_skills": [],
+                "task_specific_skills": {},
+                "common_mistakes": []
+            })
 
     def _save_index(self, index: Dict[str, Any]):
         """Save skills index to disk."""
@@ -153,6 +238,14 @@ class BatchSkillExtractor:
             lines.append(f"  {i+1}. Action: {action} -> Obs: {obs}...")
         return "\n".join(lines)
 
+    def _generate_skill_name(self, title: str) -> str:
+        """Convert a title to a valid skill name (kebab-case)."""
+        # Remove special characters, lowercase, replace spaces with hyphens
+        name = re.sub(r'[^\w\s-]', '', title.lower())
+        name = re.sub(r'[\s_]+', '-', name)
+        name = re.sub(r'-+', '-', name)
+        return name.strip('-')
+
     def _generate_general_skills(self, trajectories: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generate general skills from all trajectories."""
         success_patterns = []
@@ -168,49 +261,21 @@ class BatchSkillExtractor:
         success_text = "\n---\n".join(success_patterns[:15])  # Max 15 successful
         failure_text = "\n---\n".join(failure_patterns[:15]) if failure_patterns else "N/A"
 
-        prompt = f"""You are an expert at distilling agent behavior patterns into concise, actionable skills.
-
-Analyze these successful and failed trajectories from an embodied AI agent operating in household environments (ALFWorld).
-
-You are given {len(success_patterns)} successful trajectories and {len(failure_patterns)} failed trajectories.
-
-SUCCESSFUL TRAJECTORIES:
-{success_text}
-
-FAILED TRAJECTORIES:
-{failure_text}
-
-Your task:
-Based on the patterns you observe in these trajectories, extract the MOST IMPORTANT and ACTIONABLE general skills that apply across ALL task types.
-
-Quality over quantity - only extract skills that are clearly demonstrated by the data. If there are fewer distinct patterns, generate fewer skills.
-
-Requirements:
-1. **Concise** - Each skill should be 1-2 sentences max
-2. **Actionable** - Clear what to do, not vague principles
-3. **Transferable** - Apply to multiple task types (pick_and_place, heat, cool, clean, examine, look_at_obj_in_light)
-4. **Evidence-based** - Must be supported by the trajectories above
-
-Format as JSON array:
-[
-    {{
-        "skill_id": "gen_001",
-        "title": "Short title (3-5 words)",
-        "principle": "The core actionable insight in 1-2 sentences",
-        "when_to_apply": "Specific trigger condition"
-    }}
-]
-
-Return ONLY the JSON array, no other text."""
+        prompt = build_general_skill_prompt(
+            success_text=success_text,
+            failure_text=failure_text,
+            num_success=len(success_patterns),
+            num_failure=len(failure_patterns),
+        )
 
         response = self.llm.generate([{"role": "user", "content": prompt}])
 
         try:
             skills = json.loads(response)
-            # Add skill_id if missing
-            for i, skill in enumerate(skills):
-                if "skill_id" not in skill:
-                    skill["skill_id"] = f"gen_{i+1:03d}"
+            for skill in skills:
+                if "name" not in skill or not skill["name"]:
+                    skill["name"] = self._generate_skill_name(skill.get("title", "unnamed"))
+                skill["category"] = "general"
             return skills
         except json.JSONDecodeError:
             return []
@@ -218,12 +283,12 @@ Return ONLY the JSON array, no other text."""
     def _generate_task_specific_skills(self, trajectories: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """Generate task-specific skills organized by task type."""
         # Group by task type
-        by_type: Dict[str, List[Dict[str, Any]]] = {tt: [] for tt in self.TASK_TYPES.keys()}
+        by_type: Dict[str, List[Dict[str, Any]]] = {tt: [] for tt in self.TASK_TYPE_CATEGORIES.keys()}
 
         for traj in trajectories:
             task_type = traj.get('task_type', '')
             # Match task type from full path like "pick_and_place/..."
-            for tt in self.TASK_TYPES.keys():
+            for tt in self.TASK_TYPE_CATEGORIES.keys():
                 if tt in task_type:
                     by_type[tt].append(traj)
                     break
@@ -233,6 +298,7 @@ Return ONLY the JSON array, no other text."""
             if not trajs:
                 continue
 
+            category = self.TASK_TYPE_CATEGORIES.get(task_type, "general")
             success_patterns = []
             failure_patterns = []
             for traj in trajs:
@@ -245,49 +311,25 @@ Return ONLY the JSON array, no other text."""
             success_text = "\n---\n".join(success_patterns[:8])
             failure_text = "\n---\n".join(failure_patterns[:8]) if failure_patterns else "N/A"
 
-            prompt = f"""You are an expert at distilling agent behavior patterns into concise, actionable skills.
-
-Task Type: {task_type.upper()}
-Description: {self.TASK_TYPES.get(task_type, '')}
-
-You are given {len(success_patterns)} successful trajectories and {len(failure_patterns)} failed trajectories for this task type.
-
-SUCCESSFUL TRAJECTORIES:
-{success_text}
-
-FAILED TRAJECTORIES:
-{failure_text}
-
-Your task:
-Based on the patterns you observe in these trajectories, extract the MOST IMPORTANT and ACTIONABLE skills specific to {task_type} tasks.
-
-Quality over quantity - only extract skills that are clearly demonstrated by the data. If there are fewer distinct patterns, generate fewer skills.
-
-Requirements:
-1. **Concise** - 1-2 sentences max per skill
-2. **Specific** - Apply specifically to {task_type} tasks
-3. **Actionable** - Clear steps or decision rules
-4. **Evidence-based** - Must be supported by the trajectories above
-
-Format as JSON array:
-[
-    {{
-        "skill_id": "{task_type[:3]}_001",
-        "title": "Short title (3-5 words)",
-        "principle": "The core actionable insight",
-        "when_to_apply": "Specific trigger condition"
-    }}
-]
-
-Return ONLY the JSON array, no other text."""
+            prompt = build_task_specific_skill_prompt(
+                task_type=task_type,
+                category=category,
+                task_description=task_type.replace('_', ' '),
+                success_text=success_text,
+                failure_text=failure_text,
+                num_success=len(success_patterns),
+                num_failure=len(failure_patterns),
+            )
 
             response = self.llm.generate([{"role": "user", "content": prompt}])
 
             try:
                 skills = json.loads(response)
-                for i, skill in enumerate(skills):
-                    if "skill_id" not in skill:
-                        skill["skill_id"] = f"{task_type[:3]}_{i+1:03d}"
+                for skill in skills:
+                    if "name" not in skill or not skill["name"]:
+                        skill["name"] = self._generate_skill_name(skill.get("title", f"{task_type}-skill"))
+                    skill["category"] = category
+                    skill["task_type"] = task_type
                 result[task_type] = skills
             except json.JSONDecodeError:
                 result[task_type] = []
@@ -306,47 +348,19 @@ Return ONLY the JSON array, no other text."""
 
         failure_text = "\n---\n".join(failure_data)
 
-        prompt = f"""You are an expert at analyzing agent failures and distilling them into avoidable mistakes.
-
-You are given {len(failed_trajs)} failed trajectories to analyze.
-
-{failure_text}
-
-Your task:
-Based on the failure patterns you observe, extract the MOST IMPORTANT mistakes to avoid.
-
-Quality over quantity - only extract mistakes that are clearly demonstrated by the data. If there are fewer distinct failure patterns, generate fewer mistakes.
-
-Requirements:
-1. **Clear description** - What the mistake is (1 sentence)
-2. **Root cause** - Why agents make this mistake (1 sentence)
-3. **Actionable fix** - Concrete fix to avoid this mistake (1-2 sentences)
-
-Focus on:
-- Exploration failures (getting stuck, not finding objects)
-- State management errors (forgetting what you're holding)
-- Goal misunderstanding (wrong object, incomplete task)
-- Inefficient action sequences
-
-Format as JSON array:
-[
-    {{
-        "mistake_id": "err_001",
-        "description": "What the mistake is (1 sentence)",
-        "why_it_happens": "Why agents make this mistake (1 sentence)",
-        "how_to_avoid": "Concrete actionable fix (1-2 sentences)"
-    }}
-]
-
-Return ONLY the JSON array, no other text."""
+        prompt = build_common_mistakes_prompt(
+            failure_text=failure_text,
+            num_failures=len(failed_trajs),
+        )
 
         response = self.llm.generate([{"role": "user", "content": prompt}])
 
         try:
             mistakes = json.loads(response)
-            for i, mistake in enumerate(mistakes):
-                if "mistake_id" not in mistake:
-                    mistake["mistake_id"] = f"err_{i+1:03d}"
+            for mistake in mistakes:
+                if "name" not in mistake or not mistake["name"]:
+                    mistake["name"] = self._generate_skill_name(mistake.get("description", "common-mistake"))
+                mistake["category"] = "common_mistakes"
             return mistakes
         except json.JSONDecodeError:
             return []
@@ -385,26 +399,84 @@ Return ONLY the JSON array, no other text."""
         # Save to index
         index = self._load_index()
 
-        # Merge new skills (avoid duplicates by skill_id)
-        existing_ids = {s["skill_id"] for s in index.get("general_skills", [])}
+        # Merge new skills (avoid duplicates by name)
+        existing_names = {s["name"] for s in index.get("general_skills", [])}
         for skill in general_skills:
-            if skill["skill_id"] not in existing_ids:
+            if skill["name"] not in existing_names:
                 index["general_skills"].append(skill)
 
         for task_type, skills in task_specific_skills.items():
             if task_type not in index["task_specific_skills"]:
                 index["task_specific_skills"][task_type] = []
-            existing_ids = {s["skill_id"] for s in index["task_specific_skills"][task_type]}
+            existing_names = {s["name"] for s in index["task_specific_skills"][task_type]}
             for skill in skills:
-                if skill["skill_id"] not in existing_ids:
+                if skill["name"] not in existing_names:
                     index["task_specific_skills"][task_type].append(skill)
 
-        existing_ids = {m["mistake_id"] for m in index.get("common_mistakes", [])}
+        existing_names = {m["name"] for m in index.get("common_mistakes", [])}
         for mistake in common_mistakes:
-            if mistake["mistake_id"] not in existing_ids:
+            if mistake["name"] not in existing_names:
                 index["common_mistakes"].append(mistake)
 
         self._save_index(index)
         print(f"Saved skills to {self.storage_dir}")
 
+        # Save skills as Markdown files
+        self._save_skills_as_markdown(general_skills, "general")
+        for task_type, skills in task_specific_skills.items():
+            self._save_skills_as_markdown(skills, task_type)
+        self._save_skills_as_markdown(common_mistakes, "common_mistakes")
+
+        # Notify listener if callback is set
+        if self._on_skills_extracted:
+            self._on_skills_extracted(result)
+
         return result
+
+    def _save_skill_as_markdown(self, skill: Dict[str, Any]) -> None:
+        """Save a single skill as a Markdown file.
+
+        Args:
+            skill: Skill dictionary with name, description, content, category.
+        """
+        name = skill.get("name", "unnamed")
+        description = skill.get("description", "")
+        category = skill.get("category", "general")
+        content = skill.get("content", "")
+
+        # Convert escaped newlines to actual newlines
+        content = content.replace("\\n", "\n")
+
+        # Create directory: skills/markdown/{skill-name}/
+        skill_dir = self.markdown_dir / name
+        skill_dir.mkdir(parents=True, exist_ok=True)
+
+        # Build Markdown with YAML frontmatter
+        lines = [
+            "---",
+            f"name: {name}",
+            f"description: {description}",
+            f"category: {category}",
+            "---",
+            "",
+            f"{content}",
+            "",
+        ]
+
+        # Write to SKILL.md
+        skill_path = skill_dir / "SKILL.md"
+        with open(skill_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
+
+    def _save_skills_as_markdown(self, skills: List[Dict[str, Any]], subdir: str) -> None:
+        """Save a list of skills as Markdown files.
+
+        Args:
+            skills: List of skill dictionaries.
+            subdir: Subdirectory under markdown/ (e.g., 'general', 'pick_and_place').
+        """
+        for skill in skills:
+            # Add task_type to skill if not present (for organization)
+            if "task_type" not in skill:
+                skill["task_type"] = subdir
+            self._save_skill_as_markdown(skill)
