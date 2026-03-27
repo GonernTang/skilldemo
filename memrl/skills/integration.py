@@ -5,6 +5,9 @@ from typing import Any, Dict, Optional
 from memrl.providers.base import BaseEmbedder, BaseLLM
 from memrl.skills.batch_integration import BatchSkillIntegrator
 
+# Alias for backward compatibility
+SkillIntegrator = BatchSkillIntegrator
+
 
 def create_skill_integrator(
     config_dict: Dict[str, Any],
@@ -28,6 +31,11 @@ def create_skill_integrator(
     extract_interval = skill_config.get("extract_interval", 10)
     retrieval_method = skill_config.get("retrieval_method", "template")
     storage_dir = skill_config.get("storage_dir", "skills")
+    value_alpha = skill_config.get("value_alpha", 0.5)
+    value_lambda = skill_config.get("value_lambda", 0.5)
+    retrieve_general = skill_config.get("retrieve_general", 1)
+    retrieve_task_specific = skill_config.get("retrieve_task_specific", 1)
+    retrieve_common_mistakes = skill_config.get("retrieve_common_mistakes", 1)
 
     return BatchSkillIntegrator(
         llm=llm,
@@ -36,4 +44,9 @@ def create_skill_integrator(
         trajectory_dir="trajectories",
         skills_dir=storage_dir,
         retrieval_method=retrieval_method,
+        value_alpha=value_alpha,
+        value_lambda=value_lambda,
+        retrieve_general=retrieve_general,
+        retrieve_task_specific=retrieve_task_specific,
+        retrieve_common_mistakes=retrieve_common_mistakes,
     )
