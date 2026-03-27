@@ -797,6 +797,7 @@ class AlfworldRunner(BaseRunner):
         active_slots = list(range(current_bs))
         messages_per_slot: List[List[Dict]] = [[] for _ in range(current_bs)]
         steps_per_slot: List[List[Dict]] = [0 for _ in range(current_bs)]
+        retrieved_skills_per_slot: List[List[str]] = [[] for _ in range(current_bs)]
 
         results = mini_batch_env.reset()
         current_task_descs = ['\n'.join(res['obs'].split('\n\n')[1:]) for res in results]
@@ -873,6 +874,8 @@ class AlfworldRunner(BaseRunner):
                                         observation=current_observations[slot_idx],
                                     )
                                     if skills:
+                                        # Save retrieved skill names for value update later
+                                        retrieved_skills_per_slot[slot_idx] = [s.get("name", "") for s in skills if s.get("name")]
                                         messages_for_act = copy.deepcopy(messages_per_slot[slot_idx])
                                         skills_text = self.skill_integrator.format_skills_for_context(skills)
                                         if skills_text:
@@ -949,6 +952,27 @@ class AlfworldRunner(BaseRunner):
                     success = result.get('reward', 0) > 0
                     logger.info(f"Slot {i} finished a game. Success: {success}")
 
+                    # Update skill values based on task outcome
+                    retrieved_skill_names = retrieved_skills_per_slot[i]
+                    skill_value_changes = {}
+                    if self.skill_integrator is not None and retrieved_skill_names:
+                        all_skills = self.skill_integrator.get_all_skills()
+                        # Record skill values before update
+                        for skill_name in retrieved_skill_names:
+                            skill_value = self._get_skill_value(all_skills, skill_name)
+                            skill_value_changes[skill_name] = {"before": skill_value}
+                        # Update skill values
+                        for skill_name in retrieved_skill_names:
+                            self.skill_integrator.update_skill_value_by_name(
+                                skill_name=skill_name,
+                                success=success,
+                            )
+                        # Record skill values after update
+                        all_skills_after = self.skill_integrator.get_all_skills()
+                        for skill_name in retrieved_skill_names:
+                            skill_value_changes[skill_name]["after"] = self._get_skill_value(all_skills_after, skill_name)
+                        logger.info(f"Updated skill values for slot {i}: {skill_value_changes}")
+
                     # Extract skill from successful trajectory
                     if success and self.skill_integrator is not None:
                         try:
@@ -973,6 +997,8 @@ class AlfworldRunner(BaseRunner):
                         "success": success,
                         "retrieved_queries": retrieved_queries_per_slot[i],
                         "retrieved_mems": retrieved_mems_per_slot[i],
+                        "retrieved_skills": retrieved_skill_names,
+                        "skill_value_changes": skill_value_changes,
                         "steps": steps_per_slot[i],
                         "gamefile": current_gamefiles[i],
                     })
@@ -992,11 +1018,35 @@ class AlfworldRunner(BaseRunner):
                     "success": False,
                     "retrieved_queries": retrieved_queries_per_slot[i],
                     "retrieved_mems": retrieved_mems_per_slot[i],
+                    "retrieved_skills": retrieved_skills_per_slot[i],
+                    "skill_value_changes": {},
                     "steps": steps_per_slot[i],
                     "gamefile": current_gamefiles[i],
                 })
 
         return completed_experiences
+
+    def _get_skill_value(self, all_skills: Dict[str, Any], skill_name: str) -> float:
+        """Get skill value by name from skills index.
+
+        Args:
+            all_skills: Skills index dictionary.
+            skill_name: Name of the skill.
+
+        Returns:
+            Skill value, or 0.0 if not found.
+        """
+        for skill in all_skills.get("general_skills", []):
+            if skill.get("name") == skill_name:
+                return skill.get("skill_value", 0.0)
+        for task_type, skills in all_skills.get("task_specific_skills", {}).items():
+            for skill in skills:
+                if skill.get("name") == skill_name:
+                    return skill.get("skill_value", 0.0)
+        for skill in all_skills.get("common_mistakes", []):
+            if skill.get("name") == skill_name:
+                return skill.get("skill_value", 0.0)
+        return 0.0
 
     def _evaluate(self, game_files: List[str], eval_type: str, after_section: int) -> float:
         """
