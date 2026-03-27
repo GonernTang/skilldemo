@@ -1,5 +1,6 @@
 """Batch skill integration with trajectory buffer and batch extraction."""
 
+import json
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -37,6 +38,11 @@ class BatchSkillIntegrator:
         trajectory_dir: str = "trajectories",
         skills_dir: str = "skills",
         retrieval_method: str = "template",
+        value_alpha: float = 0.5,
+        value_lambda: float = 0.5,
+        retrieve_general: int = 1,
+        retrieve_task_specific: int = 1,
+        retrieve_common_mistakes: int = 1,
     ):
         """Initialize the batch skill integrator.
 
@@ -47,11 +53,21 @@ class BatchSkillIntegrator:
             trajectory_dir: Directory to store trajectories.
             skills_dir: Directory to store extracted skills.
             retrieval_method: Method for retrieval - "template", "embedding", or "hybrid".
+            value_alpha: Learning rate for skill value Q-learning update.
+            value_lambda: Weight for skill value in hybrid retrieval score.
+            retrieve_general: Number of general skills to retrieve.
+            retrieve_task_specific: Number of task-specific skills to retrieve.
+            retrieve_common_mistakes: Number of common mistakes to retrieve.
         """
         self.extract_interval = extract_interval
         self.llm = llm
         self.embedder = embedder
         self.retrieval_method = retrieval_method
+        self.value_alpha = value_alpha
+        self.value_lambda = value_lambda
+        self.retrieve_general = retrieve_general
+        self.retrieve_task_specific = retrieve_task_specific
+        self.retrieve_common_mistakes = retrieve_common_mistakes
 
         # Initialize components
         self.trajectory_buffer = TrajectoryBuffer(storage_dir=trajectory_dir)
@@ -70,6 +86,11 @@ class BatchSkillIntegrator:
         self._cached_skill_names: set = set()
         # Track skill signatures (name|description) to detect modifications
         self._skill_signatures: Dict[str, str] = {}
+
+        # Persist embedding cache to disk
+        self._skills_dir = Path(skills_dir)
+        self._embedding_cache_file = self._skills_dir / ".embedding_cache.json"
+        self._load_embedding_cache()
 
     @property
     def pending_count(self) -> int:
@@ -109,6 +130,33 @@ class BatchSkillIntegrator:
             return self.trigger_batch_extraction()
 
         return None
+
+    def extract_and_save_skill(
+        self,
+        trajectory: List[Dict[str, Any]],
+        task_description: str,
+        task_type: str,
+        success: bool,
+    ) -> Optional[Dict[str, Any]]:
+        """Extract and save skill from a trajectory.
+
+        This is an alias for add_trajectory to maintain compatibility.
+
+        Args:
+            trajectory: Execution trajectory.
+            task_description: Description of the task.
+            task_type: Type/category of the task.
+            success: Whether the task succeeded.
+
+        Returns:
+            Extracted skills if extraction was triggered, None otherwise.
+        """
+        return self.add_trajectory(
+            trajectory=trajectory,
+            task_description=task_description,
+            task_type=task_type,
+            success=success,
+        )
 
     def trigger_batch_extraction(self) -> Dict[str, Any]:
         """Manually trigger batch skill extraction.
@@ -164,7 +212,7 @@ class BatchSkillIntegrator:
         task_description: str,
         task_type: str,
         observation: Optional[str] = None,
-        k: int = 6,
+        k: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Retrieve relevant skills for a task.
 
@@ -172,11 +220,15 @@ class BatchSkillIntegrator:
             task_description: Description of the task.
             task_type: Type/category of the task.
             observation: Current observation (optional).
-            k: Number of skills to retrieve.
+            k: Number of skills to retrieve. If None, uses configured counts.
 
         Returns:
             List of retrieved skill dictionaries.
         """
+        # Use configured counts if k not specified
+        if k is None:
+            k = self.retrieve_general + self.retrieve_task_specific + self.retrieve_common_mistakes
+
         all_skills = self.get_all_skills()
         if not all_skills:
             return []
@@ -322,6 +374,35 @@ class BatchSkillIntegrator:
 
         # Update cached names
         self._cached_skill_names = current_skill_names
+        # Persist to disk
+        self._save_embedding_cache()
+
+    def _load_embedding_cache(self) -> None:
+        """Load embedding cache from disk if exists."""
+        if not self._embedding_cache_file.exists():
+            return
+        try:
+            with open(self._embedding_cache_file, 'r') as f:
+                data = json.load(f)
+            self._embedding_cache = data.get('embeddings', {})
+            self._skill_signatures = data.get('signatures', {})
+            self._cached_skill_names = set(self._embedding_cache.keys())
+        except Exception:
+            self._embedding_cache = {}
+            self._skill_signatures = {}
+            self._cached_skill_names = set()
+
+    def _save_embedding_cache(self) -> None:
+        """Save embedding cache to disk."""
+        data = {
+            'embeddings': self._embedding_cache,
+            'signatures': self._skill_signatures,
+        }
+        try:
+            with open(self._embedding_cache_file, 'w') as f:
+                json.dump(data, f)
+        except Exception:
+            pass  # Ignore save errors
 
     def _on_skills_extracted(self, skills_dict: Dict[str, Any]) -> None:
         """Callback invoked by BatchSkillExtractor when new skills are extracted.
@@ -349,14 +430,17 @@ class BatchSkillIntegrator:
         common_mistakes: List[Dict[str, Any]],
         k: int,
     ) -> List[Dict[str, Any]]:
-        """Embedding-based retrieval using cosine similarity.
+        """Embedding-based retrieval using hybrid scoring (similarity + skill value).
+
+        Skills are retrieved from each category based on configurable counts,
+        then sorted by hybrid score within each category.
 
         Args:
             task_description: The task description.
             general_skills: List of general skills.
             task_specific_skills: Dict of task-specific skills by type.
             common_mistakes: List of common mistakes.
-            k: Number of skills to retrieve.
+            k: Total number of skills to retrieve (used as fallback).
 
         Returns:
             List of retrieved skills sorted by relevance.
@@ -368,63 +452,83 @@ class BatchSkillIntegrator:
                 task_specific_skills, common_mistakes, k
             )
 
-        # Flatten all skills with their categories
-        all_skills = []
+        # Prepare all skills with their categories
+        all_skills_with_cat = []
         for skill in general_skills:
-            all_skills.append(("general", skill))
+            all_skills_with_cat.append(("general", skill))
         for task_type, skills in task_specific_skills.items():
             for skill in skills:
-                all_skills.append((task_type, skill))
+                all_skills_with_cat.append((task_type, skill))
         for mistake in common_mistakes:
-            all_skills.append(("common_mistakes", mistake))
+            all_skills_with_cat.append(("common_mistakes", mistake))
 
-        if not all_skills:
+        if not all_skills_with_cat:
             return []
 
         # Sync cache: add/update/remove embeddings for skills
-        self._sync_embedding_cache(all_skills)
+        self._sync_embedding_cache(all_skills_with_cat)
 
         # Encode task description
         query_embedding = self.embedder.embed([task_description])
 
-        # Use cached embeddings for skill descriptions
-        skill_embeddings = []
-        for cat, skill in all_skills:
+        # Build embedding lookup dict: name -> embedding
+        name_to_embedding = {}
+        for cat, skill in all_skills_with_cat:
             name = skill.get("name", "")
             if name and name in self._embedding_cache:
-                skill_embeddings.append(self._embedding_cache[name])
+                name_to_embedding[name] = self._embedding_cache[name]
+
+        def compute_hybrid_score(skill: Dict[str, Any]) -> float:
+            """Compute hybrid score for a skill."""
+            name = skill.get("name", "")
+            if name in name_to_embedding:
+                sim = self._cosine_similarity(query_embedding[0], name_to_embedding[name])
             else:
-                # Fallback: should not happen after sync, but handle gracefully
-                skill_embeddings.append([0.0] * 1536)  # placeholder
+                sim = 0.0
+            q_value = skill.get("skill_value", 0.0)
+            return (1 - self.value_lambda) * sim + self.value_lambda * q_value
 
-        # Compute cosine similarities
-        similarities = []
-        for i, (cat, skill) in enumerate(all_skills):
-            sim = self._cosine_similarity(query_embedding[0], skill_embeddings[i])
-            similarities.append((cat, skill, sim))
+        # Score and sort each category independently
+        general_scored = [(compute_hybrid_score(s), s) for s in general_skills]
+        general_scored.sort(key=lambda x: x[0], reverse=True)
 
-        # Sort by similarity and return top k
-        similarities.sort(key=lambda x: x[2], reverse=True)
+        # For task_specific, flatten all and score together
+        task_specific_flat = []
+        for task_type, skills in task_specific_skills.items():
+            for skill in skills:
+                task_specific_flat.append(skill)
+        task_specific_scored = [(compute_hybrid_score(s), s) for s in task_specific_flat]
+        task_specific_scored.sort(key=lambda x: x[0], reverse=True)
 
-        # Prioritize: general skills first, then by similarity
+        # Score common mistakes
+        common_mistakes_scored = [(compute_hybrid_score(s), s) for s in common_mistakes]
+        common_mistakes_scored.sort(key=lambda x: x[0], reverse=True)
+
+        # Retrieve top N from each category based on hyperparameters
+        n_general = min(self.retrieve_general, len(general_scored))
+        n_task_specific = min(self.retrieve_task_specific, len(task_specific_scored))
+        n_common_mistakes = min(self.retrieve_common_mistakes, len(common_mistakes_scored))
+
+        # Combine results in order: general, task_specific, common_mistakes
         result = []
-        general_count = min(k // 2, len(general_skills))
-        result.extend([s for _, s, _ in similarities[:general_count]])
+        result_names = set()
 
-        remaining = k - len(result)
-        if remaining > 0:
-            non_general = [s for _, s, _ in similarities[general_count:] if _ != "general"]
-            result.extend(non_general[:remaining])
+        for _, skill in general_scored[:n_general]:
+            if skill.get("name") not in result_names:
+                result.append(skill)
+                result_names.add(skill.get("name"))
 
-        # Add common mistakes if there's room
-        if len(result) < k:
-            for _, mistake, _ in similarities:
-                if len(result) >= k:
-                    break
-                if mistake not in result:
-                    result.append(mistake)
+        for _, skill in task_specific_scored[:n_task_specific]:
+            if skill.get("name") not in result_names:
+                result.append(skill)
+                result_names.add(skill.get("name"))
 
-        return result[:k]
+        for _, mistake in common_mistakes_scored[:n_common_mistakes]:
+            if mistake.get("name") not in result_names:
+                result.append(mistake)
+                result_names.add(mistake.get("name"))
+
+        return result
 
     def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
         """Compute cosine similarity between two vectors."""
@@ -673,6 +777,7 @@ class BatchSkillIntegrator:
             del self._skill_signatures[name]
         if name in self._cached_skill_names:
             self._cached_skill_names.discard(name)
+        self._save_embedding_cache()
 
     def update_skill_embedding(self, skill: Dict[str, Any]) -> None:
         """Immediately compute and update embedding for a single skill.
@@ -692,6 +797,7 @@ class BatchSkillIntegrator:
         self._embedding_cache[name] = embedding
         self._skill_signatures[name] = self._get_skill_signature(skill)
         self._cached_skill_names.add(name)
+        self._save_embedding_cache()
 
     def sync_embedding_cache(self) -> None:
         """Manually trigger full embedding cache synchronization.
@@ -709,3 +815,68 @@ class BatchSkillIntegrator:
         for mistake in all_skills_data.get("common_mistakes", []):
             all_skills.append(("common_mistakes", mistake))
         self._sync_embedding_cache(all_skills)
+
+    def update_skill_value_by_name(
+        self,
+        skill_name: str,
+        success: bool,
+        alpha: Optional[float] = None,
+    ) -> bool:
+        """Update skill value (Q-value) for a skill by name.
+
+        Q_new <- Q_old + alpha * (r - Q_old)
+        Where r = 1.0 for success, r = 0.0 for failure.
+
+        Args:
+            skill_name: Name of the skill to update.
+            success: Whether the skill execution was successful.
+            alpha: Learning rate (uses instance default if not provided).
+
+        Returns:
+            True if skill was found and updated, False otherwise.
+        """
+        alpha = alpha if alpha is not None else self.value_alpha
+        all_skills = self.get_all_skills()
+
+        # Search in general_skills
+        for skill in all_skills.get("general_skills", []):
+            if skill.get("name") == skill_name:
+                skill["skill_value"] = skill.get("skill_value", 0.0)
+                r = 1.0 if success else 0.0
+                skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                self._save_updated_index(all_skills)
+                return True
+
+        # Search in task_specific_skills
+        for task_type, skills in all_skills.get("task_specific_skills", {}).items():
+            for skill in skills:
+                if skill.get("name") == skill_name:
+                    skill["skill_value"] = skill.get("skill_value", 0.0)
+                    r = 1.0 if success else 0.0
+                    skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                    self._save_updated_index(all_skills)
+                    return True
+
+        # Search in common_mistakes
+        for skill in all_skills.get("common_mistakes", []):
+            if skill.get("name") == skill_name:
+                skill["skill_value"] = skill.get("skill_value", 0.0)
+                r = 1.0 if success else 0.0
+                skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                self._save_updated_index(all_skills)
+                return True
+
+        return False
+
+    def _save_updated_index(self, index: Dict[str, Any]) -> None:
+        """Save updated skills index to disk.
+
+        Args:
+            index: Updated skills index dictionary.
+        """
+        index_path = self._skills_dir / "batch_skills_index.json"
+        try:
+            with open(index_path, 'w') as f:
+                json.dump(index, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass  # Ignore save errors
