@@ -45,6 +45,8 @@ class TaskResult:
     actions: List[str] = field(default_factory=list)
     observations: List[str] = field(default_factory=list)
     skills_extracted: List[str] = field(default_factory=list)
+    retrieved_skills: List[str] = field(default_factory=list)
+    skill_value_changes: Dict[str, Dict[str, float]] = field(default_factory=dict)
     token_usage: Dict[str, int] = field(default_factory=dict)
     error: Optional[str] = None
 
@@ -248,6 +250,28 @@ class TestRunner:
         else:
             print(f"\n{'─'*60}\n")
 
+    def _get_skill_value(self, all_skills: Dict[str, Any], skill_name: str) -> float:
+        """Get skill value by name from skills index.
+
+        Args:
+            all_skills: Skills index dictionary.
+            skill_name: Name of the skill.
+
+        Returns:
+            Skill value, or 0.0 if not found.
+        """
+        for skill in all_skills.get("general_skills", []):
+            if skill.get("name") == skill_name:
+                return skill.get("skill_value", 0.0)
+        for task_type, skills in all_skills.get("task_specific_skills", {}).items():
+            for skill in skills:
+                if skill.get("name") == skill_name:
+                    return skill.get("skill_value", 0.0)
+        for skill in all_skills.get("common_mistakes", []):
+            if skill.get("name") == skill_name:
+                return skill.get("skill_value", 0.0)
+        return 0.0
+
     def _extract_task_description(self, obs: str) -> str:
         """Extract clean task description from observation."""
         lines = obs.split('\n\n')
@@ -324,10 +348,11 @@ class TestRunner:
                     task_description=task_desc,
                     task_type=task_type,
                     observation=initial_obs,
-                    k=self.cfg.skill.retrieve_k if hasattr(self.cfg, 'skill') else 3
                 )
                 if retrieved_skills:
                     print(f"\nRetrieved {len(retrieved_skills)} relevant skills for this task")
+                    # Save retrieved skill names for result
+                    result.retrieved_skills = [s.get("name", "") for s in retrieved_skills if s.get("name")]
 
             # Construct initial messages for the agent
             messages = self.agent._construct_messages(
@@ -392,6 +417,26 @@ class TestRunner:
                     print(f"Task {'SUCCEEDED' if result.success else 'FAILED'}")
                     print(f"{'='*40}")
                     break
+
+            # Update skill values based on task outcome
+            if self.skill_integrator and result.retrieved_skills:
+                skill_value_changes = {}
+                # Record skill values before update
+                all_skills_before = self.skill_integrator.get_all_skills()
+                for skill_name in result.retrieved_skills:
+                    skill_value_changes[skill_name] = {"before": self._get_skill_value(all_skills_before, skill_name)}
+                # Update skill values
+                for skill_name in result.retrieved_skills:
+                    self.skill_integrator.update_skill_value_by_name(
+                        skill_name=skill_name,
+                        success=result.success,
+                    )
+                # Record skill values after update
+                all_skills_after = self.skill_integrator.get_all_skills()
+                for skill_name in result.retrieved_skills:
+                    skill_value_changes[skill_name]["after"] = self._get_skill_value(all_skills_after, skill_name)
+                result.skill_value_changes = skill_value_changes
+                print(f"\nSkill value changes: {skill_value_changes}")
 
             # Process skill layer (batch mode)
             if self.skill_integrator:
@@ -527,6 +572,11 @@ class TestRunner:
             status = "✓ SUCCESS" if result.success else "✗ FAILURE"
             print(f"\n{i+1}. [{status}] {result.task_id}")
             print(f"   Actions taken: {len(result.actions)}")
+            if result.retrieved_skills:
+                print(f"   Retrieved skills: {', '.join(result.retrieved_skills)}")
+            if result.skill_value_changes:
+                for skill, change in result.skill_value_changes.items():
+                    print(f"   Skill '{skill}': {change['before']:.3f} -> {change['after']:.3f}")
             if result.skills_extracted:
                 print(f"   Skills extracted: {', '.join(result.skills_extracted)}")
             if result.error:
@@ -554,6 +604,8 @@ class TestRunner:
                     "actions": r.actions,
                     "trajectory": r.trajectory,
                     "skills_extracted": r.skills_extracted,
+                    "retrieved_skills": r.retrieved_skills,
+                    "skill_value_changes": r.skill_value_changes,
                     "token_usage": r.token_usage,
                     "error": r.error,
                 }
