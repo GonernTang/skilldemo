@@ -178,6 +178,7 @@ class TestRunner:
             self.skill_integrator = create_skill_integrator(
                 config_dict={'skill': self.cfg.skill.model_dump() if hasattr(self.cfg, 'skill') else {}},
                 llm=self.llm_provider,
+                embedder=self.embedding_provider,
             )
             if self.skill_integrator:
                 print(f"Batch skill layer enabled (extract_interval={self.cfg.skill.extract_interval})")

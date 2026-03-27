@@ -177,61 +177,44 @@ class OpenAIEmbedder(BaseEmbedder):
 
         chunked_texts, counts = self._chunk_texts(texts)
 
-        try:
+        # Batch embeddings to respect API limits (DashScope: max 10 per request)
+        batch_size = 10
+        all_embeddings = []
+        last_response = None
+        for i in range(0, len(chunked_texts), batch_size):
+            batch = chunked_texts[i:i + batch_size]
             response = self.client.embeddings.create(
-                input=chunked_texts,
+                input=batch,
                 model=self.model
             )
-            
-            embeddings = [item.embedding for item in response.data]
-            try:
-                usage_payload = self._usage_to_dict(getattr(response, "usage", None))
-                total_chars = sum(len(t) for t in texts if isinstance(t, str))
-                total_chunk_chars = sum(len(t) for t in chunked_texts if isinstance(t, str))
-                self._log_token_usage(
-                    {
-                        "provider": "embedding",
-                        "model": getattr(response, "model", self.model),
-                        "base_url": self.base_url,
-                        "request_params": {
-                            "input_count": len(texts),
-                            "chunk_count": len(chunked_texts),
-                        },
-                        "prompt_stats": {
-                            "input_chars": total_chars,
-                            "chunk_chars": total_chunk_chars,
-                        },
-                        "usage": usage_payload,
-                    }
-                )
-            except Exception:
-                pass
+            all_embeddings.extend([item.embedding for item in response.data])
+            last_response = response
 
-            return self._merge_chunk_embeddings(embeddings, counts)
-            
-        except Exception as e:
-            try:
-                total_chars = sum(len(t) for t in texts if isinstance(t, str))
-                total_chunk_chars = sum(len(t) for t in chunked_texts if isinstance(t, str))
-                self._log_token_usage(
-                    {
-                        "provider": "embedding",
-                        "model": self.model,
-                        "base_url": self.base_url,
-                        "request_params": {
-                            "input_count": len(texts),
-                            "chunk_count": len(chunked_texts),
-                        },
-                        "prompt_stats": {
-                            "input_chars": total_chars,
-                            "chunk_chars": total_chunk_chars,
-                        },
-                        "error": str(e),
-                    }
-                )
-            except Exception:
-                pass
-            raise EmbedderError(f"Failed to generate embeddings: {e}")
+        embeddings = all_embeddings
+        try:
+            usage_payload = self._usage_to_dict(getattr(last_response, "usage", None))
+            total_chars = sum(len(t) for t in texts if isinstance(t, str))
+            total_chunk_chars = sum(len(t) for t in chunked_texts if isinstance(t, str))
+            self._log_token_usage(
+                {
+                    "provider": "embedding",
+                    "model": getattr(last_response, "model", self.model),
+                    "base_url": self.base_url,
+                    "request_params": {
+                        "input_count": len(texts),
+                        "chunk_count": len(chunked_texts),
+                    },
+                    "prompt_stats": {
+                        "input_chars": total_chars,
+                        "chunk_chars": total_chunk_chars,
+                    },
+                    "usage": usage_payload,
+                }
+            )
+        except Exception:
+            pass
+
+        return self._merge_chunk_embeddings(embeddings, counts)
 
 
 class LocalEmbedder(BaseEmbedder):
