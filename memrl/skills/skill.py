@@ -43,6 +43,7 @@ class Skill:
         antipatterns: Patterns that indicate incorrect usage.
         constraints: Rules and limitations for using this skill.
         deprecated: Whether this skill should no longer be used.
+        skill_value: Skill value (Q-value) for value-driven retrieval, updated via Q-learning.
     """
 
     skill_id: str
@@ -61,6 +62,7 @@ class Skill:
     last_used_at: Optional[str] = None
     created_at: str = ""
     source_trajectory_id: Optional[str] = None
+    skill_value: float = 0.0
 
     # Failure tracking
     failure_scenarios: List[Dict[str, Any]] = field(default_factory=list)
@@ -101,6 +103,7 @@ class Skill:
             "last_used_at": self.last_used_at,
             "created_at": self.created_at,
             "source_trajectory_id": self.source_trajectory_id,
+            "skill_value": self.skill_value,
             "failure_scenarios": list(self.failure_scenarios),
             "antipatterns": list(self.antipatterns),
             "constraints": list(self.constraints),
@@ -140,6 +143,7 @@ class Skill:
             last_used_at=data.get("last_used_at"),
             created_at=data.get("created_at", ""),
             source_trajectory_id=data.get("source_trajectory_id"),
+            skill_value=data.get("skill_value", 0.0),
             failure_scenarios=list(data.get("failure_scenarios", [])),
             antipatterns=list(data.get("antipatterns", [])),
             constraints=list(data.get("constraints", [])),
@@ -185,6 +189,20 @@ class Skill:
         else:
             # Original rate is weighted by previous usage count
             self.success_rate = (self.success_rate * (self.usage_count - 1) + (1.0 if success else 0.0)) / self.usage_count
+
+    def update_skill_value(self, success: bool, alpha: float = 0.5) -> None:
+        """Update skill value (Q-value) using Q-learning formula.
+
+        Q_new <- Q_old + alpha * (r - Q_old)
+
+        Where r = 1.0 for success, r = 0.0 for failure.
+
+        Args:
+            success: Whether the skill execution was successful.
+            alpha: Learning rate for Q-value update (default: 0.5).
+        """
+        r = 1.0 if success else 0.0
+        self.skill_value = self.skill_value + alpha * (r - self.skill_value)
 
 
 @dataclass
