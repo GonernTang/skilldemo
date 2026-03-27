@@ -16,7 +16,7 @@ def create_skill_integrator(
     Args:
         config_dict: Full configuration dictionary.
         llm: LLM provider.
-        embedder: Optional embedder (not used in batch system).
+        embedder: Optional embedder for embedding-based retrieval.
 
     Returns:
         Configured BatchSkillIntegrator, or None if skills disabled.
@@ -26,11 +26,12 @@ def create_skill_integrator(
         return None
 
     extract_interval = skill_config.get("extract_interval", 10)
-    retrieval_method = skill_config.get("retrieval_method", "llm")
+    retrieval_method = skill_config.get("retrieval_method", "template")
     storage_dir = skill_config.get("storage_dir", "skills")
 
     return BatchSkillIntegrator(
         llm=llm,
+        embedder=embedder,
         extract_interval=extract_interval,
         trajectory_dir="trajectories",
         skills_dir=storage_dir,
