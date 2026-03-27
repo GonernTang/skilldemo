@@ -109,6 +109,35 @@ Format as JSON array:
 Return ONLY the JSON array, no other text."""
 
 # =============================================================================
+# Task Description Summarization Prompt
+# =============================================================================
+
+TASK_SUMMARIZATION_PROMPT = """You are an expert at analyzing household task descriptions and extracting the key intent.
+
+Given the following ALFWorld task description, summarize it into a concise, specific action phrase that captures the core task.
+
+Original Task Description:
+{task_description}
+
+Your task:
+1. Identify the object(s) involved (e.g., candle, soapbar, mug)
+2. Identify the target location/receptacle (e.g., toilet, countertop, cabinet)
+3. Identify any special requirements (e.g., "clean", "heated", "in light")
+4. Output a concise summary in 5-10 words that captures the specific action
+
+Output format:
+```
+Summarized Task: [concise action phrase]
+```
+
+Examples:
+- "Put a clean soapbar on the countertop" → "place clean soapbar on countertop"
+- "Look at the mug under the lamp" → "examine mug in illuminated area"
+- "Heat the bread in the microwave" → "heat bread using microwave"
+
+Summarized Task:"""
+
+# =============================================================================
 # Skill Retrieval Prompts
 # =============================================================================
 
@@ -193,4 +222,11 @@ def build_skill_ranking_prompt(
         skills_text=skills_text,
         query=query,
         observation=observation,
+    )
+
+
+def build_task_summarization_prompt(task_description: str) -> str:
+    """Build prompt for task description summarization."""
+    return TASK_SUMMARIZATION_PROMPT.format(
+        task_description=task_description,
     )

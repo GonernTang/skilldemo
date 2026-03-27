@@ -242,6 +242,7 @@ class SkillConfig(BaseModel):
     auto_analyze_failure: bool = Field(default=True, description="Automatically analyze and update skills from failed trajectories")
     value_alpha: float = Field(default=0.5, description="Learning rate for skill value Q-learning update (alpha)")
     value_lambda: float = Field(default=0.5, description="Weight for skill value in hybrid retrieval score (lambda)")
+    summarize_task_description: bool = Field(default=False, description="Whether to summarize task description before embedding-based retrieval")
 
 
 class MempConfig(BaseModel):

@@ -97,3 +97,4 @@ skill:
   auto_analyze_failure: true  # Automatically analyze and update skills from failed trajectories
   value_alpha: 0.5  # Learning rate for skill value Q-learning update
   value_lambda: 0.5  # Weight for skill value in hybrid retrieval score
+  summarize_task_description: true  # Summarize task description before embedding for better skill matching

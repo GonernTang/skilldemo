@@ -220,8 +220,16 @@ class BatchSkillExtractor:
     def _load_index(self) -> Dict[str, Any]:
         """Load skills index from disk."""
         if self.index_path.exists():
-            with open(self.index_path, 'r') as f:
-                return json.load(f)
+            try:
+                with open(self.index_path, 'r') as f:
+                    data = f.read()
+                    if not data.strip():
+                        # Empty file, return default
+                        return {"general_skills": [], "task_specific_skills": {}, "common_mistakes": []}
+                    return json.loads(data)
+            except (json.JSONDecodeError, IOError):
+                # Invalid JSON or read error, return default
+                return {"general_skills": [], "task_specific_skills": {}, "common_mistakes": []}
         return {"general_skills": [], "task_specific_skills": {}, "common_mistakes": []}
 
     def _format_trajectory(self, traj: Dict[str, Any]) -> str:

@@ -36,6 +36,7 @@ def create_skill_integrator(
     retrieve_general = skill_config.get("retrieve_general", 1)
     retrieve_task_specific = skill_config.get("retrieve_task_specific", 1)
     retrieve_common_mistakes = skill_config.get("retrieve_common_mistakes", 1)
+    summarize_task_description = skill_config.get("summarize_task_description", False)
 
     return BatchSkillIntegrator(
         llm=llm,
@@ -49,4 +50,5 @@ def create_skill_integrator(
         retrieve_general=retrieve_general,
         retrieve_task_specific=retrieve_task_specific,
         retrieve_common_mistakes=retrieve_common_mistakes,
+        summarize_task_description=summarize_task_description,
     )

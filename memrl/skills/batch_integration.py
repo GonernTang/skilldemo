@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from memrl.providers.base import BaseLLM, BaseEmbedder
 from memrl.skills.batch_extractor import BatchSkillExtractor, TrajectoryBuffer
-from memrl.skills.prompts import build_skill_ranking_prompt
+from memrl.skills.prompts import build_skill_ranking_prompt, build_task_summarization_prompt
 
 
 class BatchSkillIntegrator:
@@ -43,6 +43,7 @@ class BatchSkillIntegrator:
         retrieve_general: int = 1,
         retrieve_task_specific: int = 1,
         retrieve_common_mistakes: int = 1,
+        summarize_task_description: bool = False,
     ):
         """Initialize the batch skill integrator.
 
@@ -58,6 +59,7 @@ class BatchSkillIntegrator:
             retrieve_general: Number of general skills to retrieve.
             retrieve_task_specific: Number of task-specific skills to retrieve.
             retrieve_common_mistakes: Number of common mistakes to retrieve.
+            summarize_task_description: If True, summarize task description before embedding.
         """
         self.extract_interval = extract_interval
         self.llm = llm
@@ -68,6 +70,7 @@ class BatchSkillIntegrator:
         self.retrieve_general = retrieve_general
         self.retrieve_task_specific = retrieve_task_specific
         self.retrieve_common_mistakes = retrieve_common_mistakes
+        self.summarize_task_description = summarize_task_description
 
         # Initialize components
         self.trajectory_buffer = TrajectoryBuffer(storage_dir=trajectory_dir)
@@ -206,6 +209,36 @@ class BatchSkillIntegrator:
                     break
 
         return detected if detected else ["general"]
+
+    def _summarize_task_description(self, task_description: str) -> str:
+        """Summarize task description using LLM to extract core intent.
+
+        This converts verbose ALFWorld task descriptions into concise action phrases
+        that better match skill descriptions for embedding-based retrieval.
+
+        Args:
+            task_description: Original verbose task description.
+
+        Returns:
+            Summarized task description (concise action phrase).
+        """
+        if not self.llm:
+            return task_description
+
+        try:
+            prompt = build_task_summarization_prompt(task_description)
+            response = self.llm.generate([{"role": "user", "content": prompt}])
+
+            # Parse the summarized task from response
+            # Expected format: "Summarized Task: [concise action phrase]"
+            if "Summarized Task:" in response:
+                summarized = response.split("Summarized Task:")[1].strip()
+                # Remove any quotes or extra text
+                summarized = summarized.strip('"\'')
+                return summarized
+            return task_description
+        except Exception:
+            return task_description
 
     def retrieve_skills(
         self,
@@ -468,8 +501,12 @@ class BatchSkillIntegrator:
         # Sync cache: add/update/remove embeddings for skills
         self._sync_embedding_cache(all_skills_with_cat)
 
-        # Encode task description
-        query_embedding = self.embedder.embed([task_description])
+        # Encode task description (optionally summarized first for better matching)
+        if self.summarize_task_description:
+            summarized_task = self._summarize_task_description(task_description)
+        else:
+            summarized_task = task_description
+        query_embedding = self.embedder.embed([summarized_task])
 
         # Build embedding lookup dict: name -> embedding
         name_to_embedding = {}
