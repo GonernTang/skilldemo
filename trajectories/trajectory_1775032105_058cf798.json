@@ -1,0 +1,16 @@
+{
+  "traj_id": "1775032105_058cf798",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 2, a countertop 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: heat some cup and put it in countertop.",
+  "task_type": "pick_heat_then_place_in_recep-Cup-None-CounterTop-14/trial_T20190908_215907_972581",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "open cabinet 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. On the cabinet 1, you see a peppershaker 1."
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "traj_id": "1775027787_ea3f8b6a",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 2, a armchair 1, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeetable 2, a coffeetable 1, a diningtable 1, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a garbagecan 1, a shelf 13, a shelf 12, a shelf 11, a shelf 10, a shelf 9, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, and a sofa 1.\n\nYour task is to: put a remotecontrol in armchair.",
+  "task_type": "pick_and_place_simple-RemoteControl-None-ArmChair-227/trial_T20190909_064745_196990",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a vase 1."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is closed."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 5",
+      "observation": "You arrive at cabinet 5. The cabinet 5 is closed."
+    },
+    {
+      "action": "open cabinet 5",
+      "observation": "You open the cabinet 5. The cabinet 5 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 6",
+      "observation": "You arrive at cabinet 6. The cabinet 6 is closed."
+    },
+    {
+      "action": "open cabinet 6",
+      "observation": "You open the cabinet 6. The cabinet 6 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 7",
+      "observation": "You arrive at cabinet 7. The cabinet 7 is closed."
+    },
+    {
+      "action": "open cabinet 7",
+      "observation": "You open the cabinet 7. The cabinet 7 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 8",
+      "observation": "You arrive at cabinet 8. The cabinet 8 is closed."
+    },
+    {
+      "action": "open cabinet 8",
+      "observation": "You open the cabinet 8. The cabinet 8 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see a creditcard 1, and a remotecontrol 1."
+    },
+    {
+      "action": "take remotecontrol 1 from drawer 2",
+      "observation": "You pick up the remotecontrol 1 from the drawer 2."
+    },
+    {
+      "action": "go to armchair 1",
+      "observation": "You arrive at armchair 1. On the armchair 1, you see a pillow 1."
+    },
+    {
+      "action": "move remotecontrol 1 to armchair 1",
+      "observation": "You move the remotecontrol 1 to the armchair 1."
+    }
+  ]
+}

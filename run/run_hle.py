@@ -9,13 +9,13 @@ import time
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from memrl.configs.config import MempConfig
-from memrl.providers.llm import OpenAILLM
-from memrl.providers.embedding import OpenAIEmbedder
-from memrl.service.base_memory_service import NullMemoryService
-from memrl.service.memory_service import MemoryService
-from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
-from memrl.run.hle_runner import HLERunner, HLESelection
+from qskill.configs.config import MempConfig
+from qskill.providers.llm import OpenAILLM
+from qskill.providers.embedding import OpenAIEmbedder
+from qskill.service.base_memory_service import NullMemoryService
+from qskill.service.memory_service import MemoryService
+from qskill.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
+from qskill.run.hle_runner import HLERunner, HLESelection
 
 
 def setup_logging(project_root: Path, name: str):

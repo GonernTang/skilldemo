@@ -1,0 +1,56 @@
+{
+  "traj_id": "1775011859_06a656bb",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 2, a armchair 1, a coffeetable 2, a coffeetable 1, a diningtable 1, a garbagecan 1, a sidetable 2, a sidetable 1, and a sofa 1.\n\nYour task is to: put two tissuebox in garbagecan.",
+  "task_type": "pick_two_obj_and_place-TissueBox-None-GarbageCan-230/trial_T20190908_050916_526395",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a box 1, a creditcard 1, a keychain 3, a laptop 1, a newspaper 1, a plate 3, a plate 2, a plate 1, a statue 2, and a statue 1."
+    },
+    {
+      "action": "go to coffeetable 1",
+      "observation": "You arrive at coffeetable 1. On the coffeetable 1, you see a houseplant 2, a keychain 2, a keychain 1, a newspaper 2, a remotecontrol 1, and a watch 1."
+    },
+    {
+      "action": "go to coffeetable 2",
+      "observation": "You arrive at coffeetable 2. On the coffeetable 2, you see a candle 1, a television 1, a tissuebox 2, and a tissuebox 1."
+    },
+    {
+      "action": "take tissuebox 1 from coffeetable 2",
+      "observation": "You pick up the tissuebox 1 from the coffeetable 2."
+    },
+    {
+      "action": "take tissuebox 2 from coffeetable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to coffeetable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to garbagecan 1",
+      "observation": "You arrive at garbagecan 1. On the garbagecan 1, you see nothing."
+    },
+    {
+      "action": "move tissuebox 1 to garbagecan 1",
+      "observation": "You move the tissuebox 1 to the garbagecan 1."
+    },
+    {
+      "action": "go to coffeetable 2",
+      "observation": "You arrive at coffeetable 2. On the coffeetable 2, you see a candle 1, a television 1, and a tissuebox 2."
+    },
+    {
+      "action": "take tissuebox 2 from coffeetable 2",
+      "observation": "You pick up the tissuebox 2 from the coffeetable 2."
+    },
+    {
+      "action": "go to garbagecan 1",
+      "observation": "You arrive at garbagecan 1. On the garbagecan 1, you see a tissuebox 1."
+    },
+    {
+      "action": "move tissuebox 2 to garbagecan 1",
+      "observation": "You move the tissuebox 2 to the garbagecan 1."
+    }
+  ]
+}

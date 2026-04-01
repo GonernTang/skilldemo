@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775023777_fdc2e484",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bathtubbasin 1, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a garbagecan 1, a handtowelholder 2, a handtowelholder 1, a shelf 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, a towelholder 2, and a towelholder 1.\n\nYour task is to: put two toiletpaper in cabinet.",
+  "task_type": "pick_two_obj_and_place-ToiletPaper-None-Cabinet-402/trial_T20190908_144830_163459",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper from garbagecan 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper from garbagecan 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper from towelholder 2\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper from toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper from handtowelholder 2\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take roll of toilet paper from cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take roll from cabinet 4\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take Sorry card from cabinet 1\n</think>\n\nThought",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper to cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "look at cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    }
+  ]
+}

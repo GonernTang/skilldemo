@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775031178_09e2a67a",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 15, a cabinet 14, a cabinet 13, a cabinet 12, a cabinet 11, a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 4, a countertop 3, a countertop 2, a countertop 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a hot mug in coffeemachine.",
+  "task_type": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-6/trial_T20190906_214114_913196",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a fork 1, and a soapbottle 1."
+    },
+    {
+      "action": "go to countertop 2",
+      "observation": "You arrive at countertop 2. On the countertop 2, you see a saltshaker 1."
+    },
+    {
+      "action": "go to countertop 3",
+      "observation": "You arrive at countertop 3. On the countertop 3, you see a apple 1, a butterknife 1, a fork 2, a knife 1, a lettuce 2, a pot 1, a spoon 2, and a tomato 1."
+    },
+    {
+      "action": "go to countertop 4",
+      "observation": "You arrive at countertop 4. On the countertop 4, you see a bowl 2, a butterknife 3, a butterknife 2, a lettuce 1, a pan 1, a papertowelroll 1, a peppershaker 2, a plate 2, and a spatula 3."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to coffeemachine 1",
+      "observation": "You arrive at coffeemachine 1. On the coffeemachine 1, you see nothing."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to sinkbasin 1",
+      "observation": "You arrive at sinkbasin 1. On the sinkbasin 1, you see nothing."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 6",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 7",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 8",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 9",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 10",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to fridge 1",
+      "observation": "You arrive at fridge 1. The fridge 1 is closed."
+    },
+    {
+      "action": "open fridge 1",
+      "observation": "You open the fridge 1. The fridge 1 is open. In it, you see a apple 2, a bread 1, a mug 1, a potato 1, and a tomato 2."
+    },
+    {
+      "action": "take mug 1 from fridge 1",
+      "observation": "You pick up the mug 1 from the fridge 1."
+    },
+    {
+      "action": "heat mug 1 with microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to stoveburner 1",
+      "observation": "You arrive at stoveburner 1. On the stoveburner 1, you see a kettle 2."
+    },
+    {
+      "action": "heat mug 1 with stoveburner 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to toaster 1",
+      "observation": "You arrive at toaster 1. On the toaster 1, you see nothing."
+    },
+    {
+      "action": "heat mug 1 with toaster 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to coffeemachine 1",
+      "observation": "You arrive at coffeemachine 1. On the coffeemachine 1, you see nothing."
+    },
+    {
+      "action": "use mug 1 with coffeemachine 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move mug 1 to coffeemachine 1",
+      "observation": "You move the mug 1 to the coffeemachine 1."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    }
+  ]
+}

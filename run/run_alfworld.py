@@ -11,15 +11,15 @@ import time
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from memrl.configs.config import MempConfig
-from memrl.providers.llm import OpenAILLM
-from memrl.providers.embedding import OpenAIEmbedder
-from memrl.service.base_memory_service import BaseMemoryService, NullMemoryService
-from memrl.service.memory_service import MemoryService
-from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
-from memrl.agent.memp_agent import MempAgent
-from memrl.skills.integration import create_skill_integrator
-from memrl.run.alfworld_rl_runner import AlfworldRunner
+from qskill.configs.config import MempConfig
+from qskill.providers.llm import OpenAILLM
+from qskill.providers.embedding import OpenAIEmbedder
+from qskill.service.base_memory_service import BaseMemoryService, NullMemoryService
+from qskill.service.memory_service import MemoryService
+from qskill.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
+from qskill.agent.memp_agent import MempAgent
+from qskill.skills.integration import create_skill_integrator
+from qskill.run.alfworld_rl_runner import AlfworldRunner
 
 
 def setup_logging(project_root: Path, name: str):

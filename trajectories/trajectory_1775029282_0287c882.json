@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775029282_0287c882",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a garbagecan 1, a handtowelholder 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, and a towelholder 1.\n\nYour task is to: find two spraybottle and put them in toilet.",
+  "task_type": "pick_two_obj_and_place-SprayBottle-None-Toilet-417/trial_T20190908_071724_127813",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1\n</think>\n\nThought: I need to find two spray",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to sinkbasin 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 2\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 4\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from countertop 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from sinkbasin 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from sinkbasin 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from garbagecan 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from handtowelholder 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from towelholder 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from sinkbasin 2\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from toiletpaperhanger 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to countertop 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "use toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "clean spraybottle with sinkbasin 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 4\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "use sinkbasin 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move spraybottle to toilet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from cabinet 4\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take spraybottle from cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 1\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 2\n</think>",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 3\n</think>",
+      "observation": "Nothing happens."
+    }
+  ]
+}

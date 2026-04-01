@@ -1,0 +1,20 @@
+{
+  "traj_id": "1775029772_945aa99d",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 11, a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 2, a countertop 1, a diningtable 2, a diningtable 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sidetable 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: heat some apple and put it in sidetable.",
+  "task_type": "pick_heat_then_place_in_recep-Apple-None-SideTable-28/trial_T20190906_180737_225131",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a lettuce 1."
+    },
+    {
+      "action": "go to countertop 2",
+      "observation": "You arrive at countertop 2. On the countertop 2, you see a butterknife 2, a dishsponge 3, a pan 1, and a spoon 2."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a apple 3, a bread 2, a egg 1, a knife 2, a plate 1, a potato 2, a potato 1, a soapbottle 2, a soapbottle 1, and a spoon 1."
+    }
+  ]
+}

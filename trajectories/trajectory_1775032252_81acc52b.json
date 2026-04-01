@@ -1,0 +1,84 @@
+{
+  "traj_id": "1775032252_81acc52b",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a garbagecan 1, a handtowelholder 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, and a towelholder 1.\n\nYour task is to: clean some soapbar and put it in toilet.",
+  "task_type": "pick_clean_then_place_in_recep-SoapBar-None-Toilet-428/trial_T20190907_041404_517664",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a candle 2, a handtowel 1, and a toiletpaper 2."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a candle 1, and a cloth 1."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see a spraybottle 1."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see a toiletpaper 1."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is closed."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to sinkbasin 1",
+      "observation": "You arrive at sinkbasin 1. On the sinkbasin 1, you see nothing."
+    },
+    {
+      "action": "go to sinkbasin 2",
+      "observation": "You arrive at sinkbasin 2. On the sinkbasin 2, you see nothing."
+    },
+    {
+      "action": "go to handtowelholder 1",
+      "observation": "You arrive at handtowelholder 1. On the handtowelholder 1, you see a handtowel 1."
+    },
+    {
+      "action": "go to towelholder 1",
+      "observation": "You arrive at towelholder 1. On the towelholder 1, you see a towel 1."
+    },
+    {
+      "action": "go to toilet 1",
+      "observation": "You arrive at toilet 1. On the toilet 1, you see a soapbar 1, and a soapbottle 1."
+    },
+    {
+      "action": "take soapbar 1 from toilet 1",
+      "observation": "You pick up the soapbar 1 from the toilet 1."
+    },
+    {
+      "action": "go to sinkbasin 1",
+      "observation": "You arrive at sinkbasin 1. On the sinkbasin 1, you see nothing."
+    },
+    {
+      "action": "clean soapbar 1 with sinkbasin 1",
+      "observation": "You clean the soapbar 1 using the sinkbasin 1."
+    },
+    {
+      "action": "go to toilet 1",
+      "observation": "You arrive at toilet 1. On the toilet 1, you see a soapbottle 1."
+    },
+    {
+      "action": "move soapbar 1 to toilet 1",
+      "observation": "You move the soapbar 1 to the toilet 1."
+    }
+  ]
+}

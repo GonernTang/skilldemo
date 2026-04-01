@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775031694_62c2b467",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 1, a diningtable 1, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: clean some knife and put it in diningtable.",
+  "task_type": "pick_clean_then_place_in_recep-Knife-None-DiningTable-23/trial_T20190908_142153_073870",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a butterknife 2, a mug 1, a pen 2, a pen 1, a peppershaker 3, a peppershaker 1, a saltshaker 1, a spatula 2, a spoon 1, a tomato 1, and a winebottle 3."
+    },
+    {
+      "action": "take butterknife 2 from countertop 1",
+      "observation": "You pick up the butterknife 2 from the countertop 1."
+    },
+    {
+      "action": "go to sinkbasin 1",
+      "observation": "You arrive at sinkbasin 1. On the sinkbasin 1, you see a fork 2, a potato 2, and a spoon 2."
+    },
+    {
+      "action": "clean butterknife 2 with sinkbasin 1",
+      "observation": "You clean the butterknife 2 using the sinkbasin 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a apple 1, a bowl 1, a butterknife 1, a cup 1, a dishsponge 1, a fork 1, a glassbottle 3, a glassbottle 2, a glassbottle 1, a knife 1, a pencil 2, a pencil 1, a plate 1, a pot 1, a soapbottle 1, a spatula 1, a winebottle 2, and a winebottle 1."
+    },
+    {
+      "action": "move butterknife 2 to diningtable 1",
+      "observation": "You move the butterknife 2 to the diningtable 1."
+    },
+    {
+      "action": "task complete",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    }
+  ]
+}

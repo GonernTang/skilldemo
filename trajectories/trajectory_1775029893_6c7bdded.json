@@ -1,0 +1,112 @@
+{
+  "traj_id": "1775029893_6c7bdded",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 2, a bed 1, a desk 1, a drawer 11, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a safe 1, a sidetable 2, and a sidetable 1.\n\nYour task is to: put a cd in safe.",
+  "task_type": "pick_and_place_simple-CD-None-Safe-323/trial_T20190907_211140_841572",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 3",
+      "observation": "You arrive at drawer 3. The drawer 3 is closed."
+    },
+    {
+      "action": "open drawer 3",
+      "observation": "You open the drawer 3. The drawer 3 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 4",
+      "observation": "You arrive at drawer 4. The drawer 4 is closed."
+    },
+    {
+      "action": "open drawer 4",
+      "observation": "You open the drawer 4. The drawer 4 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 5",
+      "observation": "You arrive at drawer 5. The drawer 5 is closed."
+    },
+    {
+      "action": "open drawer 5",
+      "observation": "You open the drawer 5. The drawer 5 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 6",
+      "observation": "You arrive at drawer 6. The drawer 6 is closed."
+    },
+    {
+      "action": "open drawer 6",
+      "observation": "You open the drawer 6. The drawer 6 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 7",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 7",
+      "observation": "You open the drawer 7. The drawer 7 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 8",
+      "observation": "You arrive at drawer 8. The drawer 8 is closed."
+    },
+    {
+      "action": "open drawer 8",
+      "observation": "You open the drawer 8. The drawer 8 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 9",
+      "observation": "You arrive at drawer 9. The drawer 9 is closed."
+    },
+    {
+      "action": "open drawer 9",
+      "observation": "You open the drawer 9. The drawer 9 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 10",
+      "observation": "You arrive at drawer 10. The drawer 10 is closed."
+    },
+    {
+      "action": "open drawer 10",
+      "observation": "You open the drawer 10. The drawer 10 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 11",
+      "observation": "You arrive at drawer 11. The drawer 11 is closed."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a bowl 1, a cd 1, a mug 1, and a pen 1."
+    },
+    {
+      "action": "take cd 1 from dresser 1",
+      "observation": "You pick up the cd 1 from the dresser 1."
+    },
+    {
+      "action": "go to safe 1",
+      "observation": "You arrive at safe 1. The safe 1 is closed."
+    },
+    {
+      "action": "open safe 1",
+      "observation": "You open the safe 1. The safe 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "move cd 1 to safe 1",
+      "observation": "You move the cd 1 to the safe 1."
+    }
+  ]
+}

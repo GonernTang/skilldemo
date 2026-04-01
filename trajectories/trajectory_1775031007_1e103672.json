@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775031007_1e103672",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 2, a countertop 1, a diningtable 2, a diningtable 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put two cup in microwave.",
+  "task_type": "pick_two_obj_and_place-Cup-None-Microwave-26/trial_T20190907_231104_458307",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a apple 1, a peppershaker 1, and a tomato 1."
+    },
+    {
+      "action": "go to countertop 2",
+      "observation": "You arrive at countertop 2. On the countertop 2, you see a lettuce 1, a plate 2, a saltshaker 3, and a spatula 2."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a bread 1, a butterknife 1, a cup 1, a fork 1, a knife 1, a saltshaker 1, a soapbottle 1, and a spatula 1."
+    },
+    {
+      "action": "take cup 1 from diningtable 1",
+      "observation": "You pick up the cup 1 from the diningtable 1."
+    },
+    {
+      "action": "go to diningtable 2",
+      "observation": "You arrive at diningtable 2. On the diningtable 2, you see a bowl 1, a cup 3, a dishsponge 2, a knife 3, a mug 2, a mug 1, a pot 2, and a potato 3."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take mug 1 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take mug 2 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 3 from diningtable 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see a knife 2, and a saltshaker 2."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see a dishsponge 1, and a fork 2."
+    },
+    {
+      "action": "go to drawer 3",
+      "observation": "You arrive at drawer 3. The drawer 3 is closed."
+    },
+    {
+      "action": "open drawer 3",
+      "observation": "You open the drawer 3. The drawer 3 is open. In it, you see a peppershaker 2, and a spoon 1."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. On the cabinet 1, you see nothing."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to microwave 1",
+      "observation": "You arrive at microwave 1. The microwave 1 is closed."
+    },
+    {
+      "action": "open microwave 1",
+      "observation": "You open the microwave 1. The microwave 1 is open. In it, you see a apple 2."
+    },
+    {
+      "action": "move cup 1 to microwave 1",
+      "observation": "You move the cup 1 to the microwave 1."
+    }
+  ]
+}

@@ -88,13 +88,13 @@ skill:
   enabled: true  # Set to true to enable skill layer
   storage_dir: "skills"  # Directory for skill storage
   retrieval_method: "embedding"  # Retrieval method: llm, keyword, vector, hybrid (embedding enables hybrid Q-value scoring)
-  extract_interval: 5  # Number of trajectories to accumulate before batch extraction
+  extract_interval: 6  # Number of trajectories to accumulate before batch extraction
   retrieve_k: 9  # Total number of skills to retrieve
   retrieve_general: 3  # Number of general skills to retrieve
   retrieve_task_specific: 3  # Number of task-specific skills to retrieve
   retrieve_common_mistakes: 3  # Number of common mistakes to retrieve
   auto_extract: true  # Automatically extract skills from successful trajectories
   auto_analyze_failure: true  # Automatically analyze and update skills from failed trajectories
-  value_alpha: 0.5  # Learning rate for skill value Q-learning update
-  value_lambda: 0.5  # Weight for skill value in hybrid retrieval score
+  value_alpha: 0.3  # Learning rate for skill value Q-learning update
+  value_lambda: 0.3  # Weight for skill value in hybrid retrieval score
   summarize_task_description: true  # Summarize task description before embedding for better skill matching

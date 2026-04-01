@@ -1,0 +1,48 @@
+{
+  "traj_id": "1775032619_7bab6156",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 3, a armchair 2, a armchair 1, a coffeetable 1, a diningtable 2, a diningtable 1, a garbagecan 1, a sofa 1, and a tvstand 1.\n\nYour task is to: put a box in diningtable.",
+  "task_type": "pick_and_place_simple-Box-None-DiningTable-223/trial_T20190907_201444_740434",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a plate 1, a vase 2, and a vase 1."
+    },
+    {
+      "action": "go to tvstand 1",
+      "observation": "You arrive at tvstand 1. On the tvstand 1, you see a candle 2, a plate 2, and a television 1."
+    },
+    {
+      "action": "go to armchair 1",
+      "observation": "You arrive at armchair 1. On the armchair 1, you see a pillow 2."
+    },
+    {
+      "action": "go to armchair 2",
+      "observation": "You arrive at armchair 2. On the armchair 2, you see nothing."
+    },
+    {
+      "action": "go to armchair 3",
+      "observation": "You arrive at armchair 3. On the armchair 3, you see nothing."
+    },
+    {
+      "action": "go to coffeetable 1",
+      "observation": "You arrive at coffeetable 1. On the coffeetable 1, you see a candle 1, a creditcard 3, a creditcard 2, a creditcard 1, a laptop 1, a remotecontrol 1, and a statue 2."
+    },
+    {
+      "action": "go to sofa 1",
+      "observation": "You arrive at sofa 1. On the sofa 1, you see a box 2, a keychain 1, and a pillow 1."
+    },
+    {
+      "action": "take box 2 from sofa 1",
+      "observation": "You pick up the box 2 from the sofa 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a plate 1, a vase 2, and a vase 1."
+    },
+    {
+      "action": "move box 2 to diningtable 1",
+      "observation": "You move the box 2 to the diningtable 1."
+    }
+  ]
+}

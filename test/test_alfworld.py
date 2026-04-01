@@ -24,15 +24,15 @@ import textworld
 import textworld.gym
 from alfworld.agents.environment.alfred_tw_env import AlfredTWEnv, AlfredDemangler, AlfredInfos
 
-from memrl.configs.config import MempConfig
-from memrl.providers.llm import OpenAILLM
-from memrl.providers.embedding import OpenAIEmbedder
-from memrl.agent.memp_agent import MempAgent
-from memrl.service.base_memory_service import BaseMemoryService, NullMemoryService
-from memrl.service.memory_service import MemoryService
-from memrl.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
-from memrl.skills.integration import create_skill_integrator
-from memrl.envs.alfworld_env import AlfWorldEnv, load_config_from_path
+from qskill.configs.config import MempConfig
+from qskill.providers.llm import OpenAILLM
+from qskill.providers.embedding import OpenAIEmbedder
+from qskill.agent.memp_agent import MempAgent
+from qskill.service.base_memory_service import BaseMemoryService, NullMemoryService
+from qskill.service.memory_service import MemoryService
+from qskill.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
+from qskill.skills.integration import create_skill_integrator
+from qskill.envs.alfworld_env import AlfWorldEnv, load_config_from_path
 
 
 @dataclass

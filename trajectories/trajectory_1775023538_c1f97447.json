@@ -1,0 +1,64 @@
+{
+  "traj_id": "1775023538_c1f97447",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 3, a armchair 2, a armchair 1, a bed 1, a cabinet 2, a cabinet 1, a desk 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a garbagecan 1, a laundryhamper 1, a safe 1, and a sidetable 1.\n\nYour task is to: examine the pen with the desklamp.",
+  "task_type": "look_at_obj_in_light-Pen-None-DeskLamp-309/trial_T20190909_051958_854080",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a creditcard 2, a houseplant 1, and a mug 1."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to safe 1",
+      "observation": "You arrive at safe 1. On the safe 1, you see a cellphone 1."
+    },
+    {
+      "action": "open safe 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a cd 1, a cellphone 1, and a houseplant 1."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see a book 1."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a cellphone 2, a creditcard 1, a desklamp 1, a pen 2, a pen 1, and a remotecontrol 1."
+    },
+    {
+      "action": "take pen 1 from sidetable 1",
+      "observation": "You pick up the pen 1 from the sidetable 1."
+    },
+    {
+      "action": "use desklamp 1",
+      "observation": "You turn on the desklamp 1."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "traj_id": "1775032135_24f1c025",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a countertop 1, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a garbagecan 1, a handtowelholder 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, and a towelholder 1.\n\nYour task is to: put some toiletpaper on toiletpaperhanger.",
+  "task_type": "pick_and_place_simple-ToiletPaper-None-ToiletPaperHanger-421/trial_T20190906_182536_996833",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a soapbar 3, a soapbar 1, a spraybottle 3, a spraybottle 1, a toiletpaper 3, and a toiletpaper 2."
+    },
+    {
+      "action": "take toiletpaper 2 from countertop 1",
+      "observation": "You pick up the toiletpaper 2 from the countertop 1."
+    },
+    {
+      "action": "go to toiletpaperhanger 1",
+      "observation": "You arrive at toiletpaperhanger 1. On the toiletpaperhanger 1, you see nothing."
+    },
+    {
+      "action": "move toiletpaper 2 to toiletpaperhanger 1",
+      "observation": "You move the toiletpaper 2 to the toiletpaperhanger 1."
+    }
+  ]
+}

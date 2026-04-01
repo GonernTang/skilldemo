@@ -1,0 +1,100 @@
+{
+  "traj_id": "1774861084_8c7395fe",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bathtubbasin 1, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a garbagecan 1, a handtowelholder 2, a handtowelholder 1, a shelf 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, a towelholder 2, and a towelholder 1.\n\nYour task is to: put two toiletpaper in countertop.",
+  "task_type": "pick_two_obj_and_place-ToiletPaper-None-CounterTop-402/trial_T20190909_053732_822099",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to toiletpaperhanger 1",
+      "observation": "You arrive at toiletpaperhanger 1. On the toiletpaperhanger 1, you see a toiletpaper 3."
+    },
+    {
+      "action": "take toiletpaper 3 from toiletpaperhanger 1",
+      "observation": "You pick up the toiletpaper 3 from the toiletpaperhanger 1."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a cloth 3."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is closed."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see a soapbottle 2, and a toiletpaper 2."
+    },
+    {
+      "action": "take toiletpaper 2 from cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper 2 from cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "close cabinet 4",
+      "observation": "You close the cabinet 4."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see a soapbottle 2, and a toiletpaper 2."
+    },
+    {
+      "action": "take toiletpaper 2 from cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take toiletpaper 2 from cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move toiletpaper 3 to countertop 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a candle 2, a soapbar 1, a spraybottle 2, and a spraybottle 1."
+    },
+    {
+      "action": "move toiletpaper 3 to countertop 1",
+      "observation": "You move the toiletpaper 3 to the countertop 1."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is open. In it, you see a soapbottle 2, and a toiletpaper 2."
+    },
+    {
+      "action": "take toiletpaper 2 from cabinet 4",
+      "observation": "You pick up the toiletpaper 2 from the cabinet 4."
+    },
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a candle 2, a soapbar 1, a spraybottle 2, a spraybottle 1, and a toiletpaper 3."
+    },
+    {
+      "action": "move toiletpaper 2 to countertop 1",
+      "observation": "You move the toiletpaper 2 to the countertop 1."
+    }
+  ]
+}

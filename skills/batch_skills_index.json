@@ -1,0 +1,679 @@
+{
+  "general_skills": [
+    {
+      "name": "verify-prerequisite-state",
+      "description": "Use when approaching an object or container to ensure it is in the correct state before attempting interaction.",
+      "content": "## Verify Prerequisite State\n\n**Process:**\n1. Identify the target object or container.\n2. Check the current observation for state indicators (e.g., 'open', 'closed', 'in it').\n3. If the container is closed, perform 'open' action before accessing contents.\n4. If the object is not visible, search nearby locations before assuming it is unreachable.\n\n**Anti-patterns:**\n- Assuming a container is open without explicitly checking the observation.\n- Attempting to pick or move an object that is not listed in the current view.",
+      "category": "general",
+      "skill_value": 0.4116211825386591,
+      "usage_count": 29
+    },
+    {
+      "name": "recover-from-action-failure",
+      "description": "Use when an action returns 'Nothing happens' to diagnose the cause rather than repeating the command blindly.",
+      "content": "## Recover From Action Failure\n\n**Process:**\n1. Stop immediately upon receiving a 'Nothing happens' response.\n2. Navigate to the relevant location to refresh the environmental observation.\n3. Re-evaluate the state of the object or container (e.g., is it still closed?).\n4. Retry the action only after confirming the necessary preconditions are met.\n\n**Anti-patterns:**\n- Spamming the same action multiple times without changing position or state.\n- Ignoring the failure message and proceeding to the next task step regardless of outcome.",
+      "category": "general",
+      "skill_value": 0.5373559044067551,
+      "usage_count": 14
+    },
+    {
+      "name": "sequential-storage-inspection",
+      "description": "Use when the target object is not immediately visible upon arrival at a room.",
+      "content": "## Sequential Storage Inspection\n\n**Process:**\n1. Upon arriving in a room, identify all potential storage containers (drawers, cabinets, shelves).\n2. Iterate through each container sequentially, opening it to inspect contents.\n3. If the target object is located, cease searching and proceed to interact.\n4. If the object is not found, close the container and move to the next candidate.\n\n**Anti-patterns:**\n- Assuming the object is in a specific container type (e.g., only drawers) without verifying others.\n- Skipping containers or failing to open them to check internal states.",
+      "category": "general",
+      "skill_value": 0.1963669842995,
+      "usage_count": 12
+    },
+    {
+      "name": "interaction-state-recovery",
+      "description": "Use when an interaction command returns a failure message like 'Nothing happens'.",
+      "content": "## Interaction State Recovery\n\n**Process:**\n1. Observe the system response immediately after executing an action like 'take' or 'move'.\n2. If the response indicates failure (e.g., \"Nothing happens\"), halt further attempts on that specific state.\n3. Reset the environment context by closing and reopening the container or re-navigating to the location.\n4. Retry the interaction command after the state has been refreshed.\n\n**Anti-patterns:**\n- Repeating the exact same failing command multiple times without altering the environment state.\n- Ignoring negative feedback messages and proceeding to unrelated tasks without resolving the blockage.",
+      "category": "general",
+      "skill_value": 0.455,
+      "usage_count": 2
+    },
+    {
+      "name": "ensure-interaction-readiness",
+      "description": "Use when executing an action like cleaning, heating, or moving to ensure physical presence and correct object states.",
+      "content": "## Ensure Interaction Readiness\n\n**Process:**\n1. Identify the target object or location required for the current action.\n2. Navigate directly to the specific location where the action must occur.\n3. Verify the state of the target (e.g., ensure containers are open or closed as required).\n4. Execute the interaction action only after confirming readiness.\n\n**Anti-patterns:**\n- Attempting to perform an action (like cleaning or heating) while standing far away from the target.\n- Ignoring container states, such as trying to access items inside a closed cabinet or drawer.",
+      "category": "general",
+      "skill_value": 0.1614294279928858,
+      "usage_count": 49
+    },
+    {
+      "name": "prioritize-surface-search",
+      "description": "Use when locating an unknown object to check visible surfaces before opening storage containers.",
+      "content": "## Prioritize Surface Search\n\n**Process:**\n1. Scan visible surfaces (tables, countertops, shelves) for the target object upon entering a room.\n2. Only open storage containers (drawers, cabinets) if the object is not found on surfaces.\n3. Limit the number of containers opened by prioritizing those closest to the starting position or task context.\n4. Update inventory knowledge based on what is found on surfaces before assuming hidden storage.\n\n**Anti-patterns:**\n- Opening every single drawer or cabinet sequentially without checking visible areas first.\n- Assuming an object is hidden in storage when it is clearly visible on a nearby table or counter.",
+      "category": "general",
+      "skill_value": 0.6501348446279616,
+      "usage_count": 39
+    },
+    {
+      "name": "verify-object-state-and-location",
+      "description": "Use when approaching an object or container to ensure it is present, accessible, and in the correct state before attempting interaction.",
+      "content": "## Verify Object State and Location\n\n**Process:**\n1. Navigate to the target location.\n2. Read the observation to confirm the specific object exists and is visible.\n3. Check the state of any required containers (e.g., open doors/drawers) before interaction.\n4. Only proceed with the action if the object is confirmed present and accessible.\n\n**Anti-patterns:**\n- Assuming an object is available without reading the observation list.\n- Attempting to interact with closed containers without opening them first.",
+      "category": "general",
+      "skill_value": 0.5038539547142951,
+      "usage_count": 23
+    },
+    {
+      "name": "diagnose-and-recover-from-failure",
+      "description": "Use when an action returns a negative response (e.g., 'Nothing happens') to diagnose the cause rather than repeating the same command.",
+      "content": "## Diagnose and Recover from Failure\n\n**Process:**\n1. Monitor action responses for negative feedback (e.g., \"Nothing happens\").\n2. If an action fails, stop repeating it immediately.\n3. Re-evaluate the current inventory and environmental state.\n4. Adjust the strategy (e.g., change object, reposition, or check compatibility) before retrying.\n\n**Anti-patterns:**\n- Repeating the same failed action consecutively without state changes.\n- Ignoring failure messages and continuing with subsequent steps in the original plan.",
+      "category": "general",
+      "skill_value": 0.4941755,
+      "usage_count": 6
+    },
+    {
+      "name": "halt-repeated-action-failures",
+      "description": "Use when an action returns 'Nothing happens' to avoid infinite loops and wasted steps.",
+      "content": "## HALT REPEATED ACTION FAILURES\n\n**Process:**\n1. Observe the result of every action execution immediately.\n2. If the observation states \"Nothing happens...\", count consecutive failures for the same action.\n3. If the same action fails twice consecutively, immediately stop attempting it.\n4. Switch to a different action type (e.g., 'go to', 'look', 'open') or target location.\n\n**Anti-patterns:**\n- Repeating the exact same command (e.g., 'take X from Y') after receiving \"Nothing happens\".\n- Ignoring negative feedback and continuing the same interaction sequence blindly.\n\n**Failure Recovery:**\n- Perform a navigation action ('go to') to reset the agent's context.\n- Re-examine the scene observation to confirm the object's actual presence and accessibility.",
+      "category": "general",
+      "skill_value": 0.43295000000000006,
+      "usage_count": 4
+    },
+    {
+      "name": "verify-object-location-precision",
+      "description": "Use when searching for objects to distinguish specific location names and prioritize visible surfaces.",
+      "content": "## VERIFY OBJECT LOCATION PRECISION\n\n**Process:**\n1. Scan initial room observations for objects on visible surfaces (tables, counters, holders).\n2. Distinguish between similar location names (e.g., 'toiletpaperhanger' vs 'toilet', 'sinkbasin' vs 'bathtub').\n3. Prioritize interacting with visible surfaces before opening closed containers (drawers, cabinets).\n4. Confirm the object is inside a container before attempting to take it from there.\n\n**Anti-patterns:**\n- Assuming an object is in a generic container (like 'toilet') when it is on a specific fixture (like 'toiletpaperhanger').\n- Opening every drawer or cabinet sequentially without checking visible areas first.\n\n**Failure Recovery:**\n- If 'take' fails from a container, check if the container was actually opened or if the object moved.\n- If location name seems wrong, look for synonyms or related fixtures in the initial observation list.",
+      "category": "general",
+      "skill_value": 0.8285,
+      "usage_count": 3
+    },
+    {
+      "name": "action-feedback-handling",
+      "description": "Use when an action returns 'Nothing happened' to prevent infinite loops and pivot to alternative strategies.",
+      "content": "## Action Feedback Handling\n\n**Process:**\n1. Execute the intended action (e.g., take, move, open).\n2. Immediately read the observation response.\n3. If response contains 'Nothing happened', abort the current action attempt.\n4. Verify object location or switch to a different target/location.\n\n**Anti-patterns:**\n- Repeating the exact same action 2+ times after receiving 'Nothing happened'.\n- Ignoring negative feedback and assuming the action succeeded silently.\n\n**Failure Recovery:**\n- If 'Nothing happened' persists, check if the object is already held or located elsewhere (e.g., move to a different surface).\n- Switch interaction verbs (e.g., try 'move' instead of 'take') if applicable.",
+      "category": "general",
+      "skill_value": 0.455,
+      "usage_count": 2
+    },
+    {
+      "name": "container-state-verification",
+      "description": "Use before interacting with any storage unit to ensure the container is in the correct state for interaction.",
+      "content": "## Container State Verification\n\n**Process:**\n1. Navigate to the target container (fridge, cabinet, drawer).\n2. Observe the state description ('closed' or 'open').\n3. If 'closed', execute 'open' command before attempting to interact.\n4. If 'open', proceed directly to interaction (take/place).\n\n**Anti-patterns:**\n- Attempting to 'take' from a container marked 'closed'.\n- Assuming a container is open without reading the observation text.\n\n**Failure Recovery:**\n- If 'open' returns 'Nothing happened', verify if the container is already open in previous observations.\n- If access remains blocked, search adjacent surfaces or alternative containers.",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "detect-and-break-action-loops",
+      "description": "Use when an action repeatedly returns 'Nothing happened' or the agent performs redundant actions without progress.",
+      "content": "## Detect and Break Action Loops\n\n**Process:**\n1. Monitor observation feedback after every action execution.\n2. If 'Nothing happens' appears 2+ times consecutively, flag as a loop.\n3. Immediately halt the current action sequence.\n4. Re-evaluate the current state and inventory before selecting a new action.\n\n**Anti-patterns:**\n- Repeating the same command (e.g., 'stop', 'open') after receiving 'Nothing happens'.\n- Continuing to execute 'None' actions when no valid options are available.\n\n**Failure Recovery:**\n- If the action fails twice, switch to a different object type or location.\n- Verify if the target container is already open or the object is already held.",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "surface-before-container-search",
+      "description": "Use when searching for an object to verify visible surfaces before attempting to open containers.",
+      "content": "## SURFACE BEFORE CONTAINER SEARCH\n\n**Process:**\n1. Navigate to the room containing the target object.\n2. Observe all visible flat surfaces (countertops, shelves, tables, beds).\n3. If the object is not found on surfaces, proceed to open containers (drawers, cabinets).\n4. Verify container contents before assuming the object is elsewhere.\n\n**Anti-patterns:**\n- Opening drawers or cabinets immediately without checking the top surfaces first.\n- Assuming an object is inside a container without visual confirmation or prior knowledge.\n\n**Failure Recovery:**\n- If a container is empty, close it and return to checking nearby surfaces.\n- If multiple containers fail, expand the search radius to adjacent rooms or furniture.",
+      "category": "general",
+      "skill_value": 0.32679236628499997,
+      "usage_count": 11
+    },
+    {
+      "name": "halt-repeated-action-failure",
+      "description": "Use when an interaction returns 'Nothing happens' to prevent wasting steps on invalid actions.",
+      "content": "## HALT REPEATED ACTION FAILURE\n\n**Process:**\n1. Execute the intended action on the target object or location.\n2. Read the observation feedback immediately after the action.\n3. If the result is 'Nothing happens', count the occurrence.\n4. If the same action fails 2+ times, stop and select a different approach or object.\n\n**Anti-patterns:**\n- Repeating the exact same command (e.g., 'open drawer') multiple times after receiving 'Nothing happens'.\n- Ignoring observation feedback and continuing the original plan regardless of errors.\n\n**Failure Recovery:**\n- Verify if the object exists in the current environment.\n- Check if the container is already open or locked.\n- Switch to a different target object or location entirely.",
+      "category": "general",
+      "skill_value": 0.35,
+      "usage_count": 1
+    },
+    {
+      "name": "verify-object-location-and-accessibility",
+      "description": "Use when searching for an object to confirm its presence on visible surfaces or inside open containers before attempting interaction.",
+      "content": "## SURFACE AND LOCATION VERIFICATION\n\n**Process:**\n1. Upon arriving at a location, read the full observation list carefully.\n2. Search for the target object name specifically in the visible list.\n3. If the object is on a surface, interact directly.\n4. If the object is likely inside, verify the container is open before attempting to take.\n5. Distinguish between similar named locations (e.g., toilet vs toiletpaperhanger).\n\n**Anti-patterns:**\n- Attempting to take from a closed container without opening it first.\n- Confusing distinct location IDs (e.g., treating a hanger as a toilet).\n\n**Failure Recovery:**\n- If interaction fails, re-evaluate the observation list to confirm object presence and location accuracy.\n- Check if the container requires an 'open' action before access.",
+      "category": "general",
+      "skill_value": 0.20367702838143137,
+      "usage_count": 19
+    },
+    {
+      "name": "abort-repetitive-action-loops",
+      "description": "Use immediately when an action returns 'Nothing happened' twice consecutively to prevent wasted steps and explore alternatives.",
+      "content": "## REPETITIVE ACTION HALTING\n\n**Process:**\n1. Monitor the outcome of every action.\n2. If an action returns \"Nothing happened\", record the attempt.\n3. If the same action on the same target fails twice consecutively, stop immediately.\n4. Switch to a different target location or action type.\n\n**Anti-patterns:**\n- Retrying the exact same `take` command on the same object ID repeatedly.\n- Ignoring negative feedback messages like \"Nothing happened\".\n\n**Failure Recovery:**\n- Abandon the current target, scan the room for alternative valid targets, or verify if the required container needs to be opened/closed first.",
+      "category": "general",
+      "skill_value": 0.43979285,
+      "usage_count": 7
+    },
+    {
+      "name": "stop-redundant-interactions",
+      "description": "Use when an interaction yields 'Nothing happens' to prevent wasting steps on inaccessible or irrelevant objects.",
+      "content": "## STOP REDUNDANT INTERACTIONS\n\n**Process:**\n1. Attempt the intended action (e.g., open, take, use).\n2. Analyze the observation response.\n3. If response is 'Nothing happens', record the failure count for this object.\n4. If failure count reaches 2, immediately stop attempting this object and select a new target.\n\n**Anti-patterns:**\n- Continuing to attempt the same action on an object after receiving 'Nothing happens'.\n- Ignoring negative feedback and assuming the next attempt will succeed.\n\n**Failure Recovery:**\n- If stuck on one object, navigate to a different room or container type (e.g., switch from cabinets to drawers).\n- Verify if the object exists in the current environment before retrying.",
+      "category": "general",
+      "skill_value": 0.760951295,
+      "usage_count": 8
+    },
+    {
+      "name": "search-surfaces-first",
+      "description": "Use when locating an object to prioritize checking visible flat surfaces before opening closed containers.",
+      "content": "## SEARCH SURFACES FIRST\n\n**Process:**\n1. Scan the immediate view for visible flat surfaces (countertops, tables, shelves, desks).\n2. Navigate to each surface and inspect contents using 'look' or 'go to'.\n3. Only proceed to open closed containers (drawers, cabinets, fridge) if the object is not found on surfaces.\n\n**Anti-patterns:**\n- Opening closed containers immediately without checking visible surfaces.\n- Assuming objects are always stored inside closed furniture rather than placed out.\n\n**Failure Recovery:**\n- If surface search yields nothing, expand search radius to adjacent rooms.\n- If container search fails, re-evaluate if the object name matches known synonyms or hidden locations.",
+      "category": "general",
+      "skill_value": 0.333935,
+      "usage_count": 5
+    },
+    {
+      "name": "stop-repeating-failed-actions",
+      "description": "Use when an action consistently returns 'Nothing happens' to prevent wasting steps on invalid operations.",
+      "content": "## STOP REPEATING FAILED ACTIONS\n\n**Process:**\n1. Execute the intended action.\n2. Immediately read the observation result.\n3. If the result is \"Nothing happens\" for the same action/location pair twice, stop executing that action.\n4. Pivot to a different strategy or location.\n\n**Anti-patterns:**\n- Repeating the exact same command after receiving \"Nothing happens\".\n- Ignoring observation feedback to continue blindly searching.\n\n**Failure Recovery:**\n- Verify if the object exists in the current location.\n- Check if the container is actually open or accessible.\n- Move to a different location or try a different object variant.",
+      "category": "general",
+      "skill_value": 0.455,
+      "usage_count": 2
+    },
+    {
+      "name": "prioritize-surface-over-container",
+      "description": "Use when searching for objects to ensure you check visible surfaces before opening containers and verify precise object names.",
+      "content": "## PRIORITIZE SURFACE OVER CONTAINER\n\n**Process:**\n1. Scan visible surfaces (countertops, tables, shelves) for the target object.\n2. Confirm exact object name and ID (e.g., \"toiletpaper 2\" vs \"toiletpaper\").\n3. Only open containers (drawers, cabinets) if surface scan yields no results.\n4. Verify proximity before moving items between locations.\n\n**Anti-patterns:**\n- Opening all containers sequentially without checking visible surfaces first.\n- Confusing distinct locations (e.g., \"toilet\" vs \"toiletpaperhanger\").\n\n**Failure Recovery:**\n- Re-scan the room for unobserved surfaces.\n- Check inventory to see if object was already picked up.\n- Try alternative containers known to hold similar items.",
+      "category": "general",
+      "skill_value": 0.3185,
+      "usage_count": 3
+    },
+    {
+      "name": "halt-repeated-action-loops",
+      "description": "Use when an action returns 'Nothing happens' or fails unexpectedly to prevent infinite retry cycles.",
+      "content": "## HALT REPEATED ACTION LOOPS\n\n**Process:**\n1. Execute the intended action.\n2. Analyze the observation response immediately.\n3. If the response is 'Nothing happens', increment a failure counter for this specific action-target pair.\n4. If the counter reaches 2, STOP attempting this action.\n5. Pivot to a different strategy (e.g., search a different location or object).\n\n**Anti-patterns:**\n- Repeating the same 'take' or 'open' command more than twice despite negative feedback.\n- Ignoring 'Nothing happens' messages and assuming the next attempt will succeed.\n\n**Failure Recovery:**\n- If an action fails twice, assume the object is not present or the container is inaccessible.\n- Re-scan the immediate area for alternative objects or check if the container state has changed (e.g., already open).",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "verify-object-presence-on-surfaces",
+      "description": "Use when searching for an object to confirm visibility on surfaces before searching inside containers.",
+      "content": "## VERIFY OBJECT PRESENCE ON SURFACES\n\n**Process:**\n1. Identify all visible surfaces (countertops, tables, shelves) in the current view.\n2. Read the observation list carefully to confirm the target object is explicitly listed.\n3. Attempt interaction only if the object is confirmed in the observation.\n4. Only open drawers/cabinets if the object is not found on any visible surface.\n\n**Anti-patterns:**\n- Assuming an object exists on a surface because the task requires it, even if not listed in observations.\n- Opening multiple containers sequentially without checking visible surfaces first.\n\n**Failure Recovery:**\n- If an object is not found on surfaces, systematically check containers one by one rather than guessing IDs.\n- If 'Nothing happens' occurs during surface interaction, verify the object name matches exactly (e.g., 'cup' vs 'mug').",
+      "category": "general",
+      "skill_value": 0.35,
+      "usage_count": 1
+    },
+    {
+      "name": "verify-task-completion-state",
+      "description": "Use before signaling task completion to ensure all objectives are visibly satisfied in the environment.",
+      "content": "## VERIFY TASK COMPLETION STATE\n\n**Process:**\n1. After performing the final manipulation step, review the current observation.\n2. Confirm the target object is in the correct location and state (e.g., placed, cleaned, heated).\n3. Only execute 'task complete' if the observation matches the task requirements.\n4. If unsure, perform a quick scan of the destination area to confirm presence.\n\n**Anti-patterns:**\n- Calling 'task complete' immediately after the last movement without checking the result.\n- Assuming the task is done based on intent rather than environmental observation.\n\n**Failure Recovery:**\n- If 'task complete' returns 'Nothing happens', re-evaluate the scene for missing steps.\n- Return to the destination location and verify the object is actually placed there.",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "stop-repeated-action-failure",
+      "description": "Use when an action returns 'Nothing happened' or fails to change state after execution.",
+      "content": "## Stop Repeated Action Failure\n\n**Process:**\n1. Monitor action output for error messages like \"Nothing happens\" or lack of state change.\n2. Count consecutive failures on the same object/location pair.\n3. If count reaches 2, immediately cease the current action sequence.\n4. Re-evaluate object state (is it open? is it visible?) before proceeding.\n\n**Anti-patterns:**\n- Continuing to issue the same \"take\" or \"open\" command after receiving \"Nothing happens\".\n- Ignoring observation text that indicates the object is not accessible or present.\n\n**Failure Recovery:**\n- If \"Nothing happens\" persists, verify the container is actually open via observation.\n- Move to a different nearby location to search for alternative instances of the object.",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "inspect-surfaces-first",
+      "description": "Use when searching for an object to maximize efficiency and avoid blind container searching.",
+      "content": "## Inspect Surfaces First\n\n**Process:**\n1. Upon arriving at a room/area, scan initial observation for \"On the [location]\" entries.\n2. Prioritize interacting with objects listed on surfaces (countertops, desks, toilets) before opening containers.\n3. Only open cabinets/drawers if the object is not found on any visible surface.\n\n**Anti-patterns:**\n- Sequentially opening every cabinet/drawer without checking room overview first.\n- Assuming all objects must be stored inside closed containers.\n\n**Failure Recovery:**\n- If container search yields no results, return to the start of the room and re-read the initial observation for surface items.\n- Check if the object name matches exactly (e.g., \"saltshaker\" vs \"peppershaker\") before assuming it's missing.",
+      "category": "general",
+      "skill_value": 0.5,
+      "usage_count": 0
+    }
+  ],
+  "task_specific_skills": {
+    "pick_and_place": [
+      {
+        "name": "pick-and-place-execution",
+        "description": "Use when performing a simple pick and place operation to ensure correct navigation, interaction, and clean termination.",
+        "content": "## Execute Pick and Place\n\n**Process:**\n1. Navigate to the source location where the target object is located.\n2. Open the source container if it is closed and the object is inside.\n3. Take the target object from the source location.\n4. Navigate to the destination location specified in the task.\n5. Move the object to the destination.\n6. Stop execution immediately after confirming the object is placed.\n\n**Anti-patterns:**\n- Do not attempt to close containers after placing items unless explicitly instructed, as this often leads to action loops or errors.\n- Do not repeat \"done\" commands indefinitely if the task status remains unclear; verify the object's final position first.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.64361593968065,
+        "usage_count": 13
+      },
+      {
+        "name": "execute-pick-and-place",
+        "description": "Use when instructed to move an item from its current location to a specified destination.",
+        "content": "## Execute Pick And Place\n\n**Process:**\n1. Navigate to the source location where the target object is located.\n2. Verify the object is present and take it into your inventory.\n3. Navigate to the specified destination location.\n4. Place the held object onto the destination surface.\n\n**Anti-patterns:**\n- Attempting to move an object without first picking it up.\n- Navigating to the destination before successfully acquiring the object.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.22347185000000003,
+        "usage_count": 7
+      },
+      {
+        "name": "systematic-location-search",
+        "description": "Use when the target object's location is unknown and requires checking multiple storage containers sequentially.",
+        "content": "## Systematic Location Search\n\n**Process:**\n1. Identify all storage container IDs (cabinets, drawers, fridges) in the current room.\n2. Navigate to the first container ID in the sequence.\n3. Open the container if it is closed to reveal contents.\n4. Inspect the visible items for the target object.\n5. If the object is not found, proceed to the next container ID.\n6. Repeat until the object is located or all containers are checked.\n\n**Anti-patterns:**\n- Do not skip containers arbitrarily; maintain a consistent order to ensure no location is missed.\n- Do not persist on a container that returns 'Nothing happens'; move immediately to the next valid ID.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.23673592881976385,
+        "usage_count": 18
+      },
+      {
+        "name": "search-and-interact-with-container",
+        "description": "Use when navigating through multiple storage units to locate and retrieve a specific item.",
+        "content": "## Search and Interact with Container\n\n**Process:**\n1. Navigate to the target storage unit (e.g., drawer, cabinet).\n2. Open the unit to reveal its contents.\n3. Inspect the visible items for the task-specific target object.\n4. If the target is found, execute the 'pick' action immediately.\n5. If the target is not found, close the unit and move to the next candidate.\n\n**Anti-patterns:**\n- Opening and closing containers repeatedly without executing a 'pick' action on identified targets.\n- Focusing solely on navigation and container state changes without executing manipulation actions.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.27205000581500005,
+        "usage_count": 11
+      },
+      {
+        "name": "systematic-search-and-place",
+        "description": "Use when locating a hidden object within containers and moving it to a designated target.",
+        "content": "## Systematic Search and Place\n\n**Process:**\n1. Inspect all visible surfaces (tables, dressers) for the target object before touching containers.\n2. If not found on surfaces, systematically open nearby containers (drawers, cabinets) one by one until the object is located.\n3. Once located, execute 'take [object] from [container]'.\n4. Navigate directly to the target placement location.\n5. Execute 'move [object] to [location]' to complete the task.\n\n**Anti-patterns:**\n- Opening every container in the room randomly without prioritizing proximity or surface checks.\n- Attempting to place an object without confirming you have successfully picked it up first.\n\n**Failure Recovery:**\n- If 'take' fails with 'Nothing happened', re-scan nearby surfaces or check adjacent containers for the object.\n- If 'move' fails, verify the target location is valid and capable of receiving the object type.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.11852580547545502,
+        "usage_count": 14
+      },
+      {
+        "name": "pick-and-place-surface",
+        "description": "Use when moving a visible object from one surface to another without needing to open containers.",
+        "content": "## Surface-to-Surface Transfer\n\n**Process:**\n1. Identify source and destination surfaces from observations.\n2. Navigate to the source surface.\n3. Verify the object is visible on the surface.\n4. Execute 'take [object] from [source]'.\n5. Navigate to the destination surface.\n6. Execute 'move [object] to [destination]'.\n\n**Anti-patterns:**\n- Do not open containers if the object is clearly visible on a surface.\n- Do not assume the object is still in place if the 'take' command returns \"Nothing happened\".\n\n**Failure Recovery:**\n- If 'take' fails, re-scan nearby surfaces for the object.\n- Verify the object name matches exactly what is listed in the observation.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.1812755,
+        "usage_count": 6
+      },
+      {
+        "name": "standard-pick-and-place",
+        "description": "Use when instructed to move a specific object from its current location to a designated target.",
+        "content": "## Standard Pick And Place\n\n**Process:**\n1. Identify the target object and destination from the task description.\n2. Check visible surfaces (tables, desks, shelves) for the object before opening any containers.\n3. Navigate to the object's location and execute 'take [object]'.\n4. Navigate to the target container or surface.\n5. Execute 'move [object] to [target]'.\n\n**Anti-patterns:**\n- Opening drawers or cabinets before verifying the object isn't on a nearby surface.\n- Attempting to place an object while holding nothing or holding the wrong item.\n\n**Failure Recovery:**\n- If 'take' returns 'Nothing happened', search adjacent surfaces or check if the object is inside an open container.\n- If 'move' fails, verify the target container is open and accessible.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.35,
+        "usage_count": 1
+      },
+      {
+        "name": "surface-priority-search",
+        "description": "Use when searching for a target object to ensure surfaces are checked before opening containers.",
+        "content": "## Surface Priority Search\n\n**Process:**\n1. Scan all visible flat surfaces (desks, tables, dressers, chairs) for the target object.\n2. If the object is visible on a surface, navigate to it and pick it up.\n3. Only if the object is not found on any surface, proceed to open nearby containers (drawers, cabinets).\n\n**Anti-patterns:**\n- Opening closed drawers sequentially without checking surfaces first.\n- Assuming the object is inside a container just because it wasn't seen immediately.\n\n**Failure Recovery:**\n- If the 'take' action fails with 'Nothing happened', re-scan nearby surfaces for the object.\n- If the object is still missing, check adjacent rooms or different container types.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.6815,
+        "usage_count": 3
+      },
+      {
+        "name": "locate-and-transfer-object",
+        "description": "Use when moving an object from a source location to a specific target destination.",
+        "content": "## Locate And Transfer Object\n\n**Process:**\n1. Scan nearby surfaces for the object before opening any containers.\n2. Navigate to the source location where the object is located.\n3. Execute 'take [object] from [source]' to acquire the item.\n4. Navigate to the target location (e.g., toiletpaperhanger).\n5. Execute 'move [object] to [target]' to complete placement.\n\n**Anti-patterns:**\n- Do not confuse distinct locations like 'toilet' and 'toiletpaperhanger'.\n- Do not attempt to take an object without confirming it is visible on the surface.\n\n**Failure Recovery:**\n- If 'take' fails, re-scan nearby surfaces or check adjacent containers.\n- If 'move' fails, verify the target location is accessible and not full.",
+        "category": "alfworld/pick_and_place",
+        "task_type": "pick_and_place",
+        "skill_value": 0.755,
+        "usage_count": 2
+      }
+    ],
+    "cool": [
+      {
+        "name": "navigate-to-cooling-appliance",
+        "description": "Use when performing a cool action to ensure the agent is physically located at the cooling source.",
+        "content": "## Navigate To Cooling Appliance\n\n**Process:**\n1. Identify the target cooling appliance (e.g., fridge).\n2. Move to the appliance location explicitly before issuing the cool command.\n3. Ensure the appliance is open.\n4. Perform the cool action while standing adjacent to the appliance.\n\n**Anti-patterns:**\n- Attempting to cool an object from a distance without moving to the appliance.\n- Assuming the appliance is open without checking its state first.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.618083366285,
+        "usage_count": 11
+      },
+      {
+        "name": "cool-item-with-fridge",
+        "description": "Use when the task requires lowering an object's temperature using a refrigerator before moving it to a final location.",
+        "content": "## Cool Item With Fridge\n\n**Process:**\n1. Pick up the target item from its current location.\n2. Navigate to the nearest refrigerator.\n3. Open the refrigerator door if it is currently closed.\n4. Perform the cool action on the held item using the refrigerator.\n5. Navigate to the specified final receptacle.\n6. Move the cooled item into the final receptacle.\n\n**Anti-patterns:**\n- Do not attempt to cool an item that is not currently held in your inventory.\n- Do not skip opening the refrigerator before attempting the cool action.\n- Do not leave the item inside the refrigerator after cooling; ensure it is moved to the final destination.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.6159650000000001,
+        "usage_count": 5
+      },
+      {
+        "name": "cool-object-with-fridge",
+        "description": "Use when the task requires cooling an object using the refrigerator before placing it in a target location.",
+        "content": "## Cool Object With Fridge\n\n**Process:**\n1. Locate the target object (e.g., pan, apple, tomato) in the room.\n2. Pick up the object.\n3. Navigate to the refrigerator.\n4. Open the refrigerator.\n5. Place the object inside the refrigerator to cool it.\n6. Wait for the cooling process to complete.\n7. Return to the refrigerator and open it.\n8. Take the cooled object out of the refrigerator.\n9. Navigate to the final destination receptacle.\n10. Place the object in the destination.\n\n**Anti-patterns:**\n- Do not attempt to place the object in the fridge without holding it first.\n- Do not forget to retrieve the object from the fridge before placing it in the final location.\n- Do not assume the fridge is open; always verify and open if closed.\n\n**Failure Recovery:**\n- If the object is not found, systematically search all cabinets, drawers, and countertops.\n- If the fridge is locked or inaccessible, check for alternative storage locations nearby.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.599145995,
+        "usage_count": 8
+      },
+      {
+        "name": "execute-cool-and-place-sequence",
+        "description": "Use this skill when the task requires picking up an object, cooling it in a fridge, and then placing it in a specific receptacle.",
+        "content": "## Execute Cool and Place Sequence\n\n**Process:**\n1. Locate and pick up the target object.\n2. Navigate to a fridge and open it if closed.\n3. Execute the 'cool <object> with <fridge>' action.\n4. Attempt to 'take <object> from <fridge>' if the object remains inside.\n5. Navigate to the target receptacle.\n6. Place the object in the receptacle.\n\n**Anti-patterns:**\n- Attempting to cool an object without first picking it up.\n- Skipping the 'open fridge' step before attempting to cool.\n\n**Failure Recovery:**\n- If 'take <object> from <fridge>' returns 'Nothing happens', proceed directly to the target receptacle as the object may be ready to move.\n- If the fridge is inaccessible, search other rooms for an available fridge.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.57995,
+        "usage_count": 4
+      },
+      {
+        "name": "cool-with-fridge-and-store",
+        "description": "Use when you need to cool an object using a fridge and then place it into a specific receptacle.",
+        "content": "## Cool and Store Object\n\n**Process:**\n1. Pick up the target object.\n2. Navigate to a fridge and open it.\n3. Execute 'cool [object] with [fridge]'.\n4. Execute 'take [object] from [fridge]' to retrieve the cooled item.\n5. Navigate to the correct target receptacle.\n6. Place the object in the receptacle.\n\n**Anti-patterns:**\n- Do not skip the 'take from fridge' step; the object remains inside after cooling.\n- Do not navigate to the wrong cabinet ID; verify the target receptacle number matches the task description.\n\n**Failure Recovery:**\n- If the object cannot be moved after cooling, return to the fridge and explicitly take the object out.\n- If placed in the wrong location, close the current receptacle, retrieve the object from the fridge, and navigate to the correct one.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.5,
+        "usage_count": 0
+      },
+      {
+        "name": "execute-cool-workflow",
+        "description": "Use when the task requires cooling an object in a fridge before placing it in a final location.",
+        "content": "## Execute Cool Workflow\n\n**Process:**\n1. Locate the target object specified in the task goal.\n2. Navigate to a functional fridge in the environment.\n3. Place the target object inside the fridge to initiate cooling.\n4. Wait for the cooling process to complete.\n5. Take the cooled object from the fridge.\n6. Navigate to the designated final receptacle (e.g., shelf).\n7. Place the cooled object into the final receptacle.\n\n**Anti-patterns:**\n- Attempting to cool an object without physically placing it inside the fridge first.\n- Forgetting to retrieve the object from the fridge before attempting to place it in the final destination.\n\n**Failure Recovery:**\n- If the fridge is locked or full, locate an alternative fridge or clear space before proceeding.\n- If the object remains hot after retrieval, return it to the fridge and allow more time to pass.",
+        "category": "alfworld/cool",
+        "task_type": "cool",
+        "skill_value": 0.5,
+        "usage_count": 0
+      }
+    ],
+    "heat": [
+      {
+        "name": "prioritize-target-search",
+        "description": "Use when initiating a heat task to locate the required object efficiently before navigating to the destination.",
+        "content": "## Prioritize Target Search\n\n**Process:**\n1. Analyze the task instruction to identify the specific object requiring attention (e.g., Egg, Pot).\n2. Scan visible surfaces and relevant appliances (stove, microwave) before opening closed storage.\n3. Verify object presence via observation commands before committing to travel.\n4. Acquire the object immediately upon discovery to prevent unnecessary navigation loops.\n\n**Anti-patterns:**\n- Navigating to the final destination (e.g., Fridge) before securing the target object.\n- Opening every available cabinet sequentially without filtering by relevance to the task.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.5449999999999999,
+        "usage_count": 2
+      },
+      {
+        "name": "heat-appliance-setup",
+        "description": "Use when heating an object to ensure the correct appliance is chosen and the object is securely placed inside before activation.",
+        "content": "## Heat Appliance Setup\n\n**Process:**\n1. Identify the correct heating appliance for the target object (e.g., mug goes in microwave or coffeemachine, pot goes in stove).\n2. Navigate to the appliance and inspect its current state (open or closed).\n3. If the appliance is closed, open it to access the interior.\n4. Move the target object into the appliance's interior space.\n5. Close the appliance door if the heating mechanism requires it to be sealed.\n6. Execute the heat command only after confirming the object is inside and the appliance is ready.\n\n**Anti-patterns:**\n- Attempting to heat an object while holding it in your inventory rather than placing it inside the appliance first.\n- Using incompatible heating devices, such as trying to heat a mug on a stoveburner instead of a microwave.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.35,
+        "usage_count": 1
+      },
+      {
+        "name": "validate-object-and-placement-for-heating",
+        "description": "Use when initiating a heating task to ensure the selected object matches the task requirements and is correctly situated within the heating device.",
+        "content": "## Validate Object and Placement for Heating\n\n**Process:**\n1. Read the task description to identify the required object type (e.g., Mug).\n2. Search the environment for the specific object type, avoiding similar items (e.g., Cups).\n3. Navigate to the appropriate heating appliance (Microwave, Stove, etc.).\n4. Open the appliance if it is closed.\n5. Move the object into the appliance or onto the burner.\n6. Inspect the appliance interior to confirm the object is present.\n7. Attempt the heat action only after confirmation.\n\n**Anti-patterns:**\n- Do not proceed with heating using a generic object (like a Cup) if the task specifies a specific type (like a Mug).\n- Do not assume the heating action succeeded without verifying the object remains inside the appliance afterward.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.455,
+        "usage_count": 2
+      },
+      {
+        "name": "heat-object-procedure",
+        "description": "Use when heating an object to ensure correct placement and handle action failures.",
+        "content": "## Heat Object Procedure\n\n**Process:**\n1. Move the target object inside the microwave or stoveburner.\n2. Ensure the appliance door is open to verify placement.\n3. Execute the heat action with the appliance.\n4. If heating succeeds, open the appliance and take the object out.\n\n**Anti-patterns:**\n- Attempting to heat an object that is not confirmed inside the appliance.\n- Trying to retrieve an object from a closed appliance without opening it first.\n\n**Failure Recovery:**\n- If \"Nothing happens\" occurs during heating, reopen the appliance to verify the object is actually inside.\n- If retrieval fails, ensure the appliance is fully open before attempting to take the object again.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.43295000000000006,
+        "usage_count": 4
+      },
+      {
+        "name": "heat-microwave-procedure",
+        "description": "Use when heating an object like a mug using a microwave or stoveburner.",
+        "content": "## Heat Object Procedure\n\n**Process:**\n1. Navigate to the target object and pick it up.\n2. Move to the heating appliance (microwave or stoveburner).\n3. Open the appliance if it is a microwave.\n4. Move the object inside the appliance.\n5. Execute the heat action.\n6. Take the object out after heating.\n\n**Anti-patterns:**\n- Attempting to heat an object while holding it outside the appliance.\n- Ignoring the appliance door status (e.g., trying to heat through a closed microwave).\n\n**Failure Recovery:**\n- If heating returns \"Nothing happens\", verify the object is visible inside the appliance by opening it.\n- If the object is missing, return to the previous location to retrieve it.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.5449999999999999,
+        "usage_count": 2
+      },
+      {
+        "name": "heat-object-inside-appliance",
+        "description": "Use when you need to heat an object like an apple using a microwave or stoveburner.",
+        "content": "## Heat Object Inside Appliance\n\n**Process:**\n1. Locate the target object (e.g., apple) and a heating appliance (microwave or stoveburner).\n2. Pick up the target object.\n3. Navigate to the heating appliance.\n4. Place the object INSIDE the appliance (e.g., \"put apple in microwave\").\n5. Execute the heat action on the appliance (e.g., \"heat microwave\").\n6. Take the heated object OUT of the appliance (e.g., \"take apple from microwave\") before moving to the final location.\n\n**Anti-patterns:**\n- Attempting to heat an object without placing it inside the appliance first.\n- Trying to move the object to the final destination without retrieving it from the appliance first.\n\n**Failure Recovery:**\n- If the heat action says \"Nothing happens,\" verify the object is actually inside the appliance.\n- If the object cannot be taken, wait for the heating cycle to complete or check if the appliance is open.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.455,
+        "usage_count": 2
+      },
+      {
+        "name": "execute-heat-sequence",
+        "description": "Use when you have located an object that requires heating and must complete the full workflow from placement to final destination.",
+        "content": "## Execute Heat Sequence\n\n**Process:**\n1. Carry the target object to the heating appliance (e.g., microwave).\n2. Open the appliance door if it is currently closed.\n3. Put the object inside the appliance.\n4. Issue the heat command targeting the object or appliance.\n5. Once the heating process completes, take the object out of the appliance.\n6. Navigate to the final receptacle and place the object there.\n\n**Anti-patterns:**\n- Attempting to heat an object without first placing it inside the appliance.\n- Aborting the task immediately after locating the object without moving to the heating station.\n- Placing the heated object directly into the final receptacle without retrieving it from the appliance first.\n\n**Failure Recovery:**\n- If heating returns \"Nothing happens\", verify the object is physically inside the appliance before retrying.\n- If the appliance is closed during the heat attempt, open it explicitly before issuing the heat command.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.5,
+        "usage_count": 0
+      },
+      {
+        "name": "secure-heat-execution",
+        "description": "Use this skill when heating an object to ensure correct placement inside the appliance and handle potential state inconsistencies.",
+        "content": "## Secure Heating Execution\n\n**Process:**\n1. Navigate to the target appliance (microwave or stoveburner).\n2. Open the appliance if it is currently closed.\n3. Move the target object inside the appliance using `move <object> to <appliance>`.\n4. Verify the object is inside by observing the appliance contents.\n5. Execute the heat command (`heat <appliance>` or `heat <object> with <appliance>`).\n6. If heating completes, open the appliance and take the object out (`take <object> from <appliance>`).\n\n**Anti-patterns:**\n- Attempting to heat an object without first moving it inside the appliance.\n- Attempting to retrieve the object while the appliance door is closed.\n\n**Failure Recovery:**\n- If \"Nothing happens\" occurs during heating, reopen the appliance to verify the object is present.\n- If unable to take the object out, ensure the appliance is fully opened before retrying the take action.\n- If one appliance consistently fails, switch to an alternative heating source (e.g., stoveburner instead of microwave).",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.35,
+        "usage_count": 1
+      },
+      {
+        "name": "heat-prerequisite-verification",
+        "description": "Use this skill before executing any heating action to guarantee the target object is securely placed within the heating appliance.",
+        "content": "## Heat Prerequisite Verification\n\n**Process:**\n1. Identify the target object (e.g., cup, potato) and the heating device (microwave or stoveburner).\n2. Navigate to the heating device.\n3. Execute the 'put <object> in <device>' action to place the object inside.\n4. Verify via observation that the object is now inside the device.\n5. Execute the 'heat <object> with <device>' action.\n\n**Anti-patterns:**\n- Attempting to 'heat <object> with <device>' without first using the 'put' action to place the object inside.\n- Assuming the object is inside the device simply because it was picked up previously without re-verifying its location.\n\n**Failure Recovery:**\n- If heating fails with 'Nothing happens', immediately check your inventory and surroundings to confirm the object's current location.\n- Re-execute the 'put <object> in <device>' action if the object is not found inside the heating appliance.",
+        "category": "alfworld/heat",
+        "task_type": "heat",
+        "skill_value": 0.5,
+        "usage_count": 0
+      }
+    ],
+    "clean": [
+      {
+        "name": "execute-clean-task-with-location-check",
+        "description": "Use when completing a pick-clean-place task to ensure the agent navigates to the sink before cleaning and searches surfaces efficiently for the target object.",
+        "content": "## Execute Clean Task With Location Check\n\n**Process:**\n1. Locate the target object by checking common surfaces like countertops or tables first.\n2. Pick up the object once found.\n3. Navigate to a sinkbasin before attempting any cleaning action.\n4. Execute the clean command only after arriving at the sinkbasin.\n5. Navigate to the final destination receptacle.\n6. Place the cleaned object into the destination.\n\n**Anti-patterns:**\n- Attempting to clean an object while standing away from a sinkbasin, as the action will fail silently.\n- Blindly opening all drawers and cabinets without prioritizing visible surfaces where objects are typically placed.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.7611759950000001,
+        "usage_count": 8
+      },
+      {
+        "name": "clean-cloth-for-placement",
+        "description": "Use when you need to acquire a cloth, clean it at a water source, and place it in a target receptacle.",
+        "content": "## Clean Cloth for Placement\n\n**Process:**\n1. Navigate to the location where the cloth is visible.\n2. Pick up the cloth from its current surface.\n3. Navigate to a sinkbasin or bathtubbasin.\n4. Execute 'clean [cloth] with [basin]' while holding the cloth.\n5. Navigate to the target receptacle.\n6. Move the cleaned cloth into the receptacle.\n\n**Anti-patterns:**\n- Attempting to clean a cloth without having it in your inventory first.\n- Trying to clean items at locations other than sinkbasins or bathtubbasins.\n- Placing the cloth in the target receptacle before cleaning it.\n\n**Failure Recovery:**\n- If the cloth is not found, check nearby cabinets or drawers for storage.\n- If the basin is closed, open it before attempting to clean.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.44882285,
+        "usage_count": 7
+      },
+      {
+        "name": "clean-object-at-sink",
+        "description": "Use when you have an object in your inventory and need to clean it using a sink basin or bathtub basin.",
+        "content": "## Clean Object at Sink Basin\n\n**Process:**\n1. Verify the target object is currently in your inventory.\n2. Navigate to a valid cleaning location identified as 'sinkbasin' or 'bathtubbasin'.\n3. Execute the action 'clean [object] with [location]'.\n4. Proceed to the final destination once cleaning is complete.\n\n**Anti-patterns:**\n- Attempting to clean an object without picking it up first.\n- Using a countertop or cabinet as the cleaning location instead of a sinkbasin.\n\n**Failure Recovery:**\n- If the object is not in inventory, locate and pick it up before returning to the sink.\n- If the location is invalid, search for another sinkbasin or bathtubbasin in the environment.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.60182285,
+        "usage_count": 7
+      },
+      {
+        "name": "pick-clean-place-sequence",
+        "description": "Use when the task requires retrieving an item, cleaning it at a basin, and placing it into a target receptacle.",
+        "content": "## Perform Pick-Clean-Place Sequence\n\n**Process:**\n1. Navigate to the source location where the dirty item is located.\n2. Open the container if closed and take the item into your inventory.\n3. Navigate to a sinkbasin or bathtubbasin.\n4. Execute 'clean [item] with [basin]' ensuring the item is in inventory.\n5. Navigate to the target receptacle.\n6. Open the receptacle if closed.\n7. Move the cleaned item into the receptacle.\n\n**Anti-patterns:**\n- Attempting to clean an item without first picking it up into inventory.\n- Using a non-basin location (like a counter or table) to perform the clean action.\n\n**Failure Recovery:**\n- If the item is not in inventory after taking, re-check the container status and try taking again.\n- If the clean action fails, verify the basin is openable and not blocked by other objects.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.65,
+        "usage_count": 1
+      },
+      {
+        "name": "perform-pick-clean-place",
+        "description": "Use when retrieving an item, cleaning it at a sink, and placing it in a target receptacle.",
+        "content": "## Perform Pick-Clean-Place Task\n\n**Process:**\n1. Search for the target object in containers (cabinets, fridges, shelves) and navigate to its location.\n2. Open the container if necessary and execute 'take <object> from <location>' to add it to inventory.\n3. Navigate to a valid cleaning source ('sinkbasin' or 'bathtubbasin').\n4. Execute 'clean <object> with <source>' while holding the object.\n5. Navigate to the target receptacle specified in the task.\n6. Execute 'move <object> to <receptacle>' to complete the task.\n\n**Anti-patterns:**\n- Do not attempt to clean an object unless it is currently in your inventory.\n- Do not use non-basin surfaces (countertops, tables, shelves) as the cleaning location.\n\n**Failure Recovery:**\n- If the object cannot be found, systematically open closed containers in nearby rooms.\n- If the cleaning action fails, verify the sinkbasin is open and accessible, then retry.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.35,
+        "usage_count": 1
+      },
+      {
+        "name": "clean-object-at-basin",
+        "description": "Use when cleaning an object to ensure it is held in inventory and located at a valid basin.",
+        "content": "## Clean Object at Basin\n\n**Process:**\n1. Locate and pick up the target object (e.g., apple) to ensure it is in inventory.\n2. Navigate to a valid cleaning location (sinkbasin or bathtubbasin).\n3. Execute the command \"clean [object] with [location]\".\n4. Confirm the object is clean before moving to the placement location.\n\n**Anti-patterns:**\n- Attempting to clean an object without holding it in inventory.\n- Using generic \"use\" commands on basins instead of the specific \"clean\" command.\n\n**Failure Recovery:**\n- If the action fails, verify the object is in inventory; if not, search for the object again before attempting to clean.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.5,
+        "usage_count": 0
+      },
+      {
+        "name": "clean-and-place-object",
+        "description": "Use when you need to clean an item found in the environment and then place it in a specific receptacle.",
+        "content": "## Clean and Place Object\n\n**Process:**\n1. Pick up the target object from its current location to ensure it is in inventory.\n2. Navigate to a valid cleaning surface such as a sinkbasin or bathtubbasin.\n3. Execute the clean command specifying the object and the basin.\n4. Navigate to the target receptacle where the object needs to be placed.\n5. Move the cleaned object into the target receptacle.\n\n**Anti-patterns:**\n- Attempting to clean an object that is not currently held in inventory.\n- Using non-cleaning surfaces like countertops or tables as the cleaning location.\n\n**Failure Recovery:**\n- If the clean action fails, verify the object is indeed dirty and the basin is functional.\n- If unable to reach the basin, check for obstacles or closed doors blocking the path.",
+        "category": "alfworld/clean",
+        "task_type": "clean",
+        "skill_value": 0.5,
+        "usage_count": 0
+      }
+    ],
+    "look_at_obj_in_light": [
+      {
+        "name": "locate-and-illuminate-target",
+        "description": "Use when you must find a specific object and ensure it is illuminated before looking at it.",
+        "content": "## Locate and Illuminate Target\n\n**Process:**\n1. Search systematically through containers and surfaces to find the target object.\n2. Pick up the target object to hold it securely.\n3. Locate a nearby light source such as a lamp or switch.\n4. Activate the light source to illuminate the area.\n5. Execute \"look at [object]\" while the light is active.\n\n**Anti-patterns:**\n- Attempting to look at the object in darkness without activating a light source.\n- Limiting search to only one type of furniture (e.g., only drawers) instead of checking surfaces.\n\n**Failure Recovery:**\n- If the object remains invisible, verify the light source is actually turned on and facing the object.\n- If the object cannot be found, expand search to other furniture types like safes or beds.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.6185,
+        "usage_count": 3
+      },
+      {
+        "name": "illuminate-target-before-examining",
+        "description": "Use when the target object requires illumination to be seen or examined successfully.",
+        "content": "## Ensure Object Illumination\n\n**Process:**\n1. Assess if the target object is currently visible or requires light.\n2. Locate a functional light source within the same room.\n3. Navigate to the light source.\n4. Activate the light source (e.g., \"use [light_source]\").\n5. Navigate to the target object.\n6. Perform \"look at [target_object]\" to complete the task.\n\n**Anti-patterns:**\n- Ignoring lighting conditions and attempting to look at objects in dark areas.\n- Attempting to physically move a fixed light source instead of activating it in place.\n\n**Failure Recovery:**\n- If the look action returns nothing, verify the light source is actually emitting light.\n- If the object is still not visible, search for alternative light sources or check if the object is inside a closed container.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.455,
+        "usage_count": 2
+      },
+      {
+        "name": "illuminate-and-inspect-object",
+        "description": "Use when the task requires viewing an object under illumination, ensuring the light source is activated before attempting to locate or inspect the target.",
+        "content": "## Illuminate and Inspect Object\n\n**Process:**\n1. Identify the required light source (e.g., DeskLamp) in the current room.\n2. Navigate to the light source and activate it (e.g., `use desklamp`).\n3. Systematically scan the illuminated area for the target object.\n4. Execute `look at <target_object>` to confirm visibility and complete the task.\n\n**Anti-patterns:**\n- Searching for the target object in the dark before activating the light source.\n- Activating the light but failing to focus on the target, instead opening unrelated drawers or moving aimlessly.\n\n**Failure Recovery:**\n- If the object is not found immediately after lighting, re-examine all surfaces in the room as the light may reveal previously hidden items.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.65,
+        "usage_count": 1
+      },
+      {
+        "name": "illuminate-before-examine",
+        "description": "Use when the task requires verifying an object's appearance under specific lighting conditions.",
+        "content": "## Illuminate Before Examine\n\n**Process:**\n1. Search the current room for a light source (e.g., desk lamp, floor lamp).\n2. Navigate to the light source and execute \"use [light_source]\" to turn it on.\n3. Navigate to the target object's location.\n4. Execute \"look at [target_object]\" to confirm visibility.\n\n**Anti-patterns:**\n- Attempting to \"look at\" the object before ensuring the light source is active.\n- Ignoring closed containers where the object might be hidden even if the room is lit.\n\n**Failure Recovery:**\n- If the light source does not turn on, search for alternative light sources in adjacent rooms.\n- If the object is not visible despite lighting, systematically open nearby containers (drawers, cabinets) to locate it.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.65,
+        "usage_count": 1
+      },
+      {
+        "name": "prepare-object-for-light-viewing",
+        "description": "Use when the task requires viewing an object that is currently obscured by darkness or requires a specific light source to be visible.",
+        "content": "## Prepare Object For Light Viewing\n\n**Process:**\n1. Navigate to the location where the target object is placed.\n2. Pick up the target object to hold it in your inventory.\n3. Navigate to a nearby light source such as a desk lamp or floor lamp.\n4. Activate the light source using the 'use' action.\n5. Perform 'look at [object]' to verify visibility under the light.\n\n**Anti-patterns:**\n- Do not attempt to look at the object while it remains on a surface in a dark room.\n- Do not turn on the light source before securing the object if the object is hidden in shadow.\n\n**Failure Recovery:**\n- If the light does not turn on, check if you are standing close enough to the light source.\n- If the object remains invisible, ensure you are holding it and facing the correct direction towards the light.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.5,
+        "usage_count": 0
+      },
+      {
+        "name": "illuminate-before-look",
+        "description": "Use this skill when examining an object that may be obscured by darkness or requires specific lighting conditions to be visible.",
+        "content": "## Illuminate Before Look\n\n**Process:**\n1. Navigate to the location containing the target object.\n2. Pick up the target object if it is resting on a surface.\n3. Identify and activate a nearby light source (e.g., lamp, switch).\n4. Ensure the environment is sufficiently illuminated before issuing the look command.\n\n**Anti-patterns:**\n- Attempting to look at an object while the room is dark.\n- Ignoring local light sources like desk lamps in favor of distant overhead lights.\n\n**Failure Recovery:**\n- If the object is still not visible, search for additional light switches or move to a different light source.\n- Check if the object is inside a closed container that needs to be opened first.",
+        "category": "alfworld/look_at_obj_in_light",
+        "task_type": "look_at_obj_in_light",
+        "skill_value": 0.5,
+        "usage_count": 0
+      }
+    ]
+  },
+  "common_mistakes": [
+    {
+      "name": "ignore-specific-container-id",
+      "description": "Agents frequently ignore the specific numeric ID required by the task (e.g., Cabinet-22) and default to searching nearby or low-numbered containers (e.g., Cabinet 1).",
+      "content": "## Mistake Title: Ignore Specific Container ID\n\n**Why it happens:**\nThe agent parses the task type string loosely, treating the object category (e.g., 'Cabinet') as sufficient without extracting the mandatory unique identifier (e.g., '-22'). This leads to searching irrelevant locations like Cabinet 1 or Drawer 1 when the task explicitly demands Cabinet 22 or Drawer 409.\n\n**How to avoid:**\n1. Parse the task type string strictly to extract the target object ID (e.g., split 'Cabinet-22' to get '22').\n2. Prioritize navigation commands targeting the exact ID found in the task description over general room scanning.\n3. Verify the current object's ID matches the target ID before performing placement or pickup actions.",
+      "category": "common_mistakes",
+      "skill_value": 0.21504591654851712,
+      "usage_count": 38
+    },
+    {
+      "name": "repeat-unsuccessful-actions",
+      "description": "When an action returns 'Nothing happens', the agent repeats the exact same command multiple times instead of diagnosing the failure or checking environmental state.",
+      "content": "## Mistake Title: Repeat Unsuccessful Actions\n\n**Why it happens:**\nThe agent interprets 'Nothing happens' as a temporary latency issue rather than a hard constraint violation (e.g., trying to put an item in a closed drawer, or picking up an item that isn't there). This results in wasted steps and failure to adapt the strategy.\n\n**How to avoid:**\n1. Treat 'Nothing happens' as a critical failure signal requiring immediate state verification.\n2. Before retrying, check if prerequisites are met (e.g., is the drawer open? is the object visible in the observation?).\n3. If the action fails twice, switch strategies (e.g., try a different container or look for the object elsewhere) rather than looping.",
+      "category": "common_mistakes",
+      "skill_value": 0.41170898515645593,
+      "usage_count": 36
+    },
+    {
+      "name": "inefficient-cabinet-search",
+      "description": "Common mistake: Exhaustively searching all numbered cabinets sequentially without prioritizing high-probability locations for the target object.",
+      "content": "## Inefficient Cabinet Search\n\n**Why it happens:**\nThe agent defaults to a systematic scan of available numbered objects (cabinets 1-N) rather than utilizing semantic priors about where specific items (like food) are typically located.\n\n**How to avoid:**\n1. Prioritize search locations based on object category (e.g., check countertops and fridges for food items before checking storage cabinets).\n2. Limit the number of locations checked per search phase to prevent excessive wandering and time consumption.",
+      "category": "common_mistakes",
+      "skill_value": 0.780043274966414,
+      "usage_count": 73
+    },
+    {
+      "name": "fail-to-adapt-strategy",
+      "description": "The agent persists with failing actions or search patterns despite receiving negative feedback, rather than reassessing the situation.",
+      "content": "## Do Not Persist With Failing Actions\n\n**Why it happens:**\nAgents often treat negative feedback (e.g., \"Nothing happens\", \"See nothing\") as minor glitches rather than critical indicators that the current plan is invalid. In Trajectory 1, the agent repeatedly attempted to heat a mug with different appliances after receiving \"Nothing happens\" responses. In Trajectory 2, the agent opened numerous empty drawers without shifting its search strategy to other potential locations like countertops.\n\n**How to avoid:**\n1. Treat negative feedback as a signal to stop and analyze the current state.\n2. Verify prerequisites (e.g., is the object actually in the container?) before acting.\n3. Diversify search or interaction methods if the first attempt fails (e.g., check counters if drawers are empty).",
+      "category": "common_mistakes",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "verify-object-location-and-type",
+      "description": "Common mistake: Selecting or searching for objects without confirming they match the task requirements or exist in the expected location.",
+      "content": "## Do Not Assume Object Existence or Match\n\n**Why it happens:**\nAgents often default to searching standard containers (like drawers) or picking visually similar items (like a 'cup' instead of a 'mug') without explicitly verifying the object ID or location against the task goal. In Trajectory 1, the agent searched drawers sequentially for an AlarmClock despite seeing a bed in the initial scan. In Trajectory 2, the agent picked a 'cup' when the task required a 'mug', leading to invalid interactions.\n\n**How to avoid:**\n1. Cross-reference initial room observations with task requirements before starting the search path.\n2. Explicitly verify the object name and ID upon discovery (e.g., confirm 'mug' vs 'cup') before attempting complex actions like heating or placing.\n3. Expand search scope beyond single furniture types if the target is not found in the first few attempts.",
+      "category": "common_mistakes",
+      "skill_value": 0.19657575245000003,
+      "usage_count": 10
+    },
+    {
+      "name": "validate-action-prerequisites",
+      "description": "Common mistake: Executing actions without checking system constraints such as inventory capacity, container state, or object compatibility.",
+      "content": "## Do Not Execute Without Checking State\n\n**Why it happens:**\nAgents frequently attempt actions that violate environmental rules, such as holding two objects simultaneously or interacting with appliances in incorrect states. Trajectory 3 failed because the agent tried to pick a second candle while already holding one, exceeding inventory limits. Trajectory 2 failed repeatedly because it attempted to heat a cup in a microwave and use it with a coffee machine without ensuring the correct interaction sequence or object compatibility.\n\n**How to avoid:**\n1. Check current inventory count before attempting to pick up a new object; store or place existing items first if capacity is limited.\n2. Verify appliance states (open/closed) and object compatibility before issuing interaction commands (e.g., heating, using).\n3. Observe feedback messages (e.g., 'Nothing happens') immediately and adjust the action plan rather than repeating the same invalid command.",
+      "category": "common_mistakes",
+      "skill_value": 0.28850917711785395,
+      "usage_count": 17
+    },
+    {
+      "name": "repeated-action-loop",
+      "description": "Agent repeats the same action 3+ times after receiving failure feedback, causing wasted steps.",
+      "content": "## Avoid Repeating Failed Actions\n\n**Why it happens:**\nThe agent persists with the exact same command (e.g., `take toiletpaper 1` or `heat mug 1`) multiple times even after observing 'Nothing happens', indicating the action is invalid or impossible.\n\n**How to avoid:**\n1. Set a strict limit of 1 attempt per action type before switching strategies.\n2. Upon receiving 'Nothing happens', immediately abort the current action sequence.\n3. Verify object state or location before retrying the same interaction.",
+      "category": "common_mistakes",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "no-feedback-response",
+      "description": "Agent ignores negative feedback observations and continues the same approach instead of adapting.",
+      "content": "## Respond to Negative Feedback\n\n**Why it happens:**\nThe agent fails to interpret system feedback (like 'Nothing happens') as a signal to change tactics, leading to infinite loops or dead ends (e.g., trying stove after microwave fails).\n\n**How to avoid:**\n1. Treat 'Nothing happens' as a definitive failure indicator requiring immediate strategy change.\n2. Log the failure reason and search for alternative methods or locations.\n3. Prioritize verifying object availability or container states before attempting interactions.",
+      "category": "common_mistakes",
+      "skill_value": 0.5,
+      "usage_count": 0
+    },
+    {
+      "name": "incomplete-task-verification",
+      "description": "Agent stops or repeats actions without confirming task completion",
+      "content": "## Mistake Title\n\n**Why it happens:**\nAgents fail to verify task completion after executing sub-goals. In trajectory 1, the agent immediately executed 'done' without any action. In trajectory 2, the agent completed the cooling and placing task but then entered a loop of 'stop' actions (steps 9-11, 13-20) instead of confirming success.\n\n**How to avoid:**\n1. After completing all required sub-tasks, explicitly check if the final state matches task requirements\n2. Avoid repeating 'stop' or 'done' actions without verification feedback\n3. Confirm task completion by checking observation messages for success indicators before ending",
+      "category": "common_mistakes",
+      "skill_value": 0.43979285,
+      "usage_count": 7
+    },
+    {
+      "name": "wrong-location-search",
+      "description": "Agent searches containers when objects are on visible surfaces or searches wrong container type",
+      "content": "## Mistake Title\n\n**Why it happens:**\nIn trajectory 3, the agent spent 20 steps opening cabinets 1-10 searching for PepperShaker, but the task requires placing on Shelf-20. The agent never checked visible surfaces where objects typically spawn, and never attempted to place anything on the target shelf. This pattern of exhaustive container searching without surface checks causes failure.\n\n**How to avoid:**\n1. First scan visible surfaces in the current room before opening containers\n2. Verify the target receptacle type matches the task (shelf vs cabinet)\n3. If searching containers yields nothing, expand search to other room areas rather than continuing same pattern\n4. Track which locations have been checked to avoid redundant searches",
+      "category": "common_mistakes",
+      "skill_value": 0.7245077858869602,
+      "usage_count": 40
+    },
+    {
+      "name": "ignore-action-feedback",
+      "description": "Common mistake: Agent ignores 'Nothing happens' feedback and persists with invalid actions.",
+      "content": "## Ignore Negative Feedback\n\n**Why it happens:**\nThe agent treats negative environmental feedback ('Nothing happens') as noise rather than a critical signal to halt and reassess, leading to repetitive invalid attempts.\n\n**How to avoid:**\n1. Detect 'Nothing happens' responses immediately after an action.\n2. Halt the current action sequence and do not repeat the same attempt.\n3. Re-evaluate the object's location or the room state before choosing a new strategy.",
+      "category": "common_mistakes",
+      "skill_value": 0.455,
+      "usage_count": 2
+    },
+    {
+      "name": "incomplete-task-completion",
+      "description": "Agent locates the target object but fails to execute the remaining required interaction steps.",
+      "content": "## Do Not Stop After Locating Target\n\n**Why it happens:**\nThe agent successfully navigates to find the target object (Apple on diningtable) but fails to execute the subsequent required actions (pick, heat, place), causing the task to end prematurely.\n\n**How to avoid:**\n1. Track all sub-goals defined in the task type (e.g., pick, heat, place) and ensure each is completed.\n2. Once the object is located, immediately attempt the first interaction action instead of continuing to navigate.\n3. Verify the final state matches the task objective before terminating the episode.",
+      "category": "common_mistakes",
+      "skill_value": 0.35,
+      "usage_count": 1
+    },
+    {
+      "name": "missing-surface-check",
+      "description": "Agent searches inside containers (drawers/cabinets) while ignoring visible surfaces where objects are typically found.",
+      "content": "## Do Not Skip Visible Surfaces\n\n**Why it happens:**\nThe agent assumes objects are hidden inside containers, overlooking the initial observation of open surfaces like tables, countertops, or beds where items are often placed.\n\n**How to avoid:**\n1. Prioritize checking surfaces listed in the initial room observation before opening any containers.\n2. Attempt to take objects directly from visible surfaces first, as this is faster and avoids unnecessary container interactions.",
+      "category": "common_mistakes",
+      "skill_value": 0.755724570693245,
+      "usage_count": 14
+    },
+    {
+      "name": "incomplete-task-execution",
+      "description": "Agent stops executing the workflow before completing all required sub-goals such as heating or placing objects.",
+      "content": "## Do Not Stop Mid-Workflow\n\n**Why it happens:**\nThe agent successfully completes the initial pickup phase but fails to proceed to subsequent mandatory steps (like heating or placing) due to premature termination or lack of task tracking.\n\n**How to avoid:**\n1. Maintain a checklist of all task sub-goals (Pick -> Heat -> Place).\n2. Verify completion of each step before moving to the next.\n3. Ensure the final action aligns with the task objective (e.g., placing in receptacle).",
+      "category": "common_mistakes",
+      "skill_value": 0.455,
+      "usage_count": 2
+    },
+    {
+      "name": "ignore-negative-feedback",
+      "description": "Agent ignores \"Nothing happens\" feedback and persists with invalid actions or halts progress.",
+      "content": "## Ignore Negative Feedback\n\n**Why it happens:**\nThe agent receives \"Nothing happens\" indicating an action failed or is invalid, but interprets it as a temporary glitch or ignores it, continuing the same action or freezing instead of adapting.\n\n**How to avoid:**\n1. Treat \"Nothing happens\" as a hard stop for the current action sequence.\n2. Re-evaluate the object's location and state before retrying.\n3. If an action consistently fails, switch to an alternative method or verify prerequisites (e.g., is the container closed?).",
+      "category": "common_mistakes",
+      "skill_value": 0.5,
+      "usage_count": 0
+    }
+  ]
+}

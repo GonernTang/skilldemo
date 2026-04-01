@@ -1,0 +1,24 @@
+{
+  "traj_id": "1775030037_c4f5f829",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 1, a coffeetable 1, a garbagecan 1, a shelf 2, a shelf 1, a sidetable 1, a sofa 2, and a sofa 1.\n\nYour task is to: put some newspaper on garbagecan.",
+  "task_type": "pick_and_place_simple-Newspaper-None-GarbageCan-214/trial_T20190907_181235_772324",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to coffeetable 1",
+      "observation": "You arrive at coffeetable 1. On the coffeetable 1, you see a houseplant 1, a newspaper 2, a plate 2, a plate 1, a statue 1, a vase 1, and a wateringcan 1."
+    },
+    {
+      "action": "take newspaper 2 from coffeetable 1",
+      "observation": "You pick up the newspaper 2 from the coffeetable 1."
+    },
+    {
+      "action": "go to garbagecan 1",
+      "observation": "You arrive at garbagecan 1. On the garbagecan 1, you see nothing."
+    },
+    {
+      "action": "move newspaper 2 to garbagecan 1",
+      "observation": "You move the newspaper 2 to the garbagecan 1."
+    }
+  ]
+}

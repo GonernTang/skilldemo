@@ -1,0 +1,12 @@
+{
+  "traj_id": "1775024493_68c52f99",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 1, a coffeetable 1, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a garbagecan 1, a sidetable 3, a sidetable 2, a sidetable 1, a sofa 2, a sofa 1, and a tvstand 1.\n\nYour task is to: find two keychain and put them in sofa.",
+  "task_type": "pick_two_obj_and_place-KeyChain-None-Sofa-222/trial_T20190909_061611_717990",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    }
+  ]
+}

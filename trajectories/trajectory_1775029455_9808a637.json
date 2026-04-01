@@ -1,0 +1,124 @@
+{
+  "traj_id": "1775029455_9808a637",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 2, a armchair 1, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeetable 2, a coffeetable 1, a diningtable 1, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a garbagecan 1, a shelf 13, a shelf 12, a shelf 11, a shelf 10, a shelf 9, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, and a sofa 1.\n\nYour task is to: put two vase in diningtable.",
+  "task_type": "pick_two_obj_and_place-Vase-None-DiningTable-227/trial_T20190910_072914_747890",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a statue 1."
+    },
+    {
+      "action": "go to shelf 2",
+      "observation": "You arrive at shelf 2. On the shelf 2, you see nothing."
+    },
+    {
+      "action": "go to shelf 3",
+      "observation": "You arrive at shelf 3. On the shelf 3, you see a statue 3."
+    },
+    {
+      "action": "go to shelf 4",
+      "observation": "You arrive at shelf 4. On the shelf 4, you see nothing."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a newspaper 2."
+    },
+    {
+      "action": "go to shelf 6",
+      "observation": "You arrive at shelf 6. On the shelf 6, you see nothing."
+    },
+    {
+      "action": "go to shelf 7",
+      "observation": "You arrive at shelf 7. On the shelf 7, you see a statue 5."
+    },
+    {
+      "action": "go to shelf 8",
+      "observation": "You arrive at shelf 8. On the shelf 8, you see a statue 4, and a vase 1."
+    },
+    {
+      "action": "take vase 1 from shelf 8",
+      "observation": "You pick up the vase 1 from the shelf 8."
+    },
+    {
+      "action": "go to shelf 9",
+      "observation": "You arrive at shelf 9. On the shelf 9, you see nothing."
+    },
+    {
+      "action": "go to shelf 10",
+      "observation": "You arrive at shelf 10. On the shelf 10, you see a vase 3."
+    },
+    {
+      "action": "take vase 3 from shelf 10",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open shelf 10",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take vase 3 from shelf 10",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a box 1, a laptop 1, a newspaper 1, a plate 1, a remotecontrol 3, a remotecontrol 2, and a statue 2."
+    },
+    {
+      "action": "move vase 1 to diningtable 1",
+      "observation": "You move the vase 1 to the diningtable 1."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is closed."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 5",
+      "observation": "You arrive at cabinet 5. The cabinet 5 is closed."
+    },
+    {
+      "action": "open cabinet 5",
+      "observation": "You open the cabinet 5. The cabinet 5 is open. In it, you see a vase 2."
+    },
+    {
+      "action": "take vase 2 from cabinet 5",
+      "observation": "You pick up the vase 2 from the cabinet 5."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a box 1, a laptop 1, a newspaper 1, a plate 1, a remotecontrol 3, a remotecontrol 2, a statue 2, and a vase 1."
+    },
+    {
+      "action": "move vase 2 to diningtable 1",
+      "observation": "You move the vase 2 to the diningtable 1."
+    }
+  ]
+}

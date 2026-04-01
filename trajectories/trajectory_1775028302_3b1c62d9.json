@@ -1,0 +1,64 @@
+{
+  "traj_id": "1775028302_3b1c62d9",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 1, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a shelf 9, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, and a shelf 1.\n\nYour task is to: look at pencil under the desklamp.",
+  "task_type": "look_at_obj_in_light-Pencil-None-DeskLamp-319/trial_T20190908_135046_043056",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a creditcard 1, and a keychain 2."
+    },
+    {
+      "action": "go to shelf 2",
+      "observation": "You arrive at shelf 2. On the shelf 2, you see nothing."
+    },
+    {
+      "action": "go to shelf 3",
+      "observation": "You arrive at shelf 3. On the shelf 3, you see nothing."
+    },
+    {
+      "action": "go to shelf 4",
+      "observation": "You arrive at shelf 4. On the shelf 4, you see a houseplant 1."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a pencil 4."
+    },
+    {
+      "action": "go to shelf 6",
+      "observation": "You arrive at shelf 6. On the shelf 6, you see nothing."
+    },
+    {
+      "action": "go to shelf 7",
+      "observation": "You arrive at shelf 7. On the shelf 7, you see nothing."
+    },
+    {
+      "action": "go to shelf 8",
+      "observation": "You arrive at shelf 8. On the shelf 8, you see nothing."
+    },
+    {
+      "action": "go to shelf 9",
+      "observation": "You arrive at shelf 9. On the shelf 9, you see a pen 3."
+    },
+    {
+      "action": "go to bed 1",
+      "observation": "You arrive at bed 1. On the bed 1, you see a book 2, a cellphone 2, a cellphone 1, a laptop 2, a laptop 1, a pillow 2, and a pillow 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 1, a cd 1, a desklamp 1, a keychain 1, a pen 2, a pencil 3, a pencil 1, and a statue 1."
+    },
+    {
+      "action": "use desklamp 1",
+      "observation": "You turn on the desklamp 1."
+    },
+    {
+      "action": "look at pencil 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take pencil 1 from dresser 1",
+      "observation": "You pick up the pencil 1 from the dresser 1."
+    }
+  ]
+}

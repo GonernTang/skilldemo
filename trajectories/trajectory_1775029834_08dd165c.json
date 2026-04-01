@@ -1,0 +1,24 @@
+{
+  "traj_id": "1775029834_08dd165c",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a coffeetable 1, a diningtable 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a sidetable 2, a sidetable 1, and a sofa 1.\n\nYour task is to: look at newspaper under the desklamp.",
+  "task_type": "look_at_obj_in_light-Newspaper-None-DeskLamp-218/trial_T20190909_045059_467374",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to coffeetable 1",
+      "observation": "You arrive at coffeetable 1. On the coffeetable 1, you see a box 1, a newspaper 1, a plate 1, and a statue 1."
+    },
+    {
+      "action": "take newspaper 1 from coffeetable 1",
+      "observation": "You pick up the newspaper 1 from the coffeetable 1."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a desklamp 1."
+    },
+    {
+      "action": "use desklamp 1",
+      "observation": "You turn on the desklamp 1."
+    }
+  ]
+}

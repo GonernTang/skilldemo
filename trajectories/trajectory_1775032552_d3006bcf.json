@@ -1,0 +1,124 @@
+{
+  "traj_id": "1775032552_d3006bcf",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 1, a desk 1, a drawer 2, a drawer 1, a garbagecan 1, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, and a sidetable 1.\n\nYour task is to: put two cellphone in bed.",
+  "task_type": "pick_two_obj_and_place-CellPhone-None-Bed-312/trial_T20190907_035112_615160",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a book 1, a cellphone 1, and a creditcard 1."
+    },
+    {
+      "action": "take cellphone 1 from desk 1",
+      "observation": "You pick up the cellphone 1 from the desk 1."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a keychain 1, and a pen 2."
+    },
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a alarmclock 2."
+    },
+    {
+      "action": "go to shelf 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to shelf 3",
+      "observation": "You arrive at shelf 3. On the shelf 3, you see nothing."
+    },
+    {
+      "action": "go to shelf 4",
+      "observation": "You arrive at shelf 4. On the shelf 4, you see a creditcard 2, and a pencil 1."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a cellphone 2."
+    },
+    {
+      "action": "take cellphone 2 from shelf 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cellphone 2 from shelf 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to bed 1",
+      "observation": "You arrive at bed 1. On the bed 1, you see a laptop 2, a laptop 1, and a pillow 1."
+    },
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see a creditcard 3, and a keychain 2."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see a cd 2."
+    },
+    {
+      "action": "go to shelf 6",
+      "observation": "You arrive at shelf 6. On the shelf 6, you see a pen 1."
+    },
+    {
+      "action": "go to shelf 7",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to shelf 8",
+      "observation": "You arrive at shelf 8. On the shelf 8, you see nothing."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a cellphone 2."
+    },
+    {
+      "action": "take cellphone 2 from shelf 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to garbagecan 1",
+      "observation": "You arrive at garbagecan 1. On the garbagecan 1, you see a cd 1."
+    },
+    {
+      "action": "move cellphone 1 to bed 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move cellphone 1 to bed 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to bed 1",
+      "observation": "You arrive at bed 1. On the bed 1, you see a laptop 2, a laptop 1, and a pillow 1."
+    },
+    {
+      "action": "move cellphone 1 to bed 1",
+      "observation": "You move the cellphone 1 to the bed 1."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a cellphone 2."
+    },
+    {
+      "action": "take cellphone 2 from shelf 5",
+      "observation": "You pick up the cellphone 2 from the shelf 5."
+    },
+    {
+      "action": "go to bed 1",
+      "observation": "You arrive at bed 1. On the bed 1, you see a cellphone 1, a laptop 2, a laptop 1, and a pillow 1."
+    },
+    {
+      "action": "move cellphone 2 to bed 1",
+      "observation": "You move the cellphone 2 to the bed 1."
+    }
+  ]
+}

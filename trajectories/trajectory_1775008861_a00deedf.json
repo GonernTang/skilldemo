@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775008861_a00deedf",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a clean kettle in shelf.",
+  "task_type": "pick_clean_then_place_in_recep-Kettle-None-Shelf-1/trial_T20190906_182430_397766",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 3",
+      "observation": "You arrive at drawer 3. The drawer 3 is closed."
+    },
+    {
+      "action": "open drawer 3",
+      "observation": "You open the drawer 3. The drawer 3 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 4",
+      "observation": "You arrive at drawer 4. The drawer 4 is closed."
+    },
+    {
+      "action": "open drawer 4",
+      "observation": "You open the drawer 4. The drawer 4 is open. In it, you see a spoon 1."
+    },
+    {
+      "action": "go to drawer 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to drawer 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to drawer 6",
+      "observation": "You arrive at drawer 6. The drawer 6 is closed."
+    },
+    {
+      "action": "open drawer 6",
+      "observation": "You open the drawer 6. The drawer 6 is open. In it, you see a creditcard 1."
+    },
+    {
+      "action": "go to drawer 7",
+      "observation": "You arrive at drawer 7. The drawer 7 is closed."
+    },
+    {
+      "action": "open drawer 7",
+      "observation": "You open the drawer 7. The drawer 7 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 8",
+      "observation": "You arrive at drawer 8. On the drawer 8, you see nothing."
+    },
+    {
+      "action": "open drawer 8",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to drawer 9",
+      "observation": "You arrive at drawer 9. The drawer 9 is closed."
+    },
+    {
+      "action": "open drawer 9",
+      "observation": "You open the drawer 9. The drawer 9 is open. In it, you see a soapbottle 3."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see a bowl 1."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. On the cabinet 4, you see nothing."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 5",
+      "observation": "You arrive at cabinet 5. The cabinet 5 is closed."
+    },
+    {
+      "action": "open cabinet 5",
+      "observation": "You open the cabinet 5. The cabinet 5 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 6",
+      "observation": "You arrive at cabinet 6. The cabinet 6 is closed."
+    },
+    {
+      "action": "open cabinet 6",
+      "observation": "You open the cabinet 6. The cabinet 6 is open. In it, you see a winebottle 2."
+    }
+  ]
+}

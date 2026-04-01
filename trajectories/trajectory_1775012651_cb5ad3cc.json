@@ -1,0 +1,100 @@
+{
+  "traj_id": "1775012651_cb5ad3cc",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 1, a diningtable 3, a diningtable 2, a diningtable 1, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sidetable 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: cool some pan and put it in diningtable.",
+  "task_type": "pick_cool_then_place_in_recep-Pan-None-DiningTable-21/trial_T20190909_015404_512086",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see a bowl 1."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see a soapbottle 2, and a soapbottle 1."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. The cabinet 4 is closed."
+    },
+    {
+      "action": "open cabinet 4",
+      "observation": "You open the cabinet 4. The cabinet 4 is open. In it, you see a peppershaker 2."
+    },
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see a dishsponge 1, a fork 3, a fork 1, a knife 2, and a spoon 2."
+    },
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a knife 1, a spatula 1, and a tomato 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see nothing."
+    },
+    {
+      "action": "go to diningtable 2",
+      "observation": "You arrive at diningtable 2. On the diningtable 2, you see a apple 1."
+    },
+    {
+      "action": "go to diningtable 3",
+      "observation": "You arrive at diningtable 3. On the diningtable 3, you see a bread 1, and a lettuce 2."
+    },
+    {
+      "action": "go to stoveburner 1",
+      "observation": "You arrive at stoveburner 1. On the stoveburner 1, you see nothing."
+    },
+    {
+      "action": "go to stoveburner 2",
+      "observation": "You arrive at stoveburner 2. On the stoveburner 2, you see a pot 1."
+    },
+    {
+      "action": "go to stoveburner 3",
+      "observation": "You arrive at stoveburner 3. On the stoveburner 3, you see a pan 1."
+    },
+    {
+      "action": "take pan 1 from stoveburner 3",
+      "observation": "You pick up the pan 1 from the stoveburner 3."
+    },
+    {
+      "action": "go to fridge 1",
+      "observation": "You arrive at fridge 1. The fridge 1 is closed."
+    },
+    {
+      "action": "open fridge 1",
+      "observation": "You open the fridge 1. The fridge 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "cool pan 1 with fridge 1",
+      "observation": "You cool the pan 1 using the fridge 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see nothing."
+    },
+    {
+      "action": "move pan 1 to diningtable 1",
+      "observation": "You move the pan 1 to the diningtable 1."
+    }
+  ]
+}

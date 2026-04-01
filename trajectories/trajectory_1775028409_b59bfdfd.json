@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775028409_b59bfdfd",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 1, a desk 1, a drawer 17, a drawer 16, a drawer 15, a drawer 14, a drawer 13, a drawer 12, a drawer 11, a drawer 10, a drawer 9, a drawer 8, a drawer 7, a drawer 6, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, and a shelf 1.\n\nYour task is to: look at tissuebox under the desklamp.",
+  "task_type": "look_at_obj_in_light-TissueBox-None-DeskLamp-301/trial_T20190908_072624_007372",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a bowl 1, a cd 1, a creditcard 1, a keychain 2, a mug 2, and a mug 1."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a pen 1."
+    },
+    {
+      "action": "go to shelf 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to shelf 3",
+      "observation": "You arrive at shelf 3. On the shelf 3, you see a pencil 1."
+    },
+    {
+      "action": "go to shelf 4",
+      "observation": "You arrive at shelf 4. On the shelf 4, you see nothing."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a creditcard 2, and a statue 1."
+    },
+    {
+      "action": "go to shelf 6",
+      "observation": "You arrive at shelf 6. On the shelf 6, you see a keychain 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 2, a cd 2, a cellphone 1, a desklamp 1, and a watch 1."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "use desklamp 1",
+      "observation": "You turn on the desklamp 1."
+    },
+    {
+      "action": "open drawer 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to garbagecan 1",
+      "observation": "You arrive at garbagecan 1. On the garbagecan 1, you see nothing."
+    },
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a bowl 1, a cd 1, a creditcard 1, a keychain 2, a mug 2, and a mug 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 2, a cd 2, a cellphone 1, a desklamp 1, and a watch 1."
+    },
+    {
+      "action": "open drawer 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to bed 1",
+      "observation": "You arrive at bed 1. On the bed 1, you see a book 2, a book 1, a laptop 2, a laptop 1, and a pillow 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 2, a cd 2, a cellphone 1, a desklamp 1, and a watch 1."
+    },
+    {
+      "action": "open drawer 5",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a bowl 1, a cd 1, a creditcard 1, a keychain 2, a mug 2, and a mug 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 2, a cd 2, a cellphone 1, a desklamp 1, and a watch 1."
+    },
+    {
+      "action": "open drawer 6",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 7",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 8",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to desk 1",
+      "observation": "You arrive at desk 1. On the desk 1, you see a alarmclock 1, a bowl 1, a cd 1, a creditcard 1, a keychain 2, a mug 2, and a mug 1."
+    },
+    {
+      "action": "open drawer 9",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 10",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 11",
+      "observation": "Nothing happens."
+    }
+  ]
+}

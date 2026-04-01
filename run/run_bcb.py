@@ -10,18 +10,18 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from memrl.configs.config import MempConfig
-from memrl.providers.llm import OpenAILLM
-from memrl.providers.embedding import OpenAIEmbedder
-from memrl.service.base_memory_service import NullMemoryService
-from memrl.service.memory_service import MemoryService
-from memrl.service.strategies import (
+from qskill.configs.config import MempConfig
+from qskill.providers.llm import OpenAILLM
+from qskill.providers.embedding import OpenAIEmbedder
+from qskill.service.base_memory_service import NullMemoryService
+from qskill.service.memory_service import MemoryService
+from qskill.service.strategies import (
     BuildStrategy,
     RetrieveStrategy,
     UpdateStrategy,
     StrategyConfiguration,
 )
-from memrl.run.bcb_runner import BCBRunner, BCBSelection
+from qskill.run.bcb_runner import BCBRunner, BCBSelection
 
 DEFAULT_SPLIT_FILES = {
     "hard": project_root / "configs" / "bigcodebench" / "splits" / "hard_seed42.json",

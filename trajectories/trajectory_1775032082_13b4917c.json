@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775032082_13b4917c",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 13, a cabinet 12, a cabinet 11, a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 1, a drawer 5, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: find two saltshaker and put them in countertop.",
+  "task_type": "pick_two_obj_and_place-SaltShaker-None-CounterTop-25/trial_T20190908_084232_595551",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a bread 1, a butterknife 1, a dishsponge 3, a dishsponge 2, a knife 2, a knife 1, a mug 2, a mug 1, a pan 1, a plate 1, a soapbottle 3, a spatula 1, a spoon 2, and a spoon 1."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open fridge 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a peppershaker 1."
+    },
+    {
+      "action": "go to cabinet 2",
+      "observation": "You arrive at cabinet 2. The cabinet 2 is closed."
+    },
+    {
+      "action": "open cabinet 2",
+      "observation": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 3",
+      "observation": "You arrive at cabinet 3. The cabinet 3 is closed."
+    },
+    {
+      "action": "open cabinet 3",
+      "observation": "You open the cabinet 3. The cabinet 3 is open. In it, you see a saltshaker 1."
+    },
+    {
+      "action": "go to cabinet 4",
+      "observation": "You arrive at cabinet 4. On the cabinet 4, you see a saltshaker 3, and a saltshaker 2."
+    },
+    {
+      "action": "take saltshaker 1 from cabinet 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take saltshaker 2 from cabinet 4",
+      "observation": "You pick up the saltshaker 2 from the cabinet 4."
+    },
+    {
+      "action": "take saltshaker 3 from cabinet 4",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take saltshaker 1 from cabinet 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take saltshaker 1 from cabinet 3",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 5",
+      "observation": "You arrive at cabinet 5. The cabinet 5 is closed."
+    },
+    {
+      "action": "open cabinet 5",
+      "observation": "You open the cabinet 5. The cabinet 5 is open. In it, you see a bowl 1."
+    },
+    {
+      "action": "go to cabinet 6",
+      "observation": "You arrive at cabinet 6. The cabinet 6 is closed."
+    },
+    {
+      "action": "open cabinet 6",
+      "observation": "You open the cabinet 6. The cabinet 6 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 7",
+      "observation": "You arrive at cabinet 7. The cabinet 7 is closed."
+    },
+    {
+      "action": "open cabinet 7",
+      "observation": "You open the cabinet 7. The cabinet 7 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 8",
+      "observation": "You arrive at cabinet 8. The cabinet 8 is closed."
+    },
+    {
+      "action": "open cabinet 8",
+      "observation": "You open the cabinet 8. The cabinet 8 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to cabinet 9",
+      "observation": "You arrive at cabinet 9. The cabinet 9 is closed."
+    },
+    {
+      "action": "open cabinet 9",
+      "observation": "You open the cabinet 9. The cabinet 9 is open. In it, you see a bowl 2."
+    },
+    {
+      "action": "go to cabinet 10",
+      "observation": "You arrive at cabinet 10. On the cabinet 10, you see nothing."
+    },
+    {
+      "action": "open cabinet 10",
+      "observation": "Nothing happens."
+    }
+  ]
+}

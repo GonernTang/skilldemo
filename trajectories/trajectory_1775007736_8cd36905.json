@@ -1,0 +1,120 @@
+{
+  "traj_id": "1775007736_8cd36905",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 2, a bed 1, a diningtable 1, a drawer 2, a drawer 1, a garbagecan 1, a shelf 14, a shelf 13, a shelf 12, a shelf 11, a shelf 10, a shelf 9, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, and a sidetable 1.\n\nYour task is to: find two keychain and put them in sidetable.",
+  "task_type": "pick_two_obj_and_place-KeyChain-None-SideTable-326/trial_T20190908_161022_255067",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to drawer 1",
+      "observation": "You arrive at drawer 1. The drawer 1 is closed."
+    },
+    {
+      "action": "open drawer 1",
+      "observation": "You open the drawer 1. The drawer 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to drawer 2",
+      "observation": "You arrive at drawer 2. The drawer 2 is closed."
+    },
+    {
+      "action": "open drawer 2",
+      "observation": "You open the drawer 2. The drawer 2 is open. In it, you see nothing."
+    },
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see nothing."
+    },
+    {
+      "action": "go to shelf 2",
+      "observation": "You arrive at shelf 2. On the shelf 2, you see nothing."
+    },
+    {
+      "action": "go to shelf 3",
+      "observation": "You arrive at shelf 3. On the shelf 3, you see a keychain 3."
+    },
+    {
+      "action": "take keychain 3 from shelf 3",
+      "observation": "You pick up the keychain 3 from the shelf 3."
+    },
+    {
+      "action": "go to shelf 4",
+      "observation": "You arrive at shelf 4. On the shelf 4, you see a cellphone 1, and a pencil 2."
+    },
+    {
+      "action": "go to shelf 5",
+      "observation": "You arrive at shelf 5. On the shelf 5, you see a creditcard 1."
+    },
+    {
+      "action": "go to shelf 6",
+      "observation": "You arrive at shelf 6. On the shelf 6, you see nothing."
+    },
+    {
+      "action": "go to shelf 7",
+      "observation": "You arrive at shelf 7. On the shelf 7, you see a bowl 1."
+    },
+    {
+      "action": "go to shelf 8",
+      "observation": "You arrive at shelf 8. On the shelf 8, you see a creditcard 2, and a mug 1."
+    },
+    {
+      "action": "go to shelf 9",
+      "observation": "You arrive at shelf 9. On the shelf 9, you see nothing."
+    },
+    {
+      "action": "go to shelf 10",
+      "observation": "You arrive at shelf 10. On the shelf 10, you see nothing."
+    },
+    {
+      "action": "go to shelf 11",
+      "observation": "You arrive at shelf 11. On the shelf 11, you see a bowl 3."
+    },
+    {
+      "action": "go to shelf 12",
+      "observation": "You arrive at shelf 12. On the shelf 12, you see a bowl 2."
+    },
+    {
+      "action": "go to shelf 13",
+      "observation": "You arrive at shelf 13. On the shelf 13, you see nothing."
+    },
+    {
+      "action": "go to shelf 14",
+      "observation": "You arrive at shelf 14. On the shelf 14, you see nothing."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a book 1, a keychain 2, a keychain 1, a pen 1, a pencil 1, and a watch 1."
+    },
+    {
+      "action": "take keychain 1 from diningtable 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take keychain 2 from diningtable 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a alarmclock 1, a creditcard 3, a pencil 3, and a watch 2."
+    },
+    {
+      "action": "move keychain 3 to sidetable 1",
+      "observation": "You move the keychain 3 to the sidetable 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a book 1, a keychain 2, a keychain 1, a pen 1, a pencil 1, and a watch 1."
+    },
+    {
+      "action": "take keychain 1 from diningtable 1",
+      "observation": "You pick up the keychain 1 from the diningtable 1."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a alarmclock 1, a creditcard 3, a keychain 3, a pencil 3, and a watch 2."
+    },
+    {
+      "action": "move keychain 1 to sidetable 1",
+      "observation": "You move the keychain 1 to the sidetable 1."
+    }
+  ]
+}

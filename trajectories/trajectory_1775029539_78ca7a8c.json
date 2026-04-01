@@ -1,0 +1,24 @@
+{
+  "traj_id": "1775029539_78ca7a8c",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 2, a bed 1, a diningtable 1, a drawer 2, a drawer 1, a garbagecan 1, a shelf 14, a shelf 13, a shelf 12, a shelf 11, a shelf 10, a shelf 9, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, and a sidetable 1.\n\nYour task is to: put some watch on diningtable.",
+  "task_type": "pick_and_place_simple-Watch-None-DiningTable-326/trial_T20190912_074626_851427",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a creditcard 2, a mug 2, a pencil 2, a watch 2, and a watch 1."
+    },
+    {
+      "action": "take watch 1 from sidetable 1",
+      "observation": "You pick up the watch 1 from the sidetable 1."
+    },
+    {
+      "action": "go to diningtable 1",
+      "observation": "You arrive at diningtable 1. On the diningtable 1, you see a alarmclock 1, a cd 1, a keychain 1, a mug 1, a pen 1, and a pencil 1."
+    },
+    {
+      "action": "move watch 1 to diningtable 1",
+      "observation": "You move the watch 1 to the diningtable 1."
+    }
+  ]
+}

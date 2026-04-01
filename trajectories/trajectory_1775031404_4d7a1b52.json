@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775031404_4d7a1b52",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 19, a cabinet 18, a cabinet 17, a cabinet 16, a cabinet 15, a cabinet 14, a cabinet 13, a cabinet 12, a cabinet 11, a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a hot cup in fridge.",
+  "task_type": "pick_heat_then_place_in_recep-Cup-None-Fridge-12/trial_T20190908_095835_636521",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a apple 1, a butterknife 1, a cup 2, and a spatula 1."
+    },
+    {
+      "action": "take cup 2 from countertop 1",
+      "observation": "You pick up the cup 2 from the countertop 1."
+    },
+    {
+      "action": "go to microwave 1",
+      "observation": "You arrive at microwave 1. The microwave 1 is closed."
+    },
+    {
+      "action": "open microwave 1",
+      "observation": "You open the microwave 1. The microwave 1 is open. In it, you see nothing."
+    },
+    {
+      "action": "move cup 2 to microwave 1",
+      "observation": "You move the cup 2 to the microwave 1."
+    },
+    {
+      "action": "heat cup 2 with microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "close microwave 1",
+      "observation": "You close the microwave 1."
+    },
+    {
+      "action": "heat cup 2 with microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "use microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take cup 2 from microwave 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "open microwave 1",
+      "observation": "You open the microwave 1. The microwave 1 is open. In it, you see a cup 2."
+    },
+    {
+      "action": "take cup 2 from microwave 1",
+      "observation": "You pick up the cup 2 from the microwave 1."
+    },
+    {
+      "action": "go to stoveburner 1",
+      "observation": "You arrive at stoveburner 1. On the stoveburner 1, you see a pot 1."
+    },
+    {
+      "action": "heat cup 2 with stoveburner 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to toaster 1",
+      "observation": "You arrive at toaster 1. On the toaster 1, you see nothing."
+    },
+    {
+      "action": "use toaster 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to coffeemachine 1",
+      "observation": "You arrive at coffeemachine 1. On the coffeemachine 1, you see nothing."
+    },
+    {
+      "action": "use coffeemachine 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to fridge 1",
+      "observation": "You arrive at fridge 1. The fridge 1 is closed."
+    },
+    {
+      "action": "open fridge 1",
+      "observation": "You open the fridge 1. The fridge 1 is open. In it, you see a lettuce 1, a potato 2, and a tomato 1."
+    },
+    {
+      "action": "move cup 2 to fridge 1",
+      "observation": "You move the cup 2 to the fridge 1."
+    },
+    {
+      "action": "close fridge 1",
+      "observation": "You close the fridge 1."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "done",
+      "observation": "Nothing happens."
+    }
+  ]
+}

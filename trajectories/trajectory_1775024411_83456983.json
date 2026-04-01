@@ -1,0 +1,28 @@
+{
+  "traj_id": "1775024411_83456983",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bed 1, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a desk 1, a drawer 2, a drawer 1, a garbagecan 1, a shelf 1, and a sidetable 1.\n\nYour task is to: put some cd on shelf.",
+  "task_type": "pick_and_place_simple-CD-None-Shelf-310/trial_T20190908_130024_429688",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a cd 1."
+    },
+    {
+      "action": "take cd 1 from cabinet 1",
+      "observation": "You pick up the cd 1 from the cabinet 1."
+    },
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a pen 3, and a pen 2."
+    },
+    {
+      "action": "move cd 1 to shelf 1",
+      "observation": "You move the cd 1 to the shelf 1."
+    }
+  ]
+}

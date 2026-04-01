@@ -1,0 +1,48 @@
+{
+  "traj_id": "1775030485_26c6632f",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 1, a coffeetable 1, a garbagecan 1, a shelf 2, a shelf 1, a sidetable 1, a sofa 2, and a sofa 1.\n\nYour task is to: find two statue and put them in sidetable.",
+  "task_type": "pick_two_obj_and_place-Statue-None-SideTable-214/trial_T20190909_065706_103190",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a creditcard 2, a plate 1, a statue 3, and a statue 2."
+    },
+    {
+      "action": "take statue 2 from shelf 1",
+      "observation": "You pick up the statue 2 from the shelf 1."
+    },
+    {
+      "action": "take statue 3 from shelf 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move statue 2 to sidetable 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see nothing."
+    },
+    {
+      "action": "move statue 2 to sidetable 1",
+      "observation": "You move the statue 2 to the sidetable 1."
+    },
+    {
+      "action": "go to shelf 1",
+      "observation": "You arrive at shelf 1. On the shelf 1, you see a creditcard 2, a plate 1, and a statue 3."
+    },
+    {
+      "action": "take statue 3 from shelf 1",
+      "observation": "You pick up the statue 3 from the shelf 1."
+    },
+    {
+      "action": "go to sidetable 1",
+      "observation": "You arrive at sidetable 1. On the sidetable 1, you see a statue 2."
+    },
+    {
+      "action": "move statue 3 to sidetable 1",
+      "observation": "You move the statue 3 to the sidetable 1."
+    }
+  ]
+}

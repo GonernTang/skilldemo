@@ -1,0 +1,48 @@
+{
+  "traj_id": "1775028209_96b1072e",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a armchair 1, a diningtable 1, a drawer 1, a garbagecan 1, a ottoman 1, a shelf 8, a shelf 7, a shelf 6, a shelf 5, a shelf 4, a shelf 3, a shelf 2, a shelf 1, a sidetable 1, a sofa 1, and a tvstand 1.\n\nYour task is to: put two pillow in ottoman.",
+  "task_type": "pick_two_obj_and_place-Pillow-None-Ottoman-208/trial_T20190908_091502_530886",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to sofa 1",
+      "observation": "You arrive at sofa 1. On the sofa 1, you see a creditcard 1, a pillow 2, and a pillow 1."
+    },
+    {
+      "action": "take pillow 1 from sofa 1",
+      "observation": "You pick up the pillow 1 from the sofa 1."
+    },
+    {
+      "action": "take pillow 2 from sofa 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to sofa 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to ottoman 1",
+      "observation": "You arrive at ottoman 1. On the ottoman 1, you see nothing."
+    },
+    {
+      "action": "move pillow 1 to ottoman 1",
+      "observation": "You move the pillow 1 to the ottoman 1."
+    },
+    {
+      "action": "go to sofa 1",
+      "observation": "You arrive at sofa 1. On the sofa 1, you see a creditcard 1, and a pillow 2."
+    },
+    {
+      "action": "take pillow 2 from sofa 1",
+      "observation": "You pick up the pillow 2 from the sofa 1."
+    },
+    {
+      "action": "go to ottoman 1",
+      "observation": "You arrive at ottoman 1. On the ottoman 1, you see a pillow 1."
+    },
+    {
+      "action": "move pillow 2 to ottoman 1",
+      "observation": "You move the pillow 2 to the ottoman 1."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "traj_id": "1775012587_7264bacf",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bathtubbasin 1, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a drawer 4, a drawer 3, a drawer 2, a drawer 1, a dresser 1, a garbagecan 1, a handtowelholder 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, and a towelholder 1.\n\nYour task is to: put a clean cloth in toilet.",
+  "task_type": "pick_clean_then_place_in_recep-Cloth-None-Toilet-413/trial_T20190908_175313_603765",
+  "success": true,
+  "trajectory": [
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a soapbottle 1."
+    },
+    {
+      "action": "go to dresser 1",
+      "observation": "You arrive at dresser 1. On the dresser 1, you see a cloth 1."
+    },
+    {
+      "action": "take cloth 1 from dresser 1",
+      "observation": "You pick up the cloth 1 from the dresser 1."
+    },
+    {
+      "action": "go to sinkbasin 1",
+      "observation": "You arrive at sinkbasin 1. On the sinkbasin 1, you see nothing."
+    },
+    {
+      "action": "clean cloth 1 with sinkbasin 1",
+      "observation": "You clean the cloth 1 using the sinkbasin 1."
+    },
+    {
+      "action": "go to toilet 1",
+      "observation": "You arrive at toilet 1. On the toilet 1, you see nothing."
+    },
+    {
+      "action": "move cloth 1 to toilet 1",
+      "observation": "You move the cloth 1 to the toilet 1."
+    }
+  ]
+}

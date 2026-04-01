@@ -1,0 +1,44 @@
+{
+  "traj_id": "1775012160_60c324da",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a bathtubbasin 1, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a countertop 1, a garbagecan 1, a handtowelholder 1, a shelf 1, a sinkbasin 2, a sinkbasin 1, a toilet 1, a toiletpaperhanger 1, a towelholder 2, and a towelholder 1.\n\nYour task is to: find two candle and put them in cabinet.",
+  "task_type": "pick_two_obj_and_place-Candle-None-Cabinet-403/trial_T20190909_065841_838469",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a candle 2, a candle 1, a dishsponge 2, a mirror 1, a showerglass 1, a soapbar 1, a spraybottle 3, a spraybottle 2, and a toiletpaper 2."
+    },
+    {
+      "action": "take candle 1 from countertop 1",
+      "observation": "You pick up the candle 1 from the countertop 1."
+    },
+    {
+      "action": "take candle 2 from countertop 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "take candle 2 from countertop 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a cloth 2."
+    },
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a candle 2, a dishsponge 2, a mirror 1, a showerglass 1, a soapbar 1, a spraybottle 3, a spraybottle 2, and a toiletpaper 2."
+    },
+    {
+      "action": "take candle 2 from countertop 1",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "move candle 1 to cabinet 1",
+      "observation": "Nothing happens."
+    }
+  ]
+}

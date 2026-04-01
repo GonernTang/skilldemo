@@ -1,0 +1,128 @@
+{
+  "traj_id": "1775027898_d2b474a4",
+  "task_description": "You are in the middle of a room. Looking quickly around you, you see a cabinet 10, a cabinet 9, a cabinet 8, a cabinet 7, a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 1, a diningtable 1, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a cool cup in cabinet.",
+  "task_type": "pick_cool_then_place_in_recep-Cup-None-Cabinet-23/trial_T20190908_213314_697773",
+  "success": false,
+  "trajectory": [
+    {
+      "action": "go to countertop 1",
+      "observation": "You arrive at countertop 1. On the countertop 1, you see a butterknife 1, a fork 2, a knife 3, a mug 1, a pen 3, a peppershaker 2, a potato 2, a spatula 1, a tomato 3, a tomato 1, and a winebottle 1."
+    },
+    {
+      "action": "take mug 1 from countertop 1",
+      "observation": "You pick up the mug 1 from the countertop 1."
+    },
+    {
+      "action": "go to fridge 1",
+      "observation": "You arrive at fridge 1. The fridge 1 is closed."
+    },
+    {
+      "action": "open fridge 1",
+      "observation": "You open the fridge 1. The fridge 1 is open. In it, you see a apple 3, a bread 2, a bread 1, a lettuce 2, and a tomato 2."
+    },
+    {
+      "action": "cool mug 1 with fridge 1",
+      "observation": "You cool the mug 1 using the fridge 1."
+    },
+    {
+      "action": "go to cabinet 1",
+      "observation": "You arrive at cabinet 1. The cabinet 1 is closed."
+    },
+    {
+      "action": "open cabinet 1",
+      "observation": "You open the cabinet 1. The cabinet 1 is open. In it, you see a dishsponge 2."
+    },
+    {
+      "action": "move mug 1 to cabinet 1",
+      "observation": "You move the mug 1 to the cabinet 1."
+    },
+    {
+      "action": "stop",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "stop",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "close cabinet 1",
+      "observation": "You close the cabinet 1."
+    },
+    {
+      "action": "stop",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    },
+    {
+      "action": "None",
+      "observation": "Nothing happens."
+    }
+  ]
+}
