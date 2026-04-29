@@ -1,4 +1,66 @@
-# MemRL 开发日志
+# qskill 开发日志
+
+## 2026-04-29 - 项目整理：重命名 + 导入修复
+
+### 背景
+
+项目从 `memrl` 重命名为 `qskill` 后，存在多处残留引用，且 `manager.py` 和测试文件导入了不存在的模块。
+
+### 修改的文件
+
+#### 1. 重命名残留修复
+
+| 文件 | 修改内容 |
+|------|----------|
+| `CLAUDE.md` | 更新 `memrl/` → `qskill/` 路径引用 |
+| `pyproject.toml` | 项目名 `memrl` → `qskill`，脚本入口、pytest 配置更新 |
+| `README.md` | 命名空间、布局说明、引用更新 |
+| `qskill/__init__.py` | 文档字符串更新 |
+| `qskill/skills/__init__.py` | 文档字符串更新 |
+| `qskill/__version__.py` | 文档字符串和团队名更新 |
+| `qskill/run/__init__.py` | 注释中的路径更新 |
+| `qskill/cli/main.py` | CLI 文档和 prog_name 更新 |
+
+#### 2. 关键 Bug 修复
+
+| 文件 | 修改内容 |
+|------|----------|
+| `qskill/skills/manager.py` | 修复错误的 `memrl.skills.*` 导入 → `qskill.skills.*` |
+| `qskill/run/alfworld_rl_runner.py` | 修复注释中的路径 `memrl/` → `qskill/` |
+
+#### 3. 缺失模块创建
+
+`manager.py` 和测试期望的模块 (`SkillStore`, `SkillRetriever`, `SkillExtractor`, `ExtractionTrigger`) 从未实现。创建了简化版本来提供向后兼容：
+
+| 文件 | 说明 |
+|------|------|
+| `qskill/skills/extractor.py` | `SkillConfig`, `SkillExtractor`, `ExtractionTrigger` 类 |
+| `qskill/skills/store.py` | `SkillStore` 类 - JSON 文件存储管理 |
+| `qskill/skills/retriever.py` | `SkillRetriever` 类 - 基于 skill_value 的检索 |
+
+#### 4. 测试文件导入修复
+
+以下测试文件的 `memrl.skills.*` 导入已改为 `qskill.skills.*`：
+
+- `tests/test_extractor.py`
+- `tests/test_manager.py`
+- `tests/test_integration.py`
+- `tests/test_store.py`
+- `tests/test_retriever.py`
+
+#### 5. 其他
+
+- `.gitignore`: 添加 `.coverage`
+- `configs/rl_bcb_config.yaml`: 更新注释中的路径引用
+
+### 注意事项
+
+- `development_log.md` 和 `docs/*.md` 中的 `memrl` 引用是历史记录，无需修改
+- `configs/*.yaml` 中的 `user_id` 和 `experiment_name` 标识符保持原样
+- 新创建的模块 (`store.py`, `retriever.py`, `extractor.py`) 是简化实现
+- 实际的技能层实现在 `BatchSkillIntegrator` 和 `BatchSkillExtractor` 中
+
+---
 
 ## 2026-04-01 - 技能检索修复 + 提示词改进
 
@@ -260,3 +322,123 @@ mistake["skill_value"] = 0.5
 
 ### 修改文件
 - `memrl/skills/batch_extractor.py`: 在3处添加初始 Q值设置
+
+---
+
+## 2026-04-13 - 技能遗忘（斩杀线）与合并机制
+
+### 背景
+
+技能库持续增长后需要两种机制：
+1. **斩杀线（Culling）**：当技能数量超过上限时，自动删除低价值技能
+2. **技能合并（Merging）**：提取新技能时，与现有高度相似的技能合并，避免冗余
+
+### 设计决策
+
+1. **技能唯一标识**：使用 `name` 字段作为唯一标识（而非 `skill_id`）
+   - 之前代码中 `skill_id` 字段存在但未被使用
+   - 删除 `skill_id` 相关代码，统一使用 `name`
+2. **合并触发阈值**：可配置参数，默认 0.85
+3. **合并决策**：由 LLM 决定如何合并多个相似技能
+
+### 修改的文件
+
+#### 1. `qskill/skills/skill.py`
+- **删除 `skill_id` 字段**：移除 Skill 类的 `skill_id` 属性
+- **重命名 `parent_skill_id` → `parent_skill_name`**：保持命名一致性
+- **更新 `SkillUpdate`**：将 `skill_id` 改为 `skill_name`
+- **更新序列化**：移除 `skill_id`，更新 `parent_skill_name`
+
+#### 2. `qskill/skills/manager.py`
+- **方法参数变更**：
+  - `update_skill_stats(skill_id)` → `update_skill_stats(name)`
+  - `load_skill(skill_id)` → `load_skill(name)`
+  - `deprecate_skill(skill_id)` → `deprecate_skill(name)`
+  - `update_skill(skill_id, updates)` → `update_skill(name, updates)`
+- **`analyze_failure_and_update`**：参数 `skill_ids` → `skill_names`
+
+#### 3. `qskill/skills/analyzer.py`
+- **替换引用**：`skill_id=skill.skill_id` → `skill_name=skill.name`
+
+#### 4. `qskill/configs/config.py`
+- **SkillConfig 新增字段**：
+```python
+# 斩杀线配置
+enable_culling: bool = False
+max_skills: int = 50
+cull_threshold: float = 0.3
+cull_batch_size: int = 5
+cull_min_usage: int = 3
+
+# 合并配置
+enable_merging: bool = False
+merge_similarity_threshold: float = 0.85
+```
+
+#### 5. `qskill/skills/batch_integration.py`
+- **新增构造函数参数**：所有 culling 和 merging 相关参数
+- **新增 `_cull_low_value_skills()`**：斩杀线实现
+  - 按 `skill_value` 升序排序
+  - 删除低于 `cull_threshold` 且 `usage_count >= cull_min_usage` 的技能
+  - 每次最多删除 `cull_batch_size` 个
+  - 在 `trigger_batch_extraction()` 完成后自动调用
+- **新增 `_find_mergeable_skills()`**：查找需要合并的技能组
+  - 使用 embedding 相似度
+  - 返回相似度超过阈值的技能组
+- **新增 `_merge_skills_by_name()`**：合并多个技能
+  - 收集所有待合并技能详情
+  - 调用 LLM 决策合并方案
+- **新增 `_llm_merge_skills()`**：LLM 合并决策
+  - 发送技能 JSON 给 LLM
+  - 返回合并后的技能结构
+- **新增 `_compute_merged_stat()`**：统计继承（加权平均）
+  - 按 `usage_count` 加权平均 `skill_value`、`success_rate`
+- **新增 `_merge_lists()`**：列表去重合并
+  - 用于 `failure_scenarios`、`antipatterns`、`constraints`、`trigger_keywords`
+
+#### 6. `qskill/skills/integration.py`
+- **传递新参数**：culling 和 merging 配置传递到 BatchSkillIntegrator
+
+#### 7. `configs/rl_alf_config.yaml`
+```yaml
+skill:
+  # ... 原有配置 ...
+  # 技能 retention (culling) 配置
+  enable_culling: false  # 启用自动斩杀
+  max_skills: 50         # 上限
+  cull_threshold: 0.3    # 价值阈值
+  cull_batch_size: 5     # 每次删除数量
+  cull_min_usage: 3      # 最低使用次数
+  # 技能合并配置
+  enable_merging: false  # 启用合并
+  merge_similarity_threshold: 0.85  # 相似度阈值
+```
+
+### 统计继承机制
+
+合并后的技能统计计算：
+- **skill_value**: 加权平均，按 `usage_count` 权重
+- **success_rate**: 加权平均
+- **usage_count**: 求和
+- **failure_scenarios/antipatterns/constraints/trigger_keywords**: 去重合并
+- **steps**: 由 LLM 决定保留哪些
+
+### 触发时机
+
+- **斩杀线**：`trigger_batch_extraction()` 完成后检查，超过 `max_skills` 时触发
+- **合并**：`_on_skills_extracted()` 回调中处理，提取新技能后检查相似度
+
+### 使用方式
+
+```yaml
+# 启用斩杀线
+skill:
+  enable_culling: true
+  max_skills: 50
+  cull_threshold: 0.3
+
+# 启用合并（需要 embedder）
+skill:
+  enable_merging: true
+  merge_similarity_threshold: 0.85
+```

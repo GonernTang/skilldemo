@@ -1,9 +1,9 @@
-"""Version information for memrl package."""
+"""Version information for qskill package."""
 
 __version__ = "0.1.0"
-__author__ = "MemRL Team"
+__author__ = "qskill Team"
 # Kept for tooling/CLI introspection.
-__email__ = "team@memp.dev"
+__email__ = "team@qskill.dev"
 __description__ = (
-    "MemRL: Self-evolving agents via runtime reinforcement learning on episodic memory"
+    "qskill: Self-evolving agents via runtime reinforcement learning on episodic memory"
 )

@@ -1,12 +1,12 @@
-# MemRL: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory
+# qskill: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory
 
 Official code release for the paper:
 
-[**MemRL: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory**](https://arxiv.org/abs/2601.03192)
+[**qskill: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory**](https://arxiv.org/abs/2601.03192)
 
 ## Abstract
 
-The hallmark of human intelligence is the self-evolving ability to master new skills by learning from past experiences. However, current AI agents struggle to emulate this self-evolution: fine-tuning is computationally expensive and prone to catastrophic forgetting, while existing memory-based methods rely on passive semantic matching that often retrieves noise. To address these challenges, we propose **MemRL**, a non-parametric approach that evolves via reinforcement learning on episodic memory. By decoupling stable reasoning from plastic memory, **MemRL** employs a Two-Phase Retrieval mechanism to filter noise and identify high-utility strategies through environmental feedback. Extensive experiments on **HLE**, **BigCodeBench**, **ALFWorld**, and **Lifelong Agent Bench** demonstrate that **MemRL** significantly outperforms state-of-the-art baselines, confirming that **MemRL** effectively reconciles the stability-plasticity dilemma, enabling continuous runtime improvement without weight updates.
+The hallmark of human intelligence is the self-evolving ability to master new skills by learning from past experiences. However, current AI agents struggle to emulate this self-evolution: fine-tuning is computationally expensive and prone to catastrophic forgetting, while existing memory-based methods rely on passive semantic matching that often retrieves noise. To address these challenges, we propose **qskill**, a non-parametric approach that evolves via reinforcement learning on episodic memory. By decoupling stable reasoning from plastic memory, **qskill** employs a Two-Phase Retrieval mechanism to filter noise and identify high-utility strategies through environmental feedback. Extensive experiments on **HLE**, **BigCodeBench**, **ALFWorld**, and **Lifelong Agent Bench** demonstrate that **qskill** significantly outperforms state-of-the-art baselines, confirming that **qskill** effectively reconciles the stability-plasticity dilemma, enabling continuous runtime improvement without weight updates.
 
 ## Framework Overview
 
@@ -20,9 +20,9 @@ Files:
 
 ## Installation
 
-This repo is a Python package under the **`memrl`** namespace.
+This repo is a Python package under the **`qskill`** namespace.
 
-Install MemRL plus the dependencies needed to run all 4 benchmark entrypoints under `run/`.
+Install qskill plus the dependencies needed to run all 4 benchmark entrypoints under `run/`.
 
 ```bash
 conda create -n memoryrl python=3.10 -y
@@ -88,7 +88,7 @@ Important notes:
 
 ### 3) Lifelong Agent Bench (LLB / LifelongAgentBench)
 
-This repo vendors LifelongAgentBench under `3rdparty/LifelongAgentBench` and runs it through `memrl/run/llb_rl_runner.py`.
+This repo vendors LifelongAgentBench under `3rdparty/LifelongAgentBench` and runs it through `qskill/run/llb_rl_runner.py`.
 
 Docker setup:
 
@@ -127,7 +127,7 @@ Note:
 Optional tracing (LLB):
 
 - `configs/rl_llb_config.yaml` includes `experiment.trace_jsonl_path`.
-- You can also control tracing with environment variables (see `memrl/trace/llb_jsonl.py`).
+- You can also control tracing with environment variables (see `qskill/trace/llb_jsonl.py`).
 
 ### 4) BigCodeBench (BCB)
 
@@ -185,18 +185,18 @@ cat /etc/ld.so.preload
 
 ## Project Layout
 
-- `memrl/`: main library code (MemoryService, runners, providers, tracing)
+- `qskill/`: main library code (MemoryService, runners, providers, tracing)
 - `run/`: benchmark entrypoints (`run_bcb.py`, `run_llb.py`, `run_alfworld.py`, `run_hle.py`)
 - `configs/`: benchmark configs
 - `3rdparty/`: vendored benchmark repos (BigCodeBench, LifelongAgentBench)
 
 ## Citation
 
-If you use MemRL in your research, please cite our paper:
+If you use qskill in your research, please cite our paper:
 
 ```bibtex
-@misc{zhang2026memrlselfevolvingagentsruntime,
-  title         = {MemRL: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory},
+@misc{zhang2026qskillselfevolvingagentsruntime,
+  title         = {qskill: Self-Evolving Agents via Runtime Reinforcement Learning on Episodic Memory},
   author        = {Shengtao Zhang and Jiaqian Wang and Ruiwen Zhou and Junwei Liao and Yuchen Feng and Weinan Zhang and Ying Wen and Zhiyu Li and Feiyu Xiong and Yutao Qi and Bo Tang and Muning Wen},
   year          = {2026},
   eprint        = {2601.03192},

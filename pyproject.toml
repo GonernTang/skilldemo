@@ -1,18 +1,18 @@
 [project]
-name = "memrl"
+name = "qskill"
 version = "0.1.0"
-description = "MemRL: Self-evolving agents via runtime reinforcement learning on episodic memory"
+description = "qskill: Self-evolving agents via runtime reinforcement learning on episodic memory"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Memp Team", email = "team@memp.dev"}
+    {name = "qskill Team", email = "team@qskill.dev"}
 ]
 keywords = [
     "memory",
     "agent",
     "procedural-memory",
-    "memrl",
+    "qskill",
     "ai",
     "llm"
 ]
@@ -52,7 +52,7 @@ dev = [
 ]
 
 [project.scripts]
-memrl = "memrl.cli.main:cli"
+qskill = "qskill.cli.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/MemTensor/MemRL"
@@ -66,13 +66,13 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["memrl*"]
+include = ["qskill*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = [
-    "--cov=memrl",
+    "--cov=qskill",
     "--cov-report=term-missing",
     "--cov-report=html",
     "-v"

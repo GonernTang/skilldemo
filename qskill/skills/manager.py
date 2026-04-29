@@ -4,10 +4,10 @@ from typing import Any, Dict, List, Optional
 
 from qskill.providers.base import BaseEmbedder, BaseLLM
 from qskill.skills.analyzer import FailureAnalyzer
-from memrl.skills.extractor import SkillConfig, SkillExtractor
-from memrl.skills.retriever import SkillRetriever
+from qskill.skills.extractor import SkillConfig, SkillExtractor
+from qskill.skills.retriever import SkillRetriever
 from qskill.skills.skill import Skill, SkillUpdate
-from memrl.skills.store import SkillStore
+from qskill.skills.store import SkillStore
 
 
 class SkillManager:
@@ -124,30 +124,30 @@ class SkillManager:
 
     # === Statistics ===
 
-    def update_skill_stats(self, skill_id: str, success: bool) -> None:
+    def update_skill_stats(self, name: str, success: bool) -> None:
         """Update usage statistics for a skill.
 
         Args:
-            skill_id: ID of the skill to update.
+            name: Name of the skill to update.
             success: Whether the skill usage was successful.
         """
-        skill = self.store.load(skill_id)
+        skill = self.store.load(name)
         if skill:
             skill.update_stats(success)
             self.store.save(skill)
 
     # === Skill Access ===
 
-    def load_skill(self, skill_id: str) -> Optional[Skill]:
-        """Load a single skill by ID.
+    def load_skill(self, name: str) -> Optional[Skill]:
+        """Load a single skill by name.
 
         Args:
-            skill_id: Unique skill identifier.
+            name: Name of the skill.
 
         Returns:
             Skill object, or None if not found.
         """
-        return self.store.load(skill_id)
+        return self.store.load(name)
 
     def get_all_skills(self) -> List[Skill]:
         """Get all stored skills.
@@ -200,7 +200,7 @@ class SkillManager:
         failed_trajectory: List[Dict[str, Any]],
         task_description: str,
         task_type: str,
-        skill_ids: Optional[List[str]] = None,
+        skill_names: Optional[List[str]] = None,
     ) -> List[SkillUpdate]:
         """Analyze a failed trajectory and update relevant skills.
 
@@ -208,7 +208,7 @@ class SkillManager:
             failed_trajectory: Failed execution trajectory.
             task_description: Task description.
             task_type: Task type/category.
-            skill_ids: Optional list of specific skill IDs to update. If None,
+            skill_names: Optional list of specific skill names to update. If None,
                        all skills of the same task_type will be updated (legacy behavior).
 
         Returns:
@@ -225,9 +225,9 @@ class SkillManager:
             return []
 
         # Step 2: Get skills to update
-        if skill_ids:
+        if skill_names:
             # Precise mode: only update the specified skills
-            related_skills = [self.store.load(sid) for sid in skill_ids]
+            related_skills = [self.store.load(n) for n in skill_names]
             related_skills = [s for s in related_skills if s is not None]
         else:
             # Legacy mode: update all skills of the same task_type
@@ -238,7 +238,7 @@ class SkillManager:
 
         # Step 4: Apply updates
         for update in updates:
-            self.store.update_skill(update.skill_id, [update])
+            self.store.update_skill(update.skill_name, [update])
 
         return updates
 
@@ -246,30 +246,30 @@ class SkillManager:
 
     def update_skill(
         self,
-        skill_id: str,
+        name: str,
         updates: List[SkillUpdate],
     ) -> bool:
         """Apply updates to a skill.
 
         Args:
-            skill_id: ID of skill to update.
+            name: Name of skill to update.
             updates: List of updates to apply.
 
         Returns:
             True if update was successful.
         """
-        return self.store.update_skill(skill_id, updates)
+        return self.store.update_skill(name, updates)
 
-    def deprecate_skill(self, skill_id: str) -> bool:
+    def deprecate_skill(self, name: str) -> bool:
         """Mark a skill as deprecated.
 
         Args:
-            skill_id: ID of skill to deprecate.
+            name: Name of skill to deprecate.
 
         Returns:
             True if deprecation was successful.
         """
-        skill = self.store.load(skill_id)
+        skill = self.store.load(name)
         if not skill:
             return False
         skill.deprecated = True

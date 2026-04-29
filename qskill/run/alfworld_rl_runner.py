@@ -1,4 +1,4 @@
-# memrl/run/alfworld_rl_runner.py
+# qskill/run/alfworld_rl_runner.py
 import copy
 import logging
 from pathlib import Path

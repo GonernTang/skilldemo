@@ -1,7 +1,7 @@
-# Full config for running BigCodeBench (BCB) with MemRL in this repo.
+# Full config for running BigCodeBench (BCB) with qskill in this repo.
 #
 # IMPORTANT:
-# - This YAML must match `memrl.configs.config.MempConfig` (extra fields are forbidden).
+# - This YAML must match `qskill.configs.config.MempConfig` (extra fields are forbidden).
 # - BCB-specific knobs (subset/split/epochs/train_ratio/split_file/data_path/...) are CLI args
 #   to `run/run_bcb.py` and are intentionally NOT in this YAML.
 # - BCB evaluation can be toggled via YAML: set `experiment.bcb_run_validation: true` to run val.

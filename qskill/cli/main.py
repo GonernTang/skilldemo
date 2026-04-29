@@ -1,4 +1,4 @@
-"""MemRL command-line interface.
+"""qskill command-line interface.
 
 The primary way to run benchmarks in this repo is via the scripts in `run/`.
 This CLI exists mainly for packaging sanity and basic introspection.
@@ -12,9 +12,9 @@ from qskill.__version__ import __description__, __version__
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
-@click.version_option(version=__version__, prog_name="memrl")
+@click.version_option(version=__version__, prog_name="qskill")
 def cli() -> None:
-    """MemRL utilities."""
+    """qskill utilities."""
 
 
 @cli.command("about")

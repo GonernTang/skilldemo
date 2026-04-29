@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-MemRL 是一个基于情节记忆的运行时强化学习系统，通过"构建-检索-更新"三阶段记忆管理策略实现智能体的自我演进。核心特点是不更新模型权重，而是通过记忆管理实现持续改进。
+qskill 是一个基于情节记忆的运行时强化学习系统，通过"构建-检索-更新"三阶段记忆管理策略实现智能体的自我演进。核心特点是不更新模型权重，而是通过记忆管理实现持续改进。
 
 ### always do
 ```bash
@@ -26,13 +26,13 @@ conda activate memoryrl
 pip install -r requirements.txt
 
 # 代码格式化
-black memrl/
+black qskill/
 
 # Linting
-ruff check memrl/
+ruff check qskill/
 
 # 类型检查
-mypy memrl/
+mypy qskill/
 
 # 运行测试
 pytest
@@ -50,11 +50,11 @@ Runner 层 (run/run_*.py)
     └── 编排 agent、env、memory service 之间的交互
     └── 多轮训练循环，检查点管理
          ↓
-Agent 层 (memrl/agent/)
+Agent 层 (qskill/agent/)
     └── BaseAgent: reset, act, get_trajectory 接口
     └── MempAgent: 基于 LLM 的无状态智能体
          ↓
-Memory Service 层 (memrl/service/)
+Memory Service 层 (qskill/service/)
     └── 集成 MemOS 的核心记忆管理
     └── Build/Retrieve/Update 策略实现
 ```
@@ -92,7 +92,7 @@ Memory Service 层 (memrl/service/)
 ## 核心模块依赖
 
 ```
-memrl/service/memory_service.py  (核心入口)
+qskill/service/memory_service.py  (核心入口)
     ├── strategies.py       (策略枚举)
     ├── builders.py         (构建策略实现)
     ├── retrievers.py       (检索策略实现)
@@ -101,13 +101,13 @@ memrl/service/memory_service.py  (核心入口)
     ├── keyer.py            (查询键生成)
     └── memos (MemOS 框架)
 
-memrl/providers/
+qskill/providers/
     ├── llm.py              (OpenAI LLM, 含重试逻辑)
     └── embedding.py       (Embedding 提供者)
 
-memrl/configs/config.py    (Pydantic 配置模型)
+qskill/configs/config.py    (Pydantic 配置模型)
 
-memrl/agent/memp_agent.py   (智能体实现)
+qskill/agent/memp_agent.py   (智能体实现)
 ```
 
 ## 配置管理
