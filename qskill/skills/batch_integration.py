@@ -50,6 +50,13 @@ class BatchSkillIntegrator:
         retrieve_task_specific: int = 1,
         retrieve_common_mistakes: int = 1,
         summarize_task_description: bool = False,
+        enable_culling: bool = False,
+        max_skills: int = 50,
+        cull_threshold: float = 0.3,
+        cull_batch_size: int = 5,
+        cull_min_usage: int = 3,
+        enable_merging: bool = False,
+        merge_similarity_threshold: float = 0.85,
     ):
         """Initialize the batch skill integrator.
 
@@ -66,6 +73,13 @@ class BatchSkillIntegrator:
             retrieve_task_specific: Number of task-specific skills to retrieve.
             retrieve_common_mistakes: Number of common mistakes to retrieve.
             summarize_task_description: If True, summarize task description before embedding.
+            enable_culling: Enable automatic skill culling when count exceeds max_skills.
+            max_skills: Maximum number of skills before culling is triggered.
+            cull_threshold: Skill value threshold below which skills may be culled.
+            cull_batch_size: Number of skills to cull at once.
+            cull_min_usage: Minimum usage count before a skill can be culled.
+            enable_merging: Enable automatic skill merging for similar skills.
+            merge_similarity_threshold: Similarity threshold for merging.
         """
         self.extract_interval = extract_interval
         self.llm = llm
@@ -77,6 +91,13 @@ class BatchSkillIntegrator:
         self.retrieve_task_specific = retrieve_task_specific
         self.retrieve_common_mistakes = retrieve_common_mistakes
         self.summarize_task_description = summarize_task_description
+        self.enable_culling = enable_culling
+        self.max_skills = max_skills
+        self.cull_threshold = cull_threshold
+        self.cull_batch_size = cull_batch_size
+        self.cull_min_usage = cull_min_usage
+        self.enable_merging = enable_merging
+        self.merge_similarity_threshold = merge_similarity_threshold
 
         # Initialize components
         self.trajectory_buffer = TrajectoryBuffer(storage_dir=trajectory_dir)
@@ -185,7 +206,99 @@ class BatchSkillIntegrator:
         self.trajectory_buffer.mark_extracted(traj_ids)
         self.last_extraction_count = 0
 
+        # Check if culling is needed
+        if self.enable_culling:
+            self._cull_low_value_skills()
+
         return result
+
+    def _cull_low_value_skills(self) -> None:
+        """Cull low-value skills when skill count exceeds max_skills.
+
+        Skills are evaluated based on skill_value, and those below cull_threshold
+        with usage_count >= cull_min_usage are candidates for removal.
+        """
+        index = self.batch_extractor._load_index()
+
+        # Count total skills
+        total = len(index.get("general_skills", []))
+        for task_skills in index.get("task_specific_skills", {}).values():
+            total += len(task_skills)
+        total += len(index.get("common_mistakes", []))
+
+        if total <= self.max_skills:
+            return  # No culling needed
+
+        # Collect all skills with their metadata
+        all_skills: List[tuple] = []
+        for skill in index.get("general_skills", []):
+            all_skills.append(("general", skill))
+        for task_type, skills in index.get("task_specific_skills", {}).items():
+            for skill in skills:
+                all_skills.append((task_type, skill))
+        for skill in index.get("common_mistakes", []):
+            all_skills.append(("common_mistakes", skill))
+
+        # Sort by skill_value ascending (lowest first)
+        all_skills.sort(key=lambda x: x[1].get("skill_value", 0.0))
+
+        # Identify skills to cull
+        to_cull: List[tuple] = []
+        remaining_slots = self.max_skills
+
+        for cat_skill in all_skills:
+            skill = cat_skill[1]
+            skill_value = skill.get("skill_value", 0.0)
+            usage_count = skill.get("usage_count", 0)
+
+            # Skip if above threshold or below min usage
+            if skill_value >= self.cull_threshold:
+                break
+            if usage_count < self.cull_min_usage:
+                continue
+
+            # Check if we have remaining slots
+            if total - len(to_cull) <= remaining_slots:
+                break
+
+            to_cull.append(cat_skill)
+
+        # Cull up to cull_batch_size skills
+        to_cull = to_cull[: self.cull_batch_size]
+
+        if not to_cull:
+            return
+
+        # Remove culled skills from index
+        cull_names = {s[1].get("name") for s in to_cull}
+
+        index["general_skills"] = [
+            s for s in index.get("general_skills", []) if s.get("name") not in cull_names
+        ]
+
+        for task_type in list(index.get("task_specific_skills", {}).keys()):
+            index["task_specific_skills"][task_type] = [
+                s
+                for s in index["task_specific_skills"][task_type]
+                if s.get("name") not in cull_names
+            ]
+
+        index["common_mistakes"] = [
+            s for s in index.get("common_mistakes", []) if s.get("name") not in cull_names
+        ]
+
+        # Save updated index
+        self.batch_extractor._save_index(index)
+
+        # Invalidate embedding cache for culled skills
+        for name in cull_names:
+            if name in self._embedding_cache:
+                del self._embedding_cache[name]
+            if name in self._skill_signatures:
+                del self._skill_signatures[name]
+        self._save_embedding_cache()
+
+        print(f"Culled {len(to_cull)} low-value skills: {cull_names}")
 
     def get_all_skills(self) -> Dict[str, Any]:
         """Get all stored skills.
@@ -194,6 +307,95 @@ class BatchSkillIntegrator:
             Dictionary with all stored skills.
         """
         return self.batch_extractor._load_index()
+
+    def _find_mergeable_skills(
+        self, new_skills: List[Dict[str, Any]]
+    ) -> List[List[Dict[str, Any]]]:
+        """Find groups of skills that are similar enough to merge.
+
+        Uses embedding similarity to find skills with high overlap,
+        then returns groups for LLM-based merge decision.
+
+        Args:
+            new_skills: List of newly extracted skills to check against existing.
+
+        Returns:
+            List of skill groups (each group has 2+ skills) that may need merging.
+        """
+        if not self.enable_merging or not self.embedder or not new_skills:
+            return []
+
+        index = self.batch_extractor._load_index()
+
+        # Collect all existing skills
+        existing_skills: List[Dict[str, Any]] = []
+        for skill in index.get("general_skills", []):
+            existing_skills.append(skill)
+        for task_skills in index.get("task_specific_skills", {}).values():
+            existing_skills.extend(task_skills)
+        for skill in index.get("common_mistakes", []):
+            existing_skills.append(skill)
+
+        if not existing_skills:
+            return []
+
+        # Sync embeddings for existing skills
+        all_skills_with_cat = [("existing", s) for s in existing_skills]
+        self._sync_embedding_cache(all_skills_with_cat)
+
+        # Compute embeddings for new skills
+        new_skill_texts = [
+            f"{s.get('name', '')}: {s.get('description', '')}" for s in new_skills
+        ]
+        new_embeddings = self.embedder.embed(new_skill_texts)
+
+        # Build existing embedding lookup
+        name_to_embedding: Dict[str, List[float]] = {}
+        for skill in existing_skills:
+            name = skill.get("name", "")
+            if name in self._embedding_cache:
+                name_to_embedding[name] = self._embedding_cache[name]
+
+        # Find similar pairs
+        merge_groups: List[set] = []
+        new_skill_names = [s.get("name", "") for s in new_skills]
+
+        for i, new_skill in enumerate(new_skills):
+            new_name = new_skill.get("name", "")
+            if not new_name or new_name not in name_to_embedding:
+                continue
+
+            new_emb = new_embeddings[i]
+            similar_existing = []
+
+            for existing_skill in existing_skills:
+                existing_name = existing_skill.get("name", "")
+                if existing_name == new_name:
+                    continue
+                if existing_name not in name_to_embedding:
+                    continue
+
+                sim = self._cosine_similarity(new_emb, name_to_embedding[existing_name])
+                if sim >= self.merge_similarity_threshold:
+                    similar_existing.append(existing_name)
+
+            if similar_existing:
+                # Find or create a merge group
+                found_group = False
+                for group in merge_groups:
+                    if any(sn in group for sn in similar_existing):
+                        group.add(new_name)
+                        group.update(similar_existing)
+                        found_group = True
+                        break
+                if not found_group:
+                    group = {new_name}
+                    group.update(similar_existing)
+                    merge_groups.append(group)
+
+        # Convert sets to lists and ensure each group has 2+ skills
+        result = [list(g) for g in merge_groups if len(g) >= 2]
+        return result
 
     def _detect_task_type(self, task_description: str) -> List[str]:
         """Detect task types based on keywords in task description.
@@ -507,19 +709,228 @@ class BatchSkillIntegrator:
         """Callback invoked by BatchSkillExtractor when new skills are extracted.
 
         Immediately updates embedding cache for newly extracted skills.
+        If merging is enabled, also identifies and processes skill merges.
 
         Args:
             skills_dict: Dict with keys general_skills, task_specific_skills, common_mistakes.
         """
         if not self.embedder:
             return
+
+        # Collect all newly extracted skills
+        new_skills: List[Dict[str, Any]] = []
         for skill in skills_dict.get("general_skills", []):
             self.update_skill_embedding(skill)
+            new_skills.append(skill)
         for task_type, skills in skills_dict.get("task_specific_skills", {}).items():
             for skill in skills:
                 self.update_skill_embedding(skill)
+                new_skills.append(skill)
         for mistake in skills_dict.get("common_mistakes", []):
             self.update_skill_embedding(mistake)
+            new_skills.append(mistake)
+
+        # Process merging if enabled
+        if self.enable_merging and new_skills:
+            merge_groups = self._find_mergeable_skills(new_skills)
+            for group in merge_groups:
+                self._merge_skills_by_name(group)
+
+    def _merge_skills_by_name(self, skill_names: List[str]) -> None:
+        """Merge multiple skills into one using LLM-based decision.
+
+        This method is called when similar skills are detected. It gathers
+        all skill details and asks the LLM to decide how to merge them.
+
+        Args:
+            skill_names: List of skill names to merge.
+        """
+        if len(skill_names) < 2:
+            return
+
+        # Load all skills by name
+        index = self.batch_extractor._load_index()
+        skills_to_merge: List[Dict[str, Any]] = []
+
+        for name in skill_names:
+            # Check general skills
+            for skill in index.get("general_skills", []):
+                if skill.get("name") == name:
+                    skills_to_merge.append(skill)
+                    break
+            # Check task-specific skills
+            if not any(s.get("name") == name for s in skills_to_merge):
+                for task_skills in index.get("task_specific_skills", {}).values():
+                    for skill in task_skills:
+                        if skill.get("name") == name:
+                            skills_to_merge.append(skill)
+                            break
+            # Check common mistakes
+            if not any(s.get("name") == name for s in skills_to_merge):
+                for skill in index.get("common_mistakes", []):
+                    if skill.get("name") == name:
+                        skills_to_merge.append(skill)
+                        break
+
+        if len(skills_to_merge) < 2:
+            return
+
+        # Ask LLM to merge
+        merged = self._llm_merge_skills(skills_to_merge)
+        if not merged:
+            print(f"LLM merge failed for skills: {skill_names}")
+            return
+
+        # Remove merged skills from index
+        merged_names = set(skill_names)
+        for category_key in ["general_skills", "common_mistakes"]:
+            index[category_key] = [
+                s for s in index.get(category_key, []) if s.get("name") not in merged_names
+            ]
+
+        for task_type in list(index.get("task_specific_skills", {}).keys()):
+            index["task_specific_skills"][task_type] = [
+                s
+                for s in index["task_specific_skills"][task_type]
+                if s.get("name") not in merged_names
+            ]
+
+        # Add merged skill (if it has a new name, use it; otherwise use the first skill's name)
+        new_skill_name = merged.get("name", skills_to_merge[0].get("name", "merged-skill"))
+        merged["name"] = new_skill_name
+        merged["skill_value"] = self._compute_merged_stat(skills_to_merge, "skill_value")
+        merged["usage_count"] = sum(s.get("usage_count", 0) for s in skills_to_merge)
+        merged["success_rate"] = self._compute_merged_stat(skills_to_merge, "success_rate")
+
+        # Merge failure_scenarios, antipatterns, constraints, trigger_keywords
+        merged["failure_scenarios"] = self._merge_lists(
+            [s.get("failure_scenarios", []) for s in skills_to_merge]
+        )
+        merged["antipatterns"] = self._merge_lists([s.get("antipatterns", []) for s in skills_to_merge])
+        merged["constraints"] = self._merge_lists([s.get("constraints", []) for s in skills_to_merge])
+        merged["trigger_keywords"] = self._merge_lists(
+            [s.get("trigger_keywords", []) for s in skills_to_merge]
+        )
+
+        # Determine category from first skill
+        first_category = skills_to_merge[0].get("category", "general")
+        if first_category in ["general", "common_mistakes"]:
+            index[first_category].append(merged)
+        else:
+            task_type = first_category.replace("alfworld/", "")
+            if task_type not in index["task_specific_skills"]:
+                index["task_specific_skills"][task_type] = []
+            index["task_specific_skills"][task_type].append(merged)
+
+        # Save updated index
+        self.batch_extractor._save_index(index)
+
+        # Invalidate embeddings for old skills
+        for name in merged_names:
+            if name in self._embedding_cache:
+                del self._embedding_cache[name]
+        self._save_embedding_cache()
+
+        print(f"Merged {len(skill_names)} skills into '{new_skill_name}'")
+
+    def _llm_merge_skills(self, skills: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Use LLM to merge multiple similar skills.
+
+        Args:
+            skills: List of skill dictionaries to merge.
+
+        Returns:
+            Merged skill dictionary, or None if merge failed.
+        """
+        if not self.llm or len(skills) < 2:
+            return None
+
+        # Build prompt for merge decision
+        skills_json = json.dumps(skills, indent=2, ensure_ascii=False)
+
+        prompt = f"""你是一个技能融合专家。现在有多个高度相似的技能需要合并。
+
+技能列表：
+{skills_json}
+
+请输出合并后的技能 JSON，要求：
+1. 保留最关键的步骤，去除重复
+2. 如果步骤顺序不同，分析哪种顺序更合理
+3. 保持步骤的 observation_pattern 覆盖全面
+4. 只输出 JSON，不要其他内容
+
+输出格式：
+{{
+  "name": "合并后的技能名称",
+  "description": "合并后的技能描述",
+  "steps": [{{"action": "...", "observation_pattern": "...", "reasoning": "..."}}]
+}}
+"""
+
+        try:
+            response = self.llm.generate([{"role": "user", "content": prompt}])
+            # Try to parse JSON from response
+            # Handle cases where LLM adds markdown code blocks
+            response = response.strip()
+            if response.startswith("```"):
+                # Remove markdown code block syntax
+                response = response.split("```")[1]
+                if response.startswith("json"):
+                    response = response[4:]
+                response = response.strip()
+
+            merged = json.loads(response)
+            return merged
+        except (json.JSONDecodeError, Exception) as e:
+            print(f"Failed to parse LLM merge response: {e}")
+            return None
+
+    def _compute_merged_stat(self, skills: List[Dict[str, Any]], stat_name: str) -> float:
+        """Compute merged statistic from multiple skills.
+
+        Uses weighted average based on usage_count.
+
+        Args:
+            skills: List of skills.
+            stat_name: Name of the statistic to compute.
+
+        Returns:
+            Merged statistic value.
+        """
+        total_usage = 0
+        weighted_sum = 0.0
+
+        for skill in skills:
+            usage = skill.get("usage_count", 0)
+            value = skill.get(stat_name, 0.0)
+            if usage > 0:
+                weighted_sum += value * usage
+                total_usage += usage
+
+        return weighted_sum / total_usage if total_usage > 0 else 0.5
+
+    def _merge_lists(self, lists: List[List[Any]]) -> List[Any]:
+        """Merge multiple lists into one, removing duplicates.
+
+        Args:
+            lists: List of lists to merge.
+
+        Returns:
+            Merged list with unique items.
+        """
+        seen = set()
+        result = []
+        for lst in lists:
+            for item in lst:
+                # For dicts, use json.dumps as key; for primitives, use the item itself
+                if isinstance(item, dict):
+                    key = json.dumps(item, sort_keys=True)
+                else:
+                    key = str(item)
+                if key not in seen:
+                    seen.add(key)
+                    result.append(item)
+        return result
 
     def _retrieve_embedding(
         self,

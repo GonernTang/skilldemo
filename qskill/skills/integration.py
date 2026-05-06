@@ -37,6 +37,13 @@ def create_skill_integrator(
     retrieve_task_specific = skill_config.get("retrieve_task_specific", 1)
     retrieve_common_mistakes = skill_config.get("retrieve_common_mistakes", 1)
     summarize_task_description = skill_config.get("summarize_task_description", False)
+    enable_culling = skill_config.get("enable_culling", False)
+    max_skills = skill_config.get("max_skills", 50)
+    cull_threshold = skill_config.get("cull_threshold", 0.3)
+    cull_batch_size = skill_config.get("cull_batch_size", 5)
+    cull_min_usage = skill_config.get("cull_min_usage", 3)
+    enable_merging = skill_config.get("enable_merging", False)
+    merge_similarity_threshold = skill_config.get("merge_similarity_threshold", 0.85)
 
     return BatchSkillIntegrator(
         llm=llm,
@@ -51,4 +58,11 @@ def create_skill_integrator(
         retrieve_task_specific=retrieve_task_specific,
         retrieve_common_mistakes=retrieve_common_mistakes,
         summarize_task_description=summarize_task_description,
+        enable_culling=enable_culling,
+        max_skills=max_skills,
+        cull_threshold=cull_threshold,
+        cull_batch_size=cull_batch_size,
+        cull_min_usage=cull_min_usage,
+        enable_merging=enable_merging,
+        merge_similarity_threshold=merge_similarity_threshold,
     )

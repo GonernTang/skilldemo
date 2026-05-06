@@ -174,14 +174,14 @@ class FailureAnalyzer:
 
         if reason == "missing_prerequisite":
             return SkillUpdate(
-                skill_id=skill.skill_id,
+                skill_name=skill.name,
                 update_type="add_constraint",
                 new_constraints=[analysis.get("failure_detail", "")],
                 warning=f"注意：{analysis.get('lesson', '')}",
             )
         elif reason == "wrong_action":
             return SkillUpdate(
-                skill_id=skill.skill_id,
+                skill_name=skill.name,
                 update_type="create_antipattern",
                 antipattern={
                     "action": analysis.get("failure_action"),
@@ -191,7 +191,7 @@ class FailureAnalyzer:
             )
         elif reason == "wrong_order":
             return SkillUpdate(
-                skill_id=skill.skill_id,
+                skill_name=skill.name,
                 update_type="add_failure_scenario",
                 failure_scenario={
                     "reason": "wrong_order",
@@ -201,7 +201,7 @@ class FailureAnalyzer:
             )
         else:
             return SkillUpdate(
-                skill_id=skill.skill_id,
+                skill_name=skill.name,
                 update_type="add_failure_scenario",
                 failure_scenario={
                     "reason": reason,

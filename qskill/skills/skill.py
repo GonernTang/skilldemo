@@ -25,15 +25,14 @@ class Skill:
     """Represents a reusable skill with execution steps and metadata.
 
     Attributes:
-        skill_id: Unique identifier for the skill.
-        name: Human-readable name of the skill.
+        name: Human-readable name of the skill (unique identifier for dedup).
         description: Detailed description of what the skill does.
         task_type: Category of tasks this skill applies to.
         trigger_keywords: Keywords used for retrieval indexing.
         applicable_observations: List of observation patterns this skill handles.
         steps: Ordered list of steps to execute the skill.
         skill_type: Either 'primitive' (atomic) or 'composite' (hierarchical).
-        parent_skill_id: ID of parent skill if this is a sub-skill.
+        parent_skill_name: Name of parent skill if this is a sub-skill.
         success_rate: Historical success rate (0.0 to 1.0).
         usage_count: Number of times this skill has been used.
         last_used_at: ISO timestamp of last usage.
@@ -46,7 +45,6 @@ class Skill:
         skill_value: Skill value (Q-value) for value-driven retrieval, updated via Q-learning.
     """
 
-    skill_id: str
     name: str
     description: str
     task_type: str
@@ -54,7 +52,7 @@ class Skill:
     applicable_observations: List[str]
     steps: List[SkillStep]
     skill_type: str = "primitive"
-    parent_skill_id: Optional[str] = None
+    parent_skill_name: Optional[str] = None
 
     # Statistics
     success_rate: float = 1.0
@@ -82,7 +80,6 @@ class Skill:
             Dictionary containing all skill fields.
         """
         return {
-            "skill_id": self.skill_id,
             "name": self.name,
             "description": self.description,
             "task_type": self.task_type,
@@ -97,7 +94,7 @@ class Skill:
                 for step in self.steps
             ],
             "skill_type": self.skill_type,
-            "parent_skill_id": self.parent_skill_id,
+            "parent_skill_name": self.parent_skill_name,
             "success_rate": self.success_rate,
             "usage_count": self.usage_count,
             "last_used_at": self.last_used_at,
@@ -129,7 +126,6 @@ class Skill:
             for step in data.get("steps", [])
         ]
         return cls(
-            skill_id=data["skill_id"],
             name=data["name"],
             description=data["description"],
             task_type=data["task_type"],
@@ -137,7 +133,7 @@ class Skill:
             applicable_observations=list(data["applicable_observations"]),
             steps=steps,
             skill_type=data.get("skill_type", "primitive"),
-            parent_skill_id=data.get("parent_skill_id"),
+            parent_skill_name=data.get("parent_skill_name"),
             success_rate=data.get("success_rate", 1.0),
             usage_count=data.get("usage_count", 0),
             last_used_at=data.get("last_used_at"),
@@ -210,7 +206,7 @@ class SkillUpdate:
     """Represents an update operation to be applied to a skill.
 
     Attributes:
-        skill_id: ID of the skill to update.
+        skill_name: Name of the skill to update.
         update_type: Type of update to perform.
         new_constraints: Constraints to add to the skill.
         warning: Warning message associated with the update.
@@ -219,7 +215,7 @@ class SkillUpdate:
         deprecated: Whether to mark the skill as deprecated.
     """
 
-    skill_id: str
+    skill_name: str
     update_type: str
     new_constraints: List[str] = field(default_factory=list)
     warning: str = ""

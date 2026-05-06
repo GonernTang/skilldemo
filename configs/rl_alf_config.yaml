@@ -98,3 +98,12 @@ skill:
   value_alpha: 0.3  # Learning rate for skill value Q-learning update
   value_lambda: 0.3  # Weight for skill value in hybrid retrieval score
   summarize_task_description: true  # Summarize task description before embedding for better skill matching
+  # Skill retention (culling) configuration
+  enable_culling: false  # Enable automatic skill culling when skill count exceeds max_skills
+  max_skills: 50  # Maximum number of skills before culling is triggered
+  cull_threshold: 0.3  # Skill value threshold below which skills may be culled
+  cull_batch_size: 5  # Number of skills to cull at once
+  cull_min_usage: 3  # Minimum usage count before a skill can be culled
+  # Skill merging configuration
+  enable_merging: false  # Enable automatic skill merging for similar skills
+  merge_similarity_threshold: 0.85  # Similarity threshold (0-1) above which skills are considered for merging

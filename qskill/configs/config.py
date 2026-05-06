@@ -244,6 +244,17 @@ class SkillConfig(BaseModel):
     value_lambda: float = Field(default=0.5, description="Weight for skill value in hybrid retrieval score (lambda)")
     summarize_task_description: bool = Field(default=False, description="Whether to summarize task description before embedding-based retrieval")
 
+    # Skill retention (culling) configuration
+    enable_culling: bool = Field(default=False, description="Enable automatic skill culling when skill count exceeds max_skills")
+    max_skills: int = Field(default=50, description="Maximum number of skills before culling is triggered")
+    cull_threshold: float = Field(default=0.3, description="Skill value threshold below which skills may be culled")
+    cull_batch_size: int = Field(default=5, description="Number of skills to cull at once when max_skills is exceeded")
+    cull_min_usage: int = Field(default=3, description="Minimum usage count before a skill can be culled")
+
+    # Skill merging configuration
+    enable_merging: bool = Field(default=False, description="Enable automatic skill merging for similar skills")
+    merge_similarity_threshold: float = Field(default=0.85, description="Similarity threshold (0-1) above which skills are considered for merging")
+
 
 class MempConfig(BaseModel):
     """Main configuration class for the Memp system."""
