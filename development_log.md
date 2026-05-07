@@ -1,5 +1,49 @@
 # qskill 开发日志
 
+## 2026-05-07 - 论文评审意见整理
+
+### 评审文档
+
+创建 `docs/paper_review.md`，整理了关于当前 qskill 论文工作的评审意见。
+
+### 论文 Roadmap
+
+创建 `docs/paper_roadmap.md`，包含：
+
+**核心贡献 Statement（推荐版本）**：
+> qskill: A non-parametric skill evolution approach that decouples stable skill retention from plastic skill acquisition. By combining Q-value guided retrieval, environment-driven skill value updates, and automatic skill culling/merging, qskill enables agents to continuously evolve their skill libraries without weight updates.
+
+**Culling/Merging 实现逻辑**：
+- Culling: `skill_value < threshold` + `usage_count >= min` 时淘汰
+- Merging: `cosine_similarity >= 0.85` 的技能标记为可合并（合并执行未实现）
+
+**下一步计划**：
+1. 补足 4 benchmark 实验
+2. 消融实验（Q-value 有/无、Culling 有/无）
+3. 实现 Merging 合并执行
+4. 理论分析（Q-value 收敛性）
+
+### 核心评价
+
+- 当前工作处于"系统实现"阶段，距离论文发表需要显著科研贡献提炼
+- 优点：工程扎实、memory+skill 协同、多类别技能设计
+- 不足：贡献点不清晰、与前沿工作差异不足、实验验证不充分
+
+### 建议突破方向
+
+1. **Skill Evolution Theory** - 技能如何"正确"演化的理论
+2. **Two-Phase Retrieval 理论分析** - 形式化证明两阶段优于单阶段
+3. **与 Skill0 结合** - 训练时内化 + 运行时检索 正交结合
+4. **Skill Value 理论性质** - Q-value 收敛性证明
+
+### 下一步
+
+- 补足实验：4 benchmark + 消融 + 统计显著性
+- 提炼核心贡献 statement
+- 参考 Skill0/SkillMOO 写作方式
+
+---
+
 ## 2026-04-29 - 项目整理：重命名 + 导入修复
 
 ### 背景
