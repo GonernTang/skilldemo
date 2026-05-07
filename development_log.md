@@ -44,6 +44,45 @@
 
 ---
 
+## 2026-05-07 - BCB Skill Layer 集成
+
+### 修改的文件
+
+1. **qskill/run/bcb_runner.py**
+   - `__init__`: 添加 `skill_integrator` 参数
+   - `_generate_raw()`: 添加 `skill_context` 参数
+   - `_generate_code()`: 添加 `skill_context` 参数
+   - `_get_task_type()`: 新增辅助方法，从 task 提取任务类型（基于 entry_point 和 libs）
+   - `_run_phase()`: 添加技能检索、价值更新、技能提取逻辑
+
+2. **run/run_bcb.py**
+   - 导入 `create_skill_integrator`
+   - 添加 `--disable_skills` 命令行参数
+   - 初始化 `skill_integrator` 并传递给 BCBRunner
+
+3. **run/run_alfworld.py**
+   - 修复 bug：移除不存在的 `initialize()` 调用
+
+### BCB 任务类型定义
+
+BCB 的任务类型使用 `entry_point` 和 `libs` 字段构造：
+```python
+# 例如: libs=["pandas"], entry_point="filter_data"
+# task_type = "pandas/filter_data"
+```
+
+### 运行方式
+
+```bash
+# 带 skill layer 运行
+python run/run_bcb.py --config configs/rl_bcb_config.yaml --epochs 3
+
+# 不带 skill layer 运行（对比实验）
+python run/run_bcb.py --config configs/rl_bcb_config.yaml --epochs 3 --disable_skills
+```
+
+---
+
 ## 2026-04-29 - 项目整理：重命名 + 导入修复
 
 ### 背景

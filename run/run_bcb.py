@@ -21,6 +21,7 @@ from qskill.service.strategies import (
     UpdateStrategy,
     StrategyConfiguration,
 )
+from qskill.skills.integration import create_skill_integrator
 from qskill.run.bcb_runner import BCBRunner, BCBSelection
 
 DEFAULT_SPLIT_FILES = {
@@ -118,6 +119,11 @@ def parse_args() -> argparse.Namespace:
         "--disable_memory",
         action="store_true",
         help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
+    p.add_argument(
+        "--disable_skills",
+        action="store_true",
+        help="Disable skill layer (don't retrieve or extract skills)",
     )
     p.add_argument("--eval_timeout", type=float, default=60.0)
     p.add_argument("--untrusted_hard_timeout", type=float, default=120.0)
@@ -247,6 +253,25 @@ def main() -> None:
         data_path=args.data_path,
     )
 
+    # Initialize SkillIntegrator if skills are enabled
+    skill_integrator = None
+    if not args.disable_skills:
+        skill_config_dict = getattr(cfg, 'skill', {})
+        if skill_config_dict.get('enabled', False):
+            skill_integrator = create_skill_integrator(
+                config_dict={'skill': skill_config_dict},
+                llm=llm,
+                embedder=embedder,
+            )
+            if skill_integrator:
+                logger.info("Skill layer enabled")
+            else:
+                logger.info("Skill layer disabled via config")
+        else:
+            logger.info("Skill layer disabled via config")
+    else:
+        logger.info("Skill layer disabled via --disable_skills flag")
+
     runner = BCBRunner(
         root=project_root,
         selection=sel,
@@ -272,6 +297,7 @@ def main() -> None:
         bcb_repo=args.bcb_repo,
         untrusted_hard_timeout_s=float(args.untrusted_hard_timeout),
         eval_timeout_s=float(args.eval_timeout),
+        skill_integrator=skill_integrator,
     )
 
     logger.info("BCB run_dir: %s", run_dir)

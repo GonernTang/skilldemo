@@ -186,8 +186,7 @@ def main():
                     embedder=embedding_provider,
                 )
                 if skill_integrator:
-                    skill_integrator.initialize()
-                    logger.info("Skill layer enabled and initialized")
+                    logger.info("Skill layer enabled")
                 else:
                     logger.info("Skill layer disabled via config")
             else:

@@ -91,6 +91,7 @@ class BCBRunner:
         bcb_repo: Optional[str] = None,
         untrusted_hard_timeout_s: float = 120.0,
         eval_timeout_s: float = 60.0,
+        skill_integrator: Optional[Any] = None,
     ) -> None:
         self.root = Path(root)
         self.sel = selection
@@ -112,6 +113,7 @@ class BCBRunner:
         self.bcb_repo = bcb_repo
         self.untrusted_hard_timeout_s = float(untrusted_hard_timeout_s)
         self.eval_timeout_s = float(eval_timeout_s)
+        self.skill_integrator = skill_integrator
 
         ensure_bigcodebench_on_path(self.bcb_repo)
 
@@ -324,7 +326,9 @@ class BCBRunner:
 
         return "\n".join(steps)
 
-    def _generate_raw(self, prompt: str, *, memory_context: str = "") -> str:
+    def _generate_raw(
+        self, prompt: str, *, memory_context: str = "", skill_context: str = ""
+    ) -> str:
         messages: List[Dict[str, str]] = []
 
         system_parts: List[str] = []
@@ -332,6 +336,8 @@ class BCBRunner:
             system_parts.append(self.system_prompt)
         if memory_context:
             system_parts.append(memory_context)
+        if skill_context:
+            system_parts.append(skill_context)
         if system_parts:
             messages.append({"role": "system", "content": "\n\n".join(system_parts)})
 
@@ -347,8 +353,30 @@ class BCBRunner:
             return ""
         return resp or ""
 
-    def _generate_code(self, prompt: str, *, memory_context: str = "") -> str:
-        return extract_code_from_response(self._generate_raw(prompt, memory_context=memory_context))
+    def _generate_code(
+        self, prompt: str, *, memory_context: str = "", skill_context: str = ""
+    ) -> str:
+        return extract_code_from_response(
+            self._generate_raw(prompt, memory_context=memory_context, skill_context=skill_context)
+        )
+
+    def _get_task_type(self, task: Dict[str, Any]) -> str:
+        """Get task type from BCB task for skill retrieval.
+
+        Uses entry_point (function name) and libs (libraries) as task type identifiers.
+
+        Args:
+            task: BCB task dictionary.
+
+        Returns:
+            Task type string based on entry_point and libs.
+        """
+        entry_point = task.get("entry_point", "unknown")
+        libs = task.get("libs", [])
+        if isinstance(libs, list) and libs:
+            # Use first library as task type category
+            return f"{libs[0]}/{entry_point}"
+        return f"bcb/{entry_point}"
 
     # -------------------------- I/O helpers --------------------------
 
@@ -538,7 +566,24 @@ class BCBRunner:
                 except Exception:
                     pass
 
-            raw_response = self._generate_raw(prompt, memory_context=mem_context)
+            # Skill retrieval
+            skill_context = ""
+            retrieved_skill_names: List[str] = []
+            if self.skill_integrator is not None:
+                try:
+                    task_type = self._get_task_type(task)
+                    skills = self.skill_integrator.retrieve_skills(
+                        task_description=prompt,
+                        task_type=task_type,
+                        observation=None,
+                    )
+                    if skills:
+                        retrieved_skill_names = [s.get("name", "") for s in skills if s.get("name")]
+                        skill_context = self.skill_integrator.format_skills_for_context(skills)
+                except Exception:
+                    logger.debug("BCB skill retrieval failed for %s", task_id, exc_info=True)
+
+            raw_response = self._generate_raw(prompt, memory_context=mem_context, skill_context=skill_context)
             code = extract_code_from_response(raw_response)
 
             retrieval_logs.append(
@@ -549,12 +594,38 @@ class BCBRunner:
                     "selected_ids": selected_ids,
                     "retrieved_topk_queries": retrieved_topk_queries,
                     "threshold": self._get_retrieve_threshold(),
+                    "retrieved_skills": retrieved_skill_names,
                 }
             )
 
             eval_res = self._evaluate_one(task=task, code=code)
             ok = eval_res.get("status") == "PASS"
             pass_count += 1 if ok else 0
+
+            # Update skill values based on task outcome
+            if self.skill_integrator is not None and retrieved_skill_names:
+                try:
+                    for skill_name in retrieved_skill_names:
+                        self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(ok))
+                except Exception:
+                    logger.debug("BCB skill value update failed for %s", task_id, exc_info=True)
+
+            # Extract skill from successful trajectory
+            if self.skill_integrator is not None and ok:
+                try:
+                    trajectory = [
+                        {"role": "user", "content": prompt},
+                        {"role": "assistant", "content": raw_response},
+                    ]
+                    task_type = self._get_task_type(task)
+                    self.skill_integrator.extract_and_save_skill(
+                        trajectory=trajectory,
+                        task_description=prompt,
+                        task_type=task_type,
+                        success=True,
+                    )
+                except Exception:
+                    logger.debug("BCB skill extraction failed for %s", task_id, exc_info=True)
 
             sample = {
                 "task_id": task_id,
@@ -566,6 +637,7 @@ class BCBRunner:
                 "model": self.model_name,
                 "status": eval_res.get("status"),
                 "error": eval_res.get("error"),
+                "retrieved_skills": retrieved_skill_names,
             }
             samples.append(sample)
 
