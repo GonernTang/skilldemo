@@ -375,11 +375,22 @@ class MemoryService(BaseMemoryService):
             )
             os.makedirs(qdrant_dir, exist_ok=True)
             self._qdrant_dir = qdrant_dir
+
+            # Dynamically determine vector dimension based on embedding model
+            # text-embedding-v4: 1024, text-embedding-3-large: 3072, text-embedding-3-small: 1536
+            embedding_dim_map = {
+                "text-embedding-v4": 1024,
+                "text-embedding-3-large": 3072,
+                "text-embedding-3-small": 1536,
+                "text-embedding-ada-002": 1536,
+            }
+            vector_dimension = embedding_dim_map.get(embedder_model_name, 1024)
+
             vector_db_cfg = {
                 "backend": "qdrant",
                 "config": {
                     "collection_name": f"memp_{self.user_id}_{ts_str}",
-                    "vector_dimension": 3072,
+                    "vector_dimension": vector_dimension,
                     "distance_metric": "cosine",
                     "path": qdrant_dir,
                 },
@@ -1815,6 +1826,15 @@ class MemoryService(BaseMemoryService):
         chat = self.mos_config.chat_model
         openai_cfg = chat.config.model_dump()
         embedder = self.mos_config.mem_reader.config.embedder.config
+        embedder_model_name = getattr(embedder, "model_name_or_path", None) or "text-embedding-v4"
+        # Dynamically determine vector dimension based on embedding model
+        embedding_dim_map = {
+            "text-embedding-v4": 1024,
+            "text-embedding-3-large": 3072,
+            "text-embedding-3-small": 1536,
+            "text-embedding-ada-002": 1536,
+        }
+        vector_dimension = embedding_dim_map.get(embedder_model_name, 1024)
         default_cfg = GeneralMemCubeConfig(
             user_id=self.user_id,
             text_mem={
@@ -1838,7 +1858,7 @@ class MemoryService(BaseMemoryService):
                         "backend": "qdrant",
                         "config": {
                             "collection_name": f"memp_{self.user_id}_snapshot",
-                            "vector_dimension": 3072,
+                            "vector_dimension": vector_dimension,
                             "distance_metric": "cosine",
                             "path": qdrant_dir,
                         },
