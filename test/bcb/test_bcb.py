@@ -27,6 +27,7 @@ from qskill.service.base_memory_service import BaseMemoryService, NullMemoryServ
 from qskill.service.memory_service import MemoryService
 from qskill.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
 from qskill.skills.integration import create_skill_integrator
+from qskill.skills.prompts import BCB_SKILL_SYSTEM_PROMPT
 from qskill.run.bcb_runner import BCBRunner, BCBSelection
 
 
@@ -149,7 +150,7 @@ class BCBTestRunner:
 
         # Selection configuration
         self.selection = BCBSelection(
-            subset="hard",
+            subset="full",
             split="instruct",
             train_ratio=0.7,
             seed=self.random_seed,
@@ -281,10 +282,15 @@ class BCBTestRunner:
             if self.skill_integrator and retrieved_skills:
                 skill_context = self.skill_integrator.format_skills_for_context(retrieved_skills)
 
+            # Build system prompt with skill context
+            system_content = BCB_SKILL_SYSTEM_PROMPT
+            if skill_context:
+                system_content += f"\n\n[Retrieved Skills Context]\n{skill_context}"
+
             # Generate code
             raw_response = self.llm_provider.generate(
                 messages=[
-                    {"role": "system", "content": f"You are an expert Python programmer solving BigCodeBench coding tasks.\n\n{skill_context}"},
+                    {"role": "system", "content": system_content},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=self.cfg.llm.temperature,
