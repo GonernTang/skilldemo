@@ -42,6 +42,8 @@ class TaskResult:
     retrieved_skills: List[str] = field(default_factory=list)
     skill_value_changes: Dict[str, Dict[str, float]] = field(default_factory=dict)
     token_usage: Dict[str, int] = field(default_factory=dict)
+    eval_status: str = ""  # BCB evaluation status (PASS/FAIL/TIMEOUT/SYNTAX_ERROR/etc)
+    eval_error: str = ""  # BCB evaluation error details
     error: Optional[str] = None
 
 
@@ -305,10 +307,14 @@ class BCBTestRunner:
             # Evaluate
             eval_res = self._evaluate_one(task, code)
             result.success = eval_res.get("status") == "PASS"
+            result.eval_status = eval_res.get("status", "")
+            result.eval_error = eval_res.get("error", "")
 
             print(f"\n{'='*40}")
             print(f"Task {'SUCCEEDED' if result.success else 'FAILED'}")
             print(f"Status: {eval_res.get('status')}")
+            if eval_res.get("error"):
+                print(f"Error: {eval_res.get('error')}")
             print(f"{'='*40}")
 
             # Update skill values
@@ -444,6 +450,10 @@ class BCBTestRunner:
         for i, result in enumerate(results):
             status = "✓ SUCCESS" if result.success else "✗ FAILURE"
             print(f"\n{i+1}. [{status}] {result.task_id}")
+            if result.eval_status:
+                print(f"   Eval Status: {result.eval_status}")
+            if result.eval_error:
+                print(f"   Eval Error: {result.eval_error[:200]}")
             if result.retrieved_skills:
                 print(f"   Retrieved skills: {', '.join(result.retrieved_skills)}")
             if result.skill_value_changes:
@@ -471,6 +481,8 @@ class BCBTestRunner:
                     "code": r.code,
                     "retrieved_skills": r.retrieved_skills,
                     "skill_value_changes": r.skill_value_changes,
+                    "eval_status": r.eval_status,
+                    "eval_error": r.eval_error,
                     "error": r.error,
                 }
                 for r in results
