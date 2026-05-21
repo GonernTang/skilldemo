@@ -13,23 +13,19 @@
 
 llm:
   provider: "openai"
-  # NOTE: do not commit real keys/endpoints in this file.
-  # Create a local copy `configs/rl_bcb_config.local.yaml` (gitignored) for private values.
-  api_key: "sk-REPLACE_ME"
-  base_url: "https://api.openai.com/v1"
+  api_key: "sk-8df0848b28d94066a0f03ea5b388e74c"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
   api_version: null
-  model: "gpt-4o-mini"
+  model: "qwen3.5-flash"
   temperature: 0.0
   max_tokens: 12800
 
 embedding:
   provider: "openai"
-  # NOTE: do not commit real keys/endpoints in this file.
-  # Create a local copy `configs/rl_bcb_config.local.yaml` (gitignored) for private values.
-  api_key: "sk-REPLACE_ME"
-  base_url: "https://api.openai.com/v1"
+  api_key: "sk-8df0848b28d94066a0f03ea5b388e74c"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
   api_version: null
-  model: "text-embedding-3-large"
+  model: "text-embedding-v4"
   max_text_len: 8196
 
 memory:
@@ -116,3 +112,25 @@ rl_config:
   q_min_threshold: -0.8
   weight_sim: 0.5
   weight_q: 0.5
+
+skill:
+  enabled: true
+  storage_dir: "skills/bcb"
+  benchmark: "bcb"
+  retrieval_method: "template"
+  extract_interval: 10
+  retrieve_general: 1
+  retrieve_task_specific: 1
+  retrieve_common_mistakes: 1
+  auto_extract: true
+  value_alpha: 0.5
+  value_lambda: 0.5
+  summarize_task_description: false
+  enable_culling: false
+  max_skills: 50
+  cull_threshold: 0.3
+  cull_batch_size: 5
+  cull_min_usage: 3
+  enable_merging: false
+  merge_similarity_threshold: 0.85
+  rrf_k: 60.0

@@ -29,6 +29,7 @@ from qskill.service.value_driven import RLConfig
 from qskill.providers.llm import OpenAILLM
 from qskill.providers.embedding import OpenAIEmbedder
 from qskill.utils.task_id import extract_task_id
+from qskill.skills.batch_integration import BatchSkillIntegrator
 
 from qskill.lifelongbench_eval.prompts import (
     DEFAULT_SYSTEM_PROMPT as LLB_DEFAULT_SYSTEM_PROMPT,
@@ -129,6 +130,7 @@ class LLBRunner(BaseRunner):
         kg_offline_fallback: bool = False,
         limit: Optional[int] = None,
         valid_file: Optional[str] = None,
+        skill_integrator: Optional[BatchSkillIntegrator] = None,
     ):
         self.root = root
         self.memory_service = memory_service
@@ -162,6 +164,7 @@ class LLBRunner(BaseRunner):
         self.limit = limit
         self.results_log = []
         self.valid_file = valid_file
+        self.skill_integrator = skill_integrator
 
         self.rl_config: Optional[RLConfig] = rl_config
 
@@ -684,8 +687,33 @@ class LLBRunner(BaseRunner):
                     except Exception as e:
                         logger.warning(f"Memory retrieval failed for {sample_index}: {e}")
 
-                # Create agent with memory context
-                full_prompt = self._build_llb_full_prompt(memory_context=memory_context)
+                # Skill retrieval
+                skill_context = ""
+                retrieved_skill_names: List[str] = []
+                task_type = f"llb/{self.task}"  # e.g., llb/db, llb/os, llb/kg
+                if self.skill_integrator is not None:
+                    try:
+                        skills = self.skill_integrator.retrieve_skills(
+                            task_description=task_description,
+                            task_type=task_type,
+                            observation=None,
+                        )
+                        if skills:
+                            retrieved_skill_names = [s.get("name", "") for s in skills if s.get("name")]
+                            skill_context = self.skill_integrator.format_skills_for_context(skills)
+                    except Exception as e:
+                        logger.debug("LLB skill retrieval failed: %s", e)
+
+                # Combine skill context with memory context
+                combined_context = memory_context
+                if skill_context:
+                    if combined_context:
+                        combined_context = f"{combined_context}\n\n{skill_context}"
+                    else:
+                        combined_context = skill_context
+
+                # Create agent with memory context (now including skill context)
+                full_prompt = self._build_llb_full_prompt(memory_context=combined_context)
                 if trace_ctx is not None:
                     trace_ctx.set_full_system_prompt(full_prompt)
                 agent = LanguageModelAgent(
@@ -730,6 +758,28 @@ class LLBRunner(BaseRunner):
 
                 # Check success
                 success = self._session_success(session)
+
+                # Update skill values based on task outcome
+                if self.skill_integrator is not None and retrieved_skill_names:
+                    try:
+                        for skill_name in retrieved_skill_names:
+                            self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(success))
+                    except Exception as e:
+                        logger.debug("LLB skill value update failed: %s", e)
+
+                # Extract skill from successful trajectory
+                if self.skill_integrator is not None and success:
+                    try:
+                        trajectory_for_extraction = self._session_to_chat_messages(session)
+                        if trajectory_for_extraction:
+                            self.skill_integrator.extract_and_save_skill(
+                                trajectory=trajectory_for_extraction,
+                                task_description=task_description,
+                                task_type=task_type,
+                                success=True,
+                            )
+                    except Exception as e:
+                        logger.debug("LLB skill extraction failed: %s", e)
 
                 # Convert session to trajectory string
                 trajectory = self._session_to_trajectory(session)

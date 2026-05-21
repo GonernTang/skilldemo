@@ -256,8 +256,8 @@ def main() -> None:
     # Initialize SkillIntegrator if skills are enabled
     skill_integrator = None
     if not args.disable_skills:
-        skill_config_dict = getattr(cfg, 'skill', {})
-        if skill_config_dict.get('enabled', False):
+        if cfg.skill.enabled:
+            skill_config_dict = cfg.skill.model_dump()
             skill_integrator = create_skill_integrator(
                 config_dict={'skill': skill_config_dict},
                 llm=llm,

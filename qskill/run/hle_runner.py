@@ -1,4 +1,5 @@
 from __future__ import annotations
+import copy
 import logging
 import json
 import hashlib
@@ -17,6 +18,7 @@ from tqdm import tqdm
 from .base_runner import BaseRunner
 from qskill.providers.llm import OpenAILLM
 from qskill.service.base_memory_service import BaseMemoryService
+from qskill.skills.batch_integration import BatchSkillIntegrator
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,7 @@ class HLERunner(BaseRunner):
         ckpt_resume_epoch: Optional[int] = None,
         baseline_mode: Optional[str] = None,
         baseline_k: int = 10,
+        skill_integrator: Optional[BatchSkillIntegrator] = None,
     ) -> None:
         self.name = name
         self.llm = llm
@@ -82,6 +85,7 @@ class HLERunner(BaseRunner):
         self.ckpt_resume_epoch = ckpt_resume_epoch
         self.baseline_mode = (baseline_mode or "").strip().lower() or None
         self.baseline_k = max(1, int(baseline_k))
+        self.skill_integrator = skill_integrator
 
         self.run_id = run_id or time.strftime('%Y%m%d-%H%M%S')
         ts = self.run_id
@@ -761,6 +765,10 @@ class HLERunner(BaseRunner):
     def _evaluate_row(self, row: pd.Series, reflection_note: Optional[str] = None) -> Dict[str, Any]:
         q = str(row['question'])
         gold = str(row['answer'])
+        category = row.get('category', None)
+        # Build task_type from category (e.g., "hle/math")
+        task_type = f"hle/{category}" if category else "hle/other"
+
         # Collect question images and register them
         question_imgs_raw = self._collect_question_images(row)
         question_images_info: List[Tuple[str, str, str]] = []
@@ -803,6 +811,22 @@ class HLERunner(BaseRunner):
 
         images_info = question_images_info + memory_images_info
 
+        # Skill retrieval
+        skill_context = ""
+        retrieved_skill_names: List[str] = []
+        if self.skill_integrator is not None:
+            try:
+                skills = self.skill_integrator.retrieve_skills(
+                    task_description=q,
+                    task_type=task_type,
+                    observation=None,
+                )
+                if skills:
+                    retrieved_skill_names = [s.get("name", "") for s in skills if s.get("name")]
+                    skill_context = self.skill_integrator.format_skills_for_context(skills)
+            except Exception as e:
+                logger.debug("HLE skill retrieval failed: %s", e)
+
         answer_type = row.get('answer_type', None)
         messages = self._build_messages(
             q,
@@ -812,6 +836,11 @@ class HLERunner(BaseRunner):
             images_info=images_info,
             reflection_note=reflection_note,
         )
+
+        # Inject skill context into messages
+        if skill_context:
+            messages = self._inject_skill_context(messages, skill_context)
+
         call_meta = {
             "question_id": row.get('id', None),
             "answer_type": answer_type,
@@ -829,7 +858,7 @@ class HLERunner(BaseRunner):
                     messages=messages,
                     temperature=self.temperature
                     )
-                
+
             if self.llm.model == "gpt-5.2":
                 kwargs["reasoning_effort"] = "high"
 
@@ -845,6 +874,30 @@ class HLERunner(BaseRunner):
         judge_res = self._hle_judge(q, gold, output or "", meta={"question_id": row.get('id', None)})
         correct = True if str(judge_res.get("correct", "no")).lower() == "yes" else False
 
+        # Update skill values based on task outcome
+        if self.skill_integrator is not None and retrieved_skill_names:
+            try:
+                for skill_name in retrieved_skill_names:
+                    self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(correct))
+            except Exception as e:
+                logger.debug("HLE skill value update failed: %s", e)
+
+        # Extract skill from successful trajectory
+        if self.skill_integrator is not None and correct:
+            try:
+                trajectory = [
+                    {"role": "user", "content": q},
+                    {"role": "assistant", "content": output or ""},
+                ]
+                self.skill_integrator.extract_and_save_skill(
+                    trajectory=trajectory,
+                    task_description=q,
+                    task_type=task_type,
+                    success=True,
+                )
+            except Exception as e:
+                logger.debug("HLE skill extraction failed: %s", e)
+
         rec: Dict[str, Any] = {
             "id": row.get('id', None),
             "question": q,
@@ -854,11 +907,27 @@ class HLERunner(BaseRunner):
             "judge_response": judge_res,
             "retrieved_ids": retrieved_ids,
             "image_ids": question_image_ids,
+            "retrieved_skills": retrieved_skill_names,
             "trajectory": f"QUESTION\n{q}\n\nSOLUTION\n{(output or '').strip()}\n",
         }
         if retrieved_topk_queries is not None:
             rec["retrieved_topk_queries"] = retrieved_topk_queries
         return rec
+
+    def _inject_skill_context(self, messages: List[Dict[str, str]], skill_context: str) -> List[Dict[str, str]]:
+        """Inject skill context into messages as a system message."""
+        if not skill_context:
+            return messages
+        messages = copy.deepcopy(messages)
+        skill_msg = {"role": "system", "content": f"\n{skill_context}"}
+        # Insert after first system message if exists
+        for i, msg in enumerate(messages):
+            if msg.get("role") == "system":
+                messages.insert(i + 1, skill_msg)
+                return messages
+        # No system message found, prepend
+        messages.insert(0, skill_msg)
+        return messages
 
     def _eval_split(self, df: pd.DataFrame, tag: str, step: Optional[int] = None) -> Dict[str, float]:
         total = len(df)

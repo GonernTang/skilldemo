@@ -15,6 +15,7 @@ from qskill.providers.embedding import OpenAIEmbedder
 from qskill.service.base_memory_service import NullMemoryService
 from qskill.service.memory_service import MemoryService
 from qskill.service.strategies import BuildStrategy, RetrieveStrategy, UpdateStrategy, StrategyConfiguration
+from qskill.skills.integration import create_skill_integrator
 from qskill.run.hle_runner import HLERunner, HLESelection
 
 
@@ -72,6 +73,11 @@ def parse_args() -> argparse.Namespace:
         "--disable_memory",
         action="store_true",
         help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
+    p.add_argument(
+        "--disable_skills",
+        action="store_true",
+        help="Disable skill layer (don't retrieve or extract skills)",
     )
     return p.parse_args()
 
@@ -190,6 +196,25 @@ def main():
             category_ratio=args.category_ratio if args.category_ratio is not None else getattr(cfg.experiment, "hle_category_ratio", None),
         )
 
+        # Initialize SkillIntegrator if skills are enabled
+        skill_integrator = None
+        if not args.disable_skills:
+            if cfg.skill.enabled:
+                skill_config_dict = cfg.skill.model_dump()
+                skill_integrator = create_skill_integrator(
+                    config_dict={'skill': skill_config_dict},
+                    llm=llm,
+                    embedder=embedder,
+                )
+                if skill_integrator:
+                    logger.info("Skill layer enabled")
+                else:
+                    logger.info("Skill layer disabled via config")
+            else:
+                logger.info("Skill layer disabled via config")
+        else:
+            logger.info("Skill layer disabled via --disable_skills flag")
+
         runner = HLERunner(
             name=cfg.experiment.experiment_name,
             llm=llm,
@@ -213,6 +238,7 @@ def main():
             ckpt_resume_epoch=getattr(cfg.experiment, "ckpt_resume_epoch", None),
             baseline_mode=getattr(cfg.experiment, "baseline_mode", False),
             baseline_k=getattr(cfg.experiment, "baseline_k", 0),
+            skill_integrator=skill_integrator,
         )
         runner.run()
     except Exception as e:

@@ -56,6 +56,7 @@ from qskill.service.strategies import (
 )
 from qskill.providers.llm import OpenAILLM
 from qskill.providers.embedding import OpenAIEmbedder
+from qskill.skills.integration import create_skill_integrator
 from qskill.run.llb_rl_runner import LLBRunner
 from qskill.trace.llb_jsonl import apply_trace_env_from_experiment_config
 
@@ -109,6 +110,11 @@ def parse_args(project_root: Path) -> argparse.Namespace:
         "--disable_memory",
         action="store_true",
         help="Disable memory retrieval (use NullMemoryService instead of MemoryService)",
+    )
+    p.add_argument(
+        "--disable_skills",
+        action="store_true",
+        help="Disable skill layer (don't retrieve or extract skills)",
     )
     return p.parse_args()
 
@@ -289,6 +295,25 @@ def main():
 
         logger.info("All components initialized successfully.")
 
+        # Initialize SkillIntegrator if skills are enabled
+        skill_integrator = None
+        if not args.disable_skills:
+            if getattr(config, 'skill', None) and config.skill.enabled:
+                skill_config_dict = config.skill.model_dump()
+                skill_integrator = create_skill_integrator(
+                    config_dict={'skill': skill_config_dict},
+                    llm=llm_provider,
+                    embedder=embedding_provider,
+                )
+                if skill_integrator:
+                    logger.info("Skill layer enabled")
+                else:
+                    logger.info("Skill layer disabled via config")
+            else:
+                logger.info("Skill layer disabled via config")
+        else:
+            logger.info("Skill layer disabled via --disable_skills flag")
+
         # Initialize the Runner with the fully constructed components
         # Note: LLBRunner will create LanguageModelAgent instances internally using the adapter
         runner = LLBRunner(
@@ -322,6 +347,7 @@ def main():
             algorithm=config.experiment.algorithm,
             val_before_train=config.experiment.val_before_train,
             valid_file=config.experiment.valid_file,  # Get from config
+            skill_integrator=skill_integrator,
         )
         # --- RUN THE EXPERIMENT ---
         runner.run()

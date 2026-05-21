@@ -159,16 +159,21 @@ class BatchSkillExtractor:
     """Extract skills in batch from accumulated trajectories."""
 
     # Task type to category mapping
+    # Format: "task_type_key" -> "benchmark/category"
+    # BCB task types are like "subprocess/task_func" -> "bcb/subprocess/task_func"
     TASK_TYPE_CATEGORIES = {
+        # ALFWorld task types
         "pick_and_place": "alfworld/pick_and_place",
         "look_at_obj_in_light": "alfworld/look_at_obj_in_light",
         "clean": "alfworld/clean",
         "heat": "alfworld/heat",
         "cool": "alfworld/cool",
         "examine": "alfworld/examine",
+        # BCB task types (prefix "bcb/" is added dynamically)
+        # e.g., "subprocess/task_func" -> "bcb/subprocess/task_func"
     }
 
-    # Available categories
+    # Available categories (updated to include BCB prefix)
     CATEGORIES = [
         "general",
         "alfworld/pick_and_place",
@@ -177,13 +182,25 @@ class BatchSkillExtractor:
         "alfworld/heat",
         "alfworld/cool",
         "alfworld/examine",
+        "bcb",  # BCB benchmark prefix for all BCB skills
         "common_mistakes",
+    ]
+
+    # BCB library categories for task-specific skills
+    BCB_LIB_CATEGORIES = [
+        "subprocess", "ftplib", "os", "io", "json", "re", "math",
+        "datetime", "collections", "itertools", "functools", "random",
+        "statistics", "pprint", "textwrap", "string", "unicodedata",
+        "html", "xml", "csv", "configparser", "tarfile", "zipfile",
+        "gzip", "hashlib", "hmac", "secrets", "ssl", "socket",
+        "urllib", "asyncio", "heapq", "bisect", "copy", "pickle",
     ]
 
     def __init__(
         self,
         llm: BaseLLM,
         storage_dir: str = "skills",
+        benchmark: str = "markdown",
         on_skills_extracted: Optional[callable] = None,
     ):
         """Initialize the batch skill extractor.
@@ -191,15 +208,21 @@ class BatchSkillExtractor:
         Args:
             llm: LLM provider for skill extraction.
             storage_dir: Directory to save extracted skills.
+            benchmark: Benchmark name for organizing skills subdirectory (e.g., "alf", "bcb", "hle", "llb").
+                Defaults to "markdown" for backward compatibility.
             on_skills_extracted: Optional callback(skills_dict) called after
                 batch extraction with the newly extracted skills dict.
                 The dict has keys: general_skills, task_specific_skills, common_mistakes.
         """
         self.llm = llm
         self.storage_dir = Path(storage_dir)
+        self.benchmark = benchmark
         self.storage_dir.mkdir(parents=True, exist_ok=True)
-        self.index_path = self.storage_dir / "batch_skills_index.json"
-        self.markdown_dir = self.storage_dir / "markdown"
+        # Create benchmark subdirectory
+        benchmark_dir = self.storage_dir / benchmark
+        benchmark_dir.mkdir(parents=True, exist_ok=True)
+        self.index_path = benchmark_dir / "batch_skills_index.json"
+        self.markdown_dir = benchmark_dir
         self._on_skills_extracted = on_skills_extracted
         self._init_index()
 
@@ -254,6 +277,58 @@ class BatchSkillExtractor:
         name = re.sub(r'-+', '-', name)
         return name.strip('-')
 
+    def _get_bcb_task_category(self, task_type: str) -> Optional[str]:
+        """Extract BCB task category from task_type string.
+
+        BCB task_type format: "bcb/lib_name/entry_point" or "lib_name/entry_point"
+        Returns: "bcb/lib_name" or None if not a BCB task type.
+
+        Args:
+            task_type: Task type string from trajectory.
+
+        Returns:
+            BCB category string like "bcb/subprocess" or None.
+        """
+        if not task_type:
+            return None
+        # Handle "bcb/lib/entry" format
+        if task_type.startswith("bcb/"):
+            parts = task_type.split("/")
+            if len(parts) >= 2:
+                return f"bcb/{parts[1]}"
+        # Handle "lib/entry" format (without bcb prefix)
+        elif "/" in task_type and task_type not in self.TASK_TYPE_CATEGORIES:
+            parts = task_type.split("/")
+            if len(parts) >= 2:
+                lib = parts[0]
+                if lib in self.BCB_LIB_CATEGORIES:
+                    return f"bcb/{lib}"
+        return None
+
+    def _get_trajectory_benchmark(self, task_type: str) -> Optional[str]:
+        """Determine benchmark from task_type.
+
+        Args:
+            task_type: Task type string from trajectory.
+
+        Returns:
+            Benchmark name: "bcb", "alfworld", or None for unknown.
+        """
+        if not task_type:
+            return None
+        if task_type.startswith("bcb/"):
+            return "bcb"
+        if "/" in task_type:
+            # Check if it's an ALFWorld format
+            parts = task_type.split("/")
+            if len(parts) >= 2 and parts[0] in ["train", "valid", "test"]:
+                base_type = parts[-1] if len(parts) > 2 else parts[1]
+                if base_type in self.TASK_TYPE_CATEGORIES:
+                    return "alfworld"
+        elif task_type in self.TASK_TYPE_CATEGORIES:
+            return "alfworld"
+        return None
+
     def _generate_general_skills(self, trajectories: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generate general skills from all trajectories."""
         success_patterns = []
@@ -291,10 +366,16 @@ class BatchSkillExtractor:
 
         try:
             skills = json.loads(response)
+            # Determine benchmark from trajectories (use most common)
+            benchmarks = [self._get_trajectory_benchmark(t.get('task_type', '')) for t in trajectories]
+            benchmarks = [b for b in benchmarks if b is not None]
+            benchmark = max(set(benchmarks), key=benchmarks.count) if benchmarks else None
+
             for skill in skills:
                 if "name" not in skill or not skill["name"]:
                     skill["name"] = self._generate_skill_name(skill.get("title", "unnamed"))
                 skill["category"] = "general"
+                skill["benchmark"] = benchmark  # Tag with benchmark for retrieval filtering
                 skill["skill_value"] = 0.5  # Initial Q-value for new skills
                 skill["usage_count"] = 0  # Initialize usage counter
             return skills
@@ -302,24 +383,50 @@ class BatchSkillExtractor:
             return []
 
     def _generate_task_specific_skills(self, trajectories: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-        """Generate task-specific skills organized by task type."""
-        # Group by task type
+        """Generate task-specific skills organized by task type.
+
+        Handles both ALFWorld and BCB task types:
+        - ALFWorld: "pick_and_place", "clean", etc.
+        - BCB: "bcb/subprocess", "bcb/json", etc.
+        """
+        # Group by task type - initialize with ALFWorld types
         by_type: Dict[str, List[Dict[str, Any]]] = {tt: [] for tt in self.TASK_TYPE_CATEGORIES.keys()}
+
+        # Also track BCB task categories separately
+        bcb_by_lib: Dict[str, List[Dict[str, Any]]] = {}
 
         for traj in trajectories:
             task_type = traj.get('task_type', '')
-            # Match task type from full path like "pick_and_place/..."
+
+            # First check if it's a BCB task type
+            bcb_category = self._get_bcb_task_category(task_type)
+            if bcb_category:
+                if bcb_category not in bcb_by_lib:
+                    bcb_by_lib[bcb_category] = []
+                bcb_by_lib[bcb_category].append(traj)
+                continue
+
+            # Otherwise check ALFWorld task types
             for tt in self.TASK_TYPE_CATEGORIES.keys():
                 if tt in task_type:
                     by_type[tt].append(traj)
                     break
+
+        # Merge BCB categories into result
+        for bcb_cat, trajs in bcb_by_lib.items():
+            by_type[bcb_cat] = trajs
 
         result = {}
         for task_type, trajs in by_type.items():
             if not trajs:
                 continue
 
-            category = self.TASK_TYPE_CATEGORIES.get(task_type, "general")
+            # Determine category
+            if task_type in self.TASK_TYPE_CATEGORIES:
+                category = self.TASK_TYPE_CATEGORIES.get(task_type, "general")
+            else:
+                # BCB task type - category is the task_type itself (e.g., "bcb/subprocess")
+                category = task_type
             success_patterns = []
             failure_patterns = []
             for traj in trajs:
@@ -357,11 +464,14 @@ class BatchSkillExtractor:
 
             try:
                 skills = json.loads(response)
+                # Determine benchmark from task_type
+                benchmark = "bcb" if task_type.startswith("bcb/") else "alfworld"
                 for skill in skills:
                     if "name" not in skill or not skill["name"]:
                         skill["name"] = self._generate_skill_name(skill.get("title", f"{task_type}-skill"))
                     skill["category"] = category
                     skill["task_type"] = task_type
+                    skill["benchmark"] = benchmark  # Tag with benchmark for retrieval filtering
                     skill["skill_value"] = 0.5  # Initial Q-value for new skills
                     skill["usage_count"] = 0  # Initialize usage counter
                 result[task_type] = skills
@@ -402,10 +512,16 @@ class BatchSkillExtractor:
 
         try:
             mistakes = json.loads(response)
+            # Determine benchmark from failed trajectories (use most common)
+            benchmarks = [self._get_trajectory_benchmark(t.get('task_type', '')) for t in failed_trajs]
+            benchmarks = [b for b in benchmarks if b is not None]
+            benchmark = max(set(benchmarks), key=benchmarks.count) if benchmarks else None
+
             for mistake in mistakes:
                 if "name" not in mistake or not mistake["name"]:
                     mistake["name"] = self._generate_skill_name(mistake.get("description", "common-mistake"))
                 mistake["category"] = "common_mistakes"
+                mistake["benchmark"] = benchmark  # Tag with benchmark for retrieval filtering
                 mistake["skill_value"] = 0.5  # Initial Q-value for new skills
                 mistake["usage_count"] = 0  # Initialize usage counter
             return mistakes

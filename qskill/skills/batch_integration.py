@@ -9,6 +9,11 @@ from qskill.providers.base import BaseLLM, BaseEmbedder
 from qskill.skills.batch_extractor import BatchSkillExtractor, TrajectoryBuffer
 from qskill.skills.prompts import build_skill_ranking_prompt, build_task_summarization_prompt
 
+try:
+    from rank_bm25 import BM25Okapi
+except ImportError:
+    BM25Okapi = None
+
 
 class BatchSkillIntegrator:
     """Integrates batch skill extraction into the agent workflow.
@@ -25,6 +30,7 @@ class BatchSkillIntegrator:
     # Format: for multi-condition types (AND), list of keyword groups
     # e.g. pick_and_place requires BOTH "pick/find" keyword AND "put" keyword
     TASK_TYPE_KEYWORDS = {
+        # ALFWorld task types
         # pick_and_place: either "put" with destination OR "find/pick/grab" + "put"
         "pick_and_place": [["put ", "put them", "put it"], ["find ", "pick ", "grab ", "find two", "pick ", "grab "]],
         "look_at_obj_in_light": ["look at", "look quickly", "examine in", "inspect in"],
@@ -34,6 +40,39 @@ class BatchSkillIntegrator:
         # cool: only the action keywords
         "cool": ["cool ", "refrigerate", "chill "],
         "examine": ["examine the", "look at the", "check the", "verify the"],
+        # BCB task types - library-based detection
+        # BCB task_type format: "bcb/lib_name" where lib_name is from the libs field
+        "bcb/subprocess": ["subprocess", "shell", "command", "run "],
+        "bcb/os": ["os.path", "os.walk", "os.listdir", "os.rename", "os.remove"],
+        "bcb/json": ["json", "json.dump", "json.load", "json.dumps", "json.loads"],
+        "bcb/re": ["regex", "re.match", "re.search", "re.findall", "re.sub"],
+        "bcb/datetime": ["datetime", "timedelta", "strftime", "strptime"],
+        "bcb/collections": ["collections", "Counter", "defaultdict", "OrderedDict"],
+        "bcb/itertools": ["itertools", "chain", "islice", "count"],
+        "bcb/functools": ["functools", "lru_cache", "partial"],
+        "bcb/random": ["random", "randint", "random.choice", "shuffle"],
+        "bcb/math": ["math", "sqrt", "pow", "floor", "ceil"],
+        "bcb/csv": ["csv", "csv.reader", "csv.writer", "DictReader", "DictWriter"],
+        "bcb/zipfile": ["zipfile", "ZipFile", "zip"],
+        "bcb/gzip": ["gzip", "gzip.open", "gzip.decompress"],
+        "bcb/hashlib": ["hashlib", "md5", "sha1", "sha256"],
+        "bcb/urllib": ["urllib", "urlopen", "urlretrieve", "quote"],
+        "bcb/asyncio": ["asyncio", "async ", "await ", "gather"],
+        "bcb/heapq": ["heapq", "heappush", "heappop", "heapify"],
+        "bcb/pickle": ["pickle", "pickle.dump", "pickle.load", "dumps", "loads"],
+        # HLE task types - category-based detection
+        "hle/cs": ["Computer Science", "AI", "machine learning", "algorithm", "programming", "software", "neural", "deep learning", "NLP", "computer vision"],
+        "hle/math": ["math", "equation", "calculus", "algebra", "geometry", "probability", "theorem", "proof", "number theory"],
+        "hle/biology": ["biology", "bio", "cell", "DNA", "RNA", "protein", "organism", "genetics", "evolution", "ecology"],
+        "hle/physics": ["physics", "force", "energy", "motion", "quantum", "thermodynamic", "electromagnetic", "mechanics", "relativity"],
+        "hle/chemistry": ["chemistry", "chemical", "molecule", "reaction", "bond", "organic", "inorganic", "periodic", "catalyst", "compound"],
+        "hle/engineering": ["engineering", "circuit", "signal", "control", "system", "mechanical", "electrical", "structural", "bridge", "robot"],
+        "hle/humanities": ["humanities", "history", "philosophy", "literature", "psychology", "sociology", "economics", "political", "anthropology", "culture"],
+        "hle/other": [],  # Default for uncategorized tasks
+        # LLB task types - benchmark-based detection
+        "llb/db": ["sql", "database", "query", "select", "insert", "update", "delete", "table", "column", "row", "db", "sqlite", "mysql", "postgresql"],
+        "llb/os": ["shell", "bash", "command", "file", "directory", "path", "linux", "ubuntu", "cd", "ls", "mkdir", "rm", "cp", "mv", "cat", "grep", "awk", "sed"],
+        "llb/kg": ["knowledge graph", "sparql", "rdf", "ontology", "entity", "triple", "link prediction", "kg", "graph query"],
     }
 
     def __init__(
@@ -43,6 +82,7 @@ class BatchSkillIntegrator:
         extract_interval: int = 10,
         trajectory_dir: str = "trajectories",
         skills_dir: str = "skills",
+        benchmark: str = "markdown",
         retrieval_method: str = "template",
         value_alpha: float = 0.5,
         value_lambda: float = 0.5,
@@ -57,6 +97,7 @@ class BatchSkillIntegrator:
         cull_min_usage: int = 3,
         enable_merging: bool = False,
         merge_similarity_threshold: float = 0.85,
+        rrf_k: float = 60.0,
     ):
         """Initialize the batch skill integrator.
 
@@ -66,6 +107,8 @@ class BatchSkillIntegrator:
             extract_interval: Number of trajectories to accumulate before extraction.
             trajectory_dir: Directory to store trajectories.
             skills_dir: Directory to store extracted skills.
+            benchmark: Benchmark name for organizing skills subdirectory (e.g., "alf", "bcb", "hle", "llb").
+                Defaults to "markdown" for backward compatibility.
             retrieval_method: Method for retrieval - "template", "embedding", or "hybrid".
             value_alpha: Learning rate for skill value Q-learning update.
             value_lambda: Weight for skill value in hybrid retrieval score.
@@ -80,6 +123,8 @@ class BatchSkillIntegrator:
             cull_min_usage: Minimum usage count before a skill can be culled.
             enable_merging: Enable automatic skill merging for similar skills.
             merge_similarity_threshold: Similarity threshold for merging.
+            rrf_k: RRF (Reciprocal Rank Fusion) k parameter. Higher values
+                give more weight to lower ranks. Default is 60.
         """
         self.extract_interval = extract_interval
         self.llm = llm
@@ -98,12 +143,15 @@ class BatchSkillIntegrator:
         self.cull_min_usage = cull_min_usage
         self.enable_merging = enable_merging
         self.merge_similarity_threshold = merge_similarity_threshold
+        self.rrf_k = rrf_k
+        self.benchmark = benchmark
 
         # Initialize components
         self.trajectory_buffer = TrajectoryBuffer(storage_dir=trajectory_dir)
         self.batch_extractor = BatchSkillExtractor(
             llm=llm,
             storage_dir=skills_dir,
+            benchmark=benchmark,
             on_skills_extracted=self._on_skills_extracted,
         )
 
@@ -117,8 +165,8 @@ class BatchSkillIntegrator:
         # Track skill signatures (name|description) to detect modifications
         self._skill_signatures: Dict[str, str] = {}
 
-        # Persist embedding cache to disk
-        self._skills_dir = Path(skills_dir)
+        # Persist embedding cache to disk (inside benchmark directory)
+        self._skills_dir = Path(skills_dir) / benchmark
         self._embedding_cache_file = self._skills_dir / ".embedding_cache.json"
         self._load_embedding_cache()
 
@@ -412,6 +460,8 @@ class BatchSkillIntegrator:
         detected = []
 
         for task_type, keyword_groups in self.TASK_TYPE_KEYWORDS.items():
+            if not keyword_groups:
+                continue
             if isinstance(keyword_groups[0], list):
                 # Multi-condition type (AND logic between groups)
                 all_groups_match = True
@@ -534,7 +584,7 @@ class BatchSkillIntegrator:
         if self.retrieval_method == "template":
             skills = self._retrieve_template(
                 task_description, general_skills,
-                task_specific_skills, common_mistakes, k
+                task_specific_skills, common_mistakes, k, task_type
             )
         elif self.retrieval_method == "embedding":
             skills = self._retrieve_embedding(
@@ -562,37 +612,73 @@ class BatchSkillIntegrator:
         task_specific_skills: Dict[str, List[Dict[str, Any]]],
         common_mistakes: List[Dict[str, Any]],
         k: int,
+        task_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Template-based retrieval using keyword matching.
 
         Args:
             task_description: The task description.
-            task_type: The detected task type.
             general_skills: List of general skills.
             task_specific_skills: Dict of task-specific skills by type.
             common_mistakes: List of common mistakes.
             k: Number of skills to retrieve.
+            task_type: Optional task type for benchmark-aware filtering.
 
         Returns:
             List of retrieved skills.
         """
         detected_types = self._detect_task_type(task_description)
 
+        # Determine benchmark from task_type
+        # BCB task_type format: "bcb/lib_name" or "bcb/lib_name/entry_point"
+        # ALFWorld task_type format: "pick_and_place", "clean", etc.
+        benchmark = None
+        if task_type:
+            if task_type.startswith("bcb/"):
+                benchmark = "bcb"
+            elif "/" not in task_type and task_type in self.TASK_TYPE_KEYWORDS:
+                benchmark = "alfworld"
+
         # Add general skills (top k//2)
-        selected = general_skills[:k // 2]
+        # Filter general_skills by benchmark if they have benchmark metadata
+        if benchmark:
+            filtered_general = [
+                s for s in general_skills
+                if s.get("benchmark") is None or s.get("benchmark") == benchmark
+            ]
+        else:
+            filtered_general = general_skills
+        selected = filtered_general[:k // 2]
 
         # Add task-specific skills for detected types
         remaining = k - len(selected)
         for task_type_key in detected_types:
             if remaining <= 0:
                 break
+            # Only get task-specific skills that match the benchmark
+            if benchmark == "bcb" and not task_type_key.startswith("bcb/"):
+                continue
+            if benchmark == "alfworld" and task_type_key.startswith("bcb/"):
+                continue
             type_skills = task_specific_skills.get(task_type_key, [])
+            # If no skills found and this is a BCB sub-type (e.g., bcb/json),
+            # also check the generic bcb/task_func bucket
+            if not type_skills and task_type_key.startswith("bcb/") and task_type_key != "bcb/task_func":
+                type_skills = task_specific_skills.get("bcb/task_func", [])
             selected.extend(type_skills[:remaining])
             remaining = k - len(selected)
 
-        # Always add common mistakes (up to 2)
+        # Add common mistakes (benchmark-aware filtering)
+        # Only return common mistakes that match the current benchmark
         if len(common_mistakes) > 0:
-            selected.extend(common_mistakes[:2])
+            if benchmark:
+                filtered_mistakes = [
+                    m for m in common_mistakes
+                    if m.get("benchmark") is None or m.get("benchmark") == benchmark
+                ]
+            else:
+                filtered_mistakes = common_mistakes
+            selected.extend(filtered_mistakes[:2])
 
         return selected[:k]
 
@@ -960,7 +1046,7 @@ class BatchSkillIntegrator:
             # Fallback to template if no embedder
             return self._retrieve_template(
                 task_description, general_skills,
-                task_specific_skills, common_mistakes, k
+                task_specific_skills, common_mistakes, k, task_type
             )
 
         # Prepare all skills with their categories
@@ -1003,17 +1089,49 @@ class BatchSkillIntegrator:
             q_value = skill.get("skill_value", 0.0)
             return (1 - self.value_lambda) * sim + self.value_lambda * q_value
 
+        # Determine benchmark from task_type
+        # BCB task_type format: "bcb/lib_name" or "bcb/lib_name/entry_point"
+        # ALFWorld task_type format: "pick_and_place", "clean", etc.
+        benchmark = None
+        task_type_prefix = ""
+        if task_type:
+            if task_type.startswith("bcb/"):
+                benchmark = "bcb"
+                task_type_prefix = "bcb/"
+            elif "/" not in task_type and task_type in self.TASK_TYPE_KEYWORDS:
+                benchmark = "alfworld"
+
         # Normalize task_type from ALFWorld format (e.g., 'train/cool' -> 'cool')
         normalized_type = self._normalize_task_type(task_type)
 
         # Filter task_specific_skills to only include the normalized type if it exists
+        # For BCB tasks, also filter by bcb/ prefix
         available_types = set(task_specific_skills.keys())
-        valid_types = [normalized_type] if normalized_type in available_types else []
+        valid_types = []
 
-        # Fallback: if normalized_type not found, detect from task_description
-        if not valid_types and task_description:
-            detected_from_desc = self._detect_task_type(task_description)
-            valid_types = [t for t in detected_from_desc if t in available_types]
+        if benchmark == "bcb":
+            # BCB: only include types starting with "bcb/"
+            valid_types = [t for t in available_types if t.startswith("bcb/")]
+        elif benchmark == "alfworld":
+            # ALFWorld: only include types NOT starting with "bcb/"
+            valid_types = [t for t in available_types if not t.startswith("bcb/")]
+            if normalized_type in available_types:
+                valid_types = [normalized_type]
+        else:
+            # Unknown benchmark: use normalized type or detect from description
+            if normalized_type in available_types:
+                valid_types = [normalized_type]
+            elif task_description:
+                detected_from_desc = self._detect_task_type(task_description)
+                valid_types = [t for t in detected_from_desc if t in available_types]
+
+        # Benchmark-aware filtering for common_mistakes
+        filtered_common_mistakes = []
+        for mistake in common_mistakes:
+            mistake_benchmark = mistake.get("benchmark")
+            if mistake_benchmark is None or mistake_benchmark == benchmark:
+                filtered_common_mistakes.append(mistake)
+        common_mistakes = filtered_common_mistakes
 
         # Score and sort each category independently
         general_scored = [(compute_hybrid_score(s), s) for s in general_skills]
@@ -1077,23 +1195,22 @@ class BatchSkillIntegrator:
         common_mistakes: List[Dict[str, Any]],
         k: int,
     ) -> List[Dict[str, Any]]:
-        """Hybrid retrieval: keyword pre-filter + LLM ranking.
+        """Hybrid retrieval: BM25 + Embedding + RRF fusion.
 
-        For large skill sets (>20 skills), uses a two-stage approach:
-        1. Quick keyword matching to get top 20 candidates
-        2. LLM ranking of candidates
+        Uses Reciprocal Rank Fusion to combine BM25 keyword matching
+        and embedding-based semantic similarity.
 
         Args:
             task_description: The task description.
             task_type: The detected task type.
-            observation: Current observation.
+            observation: Current observation (unused, kept for API compatibility).
             general_skills: List of general skills.
             task_specific_skills: Dict of task-specific skills by type.
             common_mistakes: List of common mistakes.
             k: Number of skills to retrieve.
 
         Returns:
-            List of retrieved skills.
+            List of retrieved skills sorted by RRF score.
         """
         # Flatten all skills
         all_available = []
@@ -1105,13 +1222,175 @@ class BatchSkillIntegrator:
         if not all_available:
             return []
 
-        # If small skill set, use direct LLM ranking
-        if len(all_available) <= 20:
-            return self._rank_with_llm(task_description, observation, all_available, k)
+        # RRF k parameter (configurable)
+        rrf_k = getattr(self, 'rrf_k', 60)
 
-        # Two-stage: pre-filter with keyword matching, then LLM ranking
-        candidates = self._keyword_prefilter(task_description, task_type, all_available, top_n=20)
-        return self._rank_with_llm(task_description, observation, candidates, k)
+        # Get BM25 scores (top-m)
+        bm25_scores = self._retrieve_bm25(task_description, all_available, top_m=k * 2)
+
+        # Get embedding scores (top-m)
+        emb_scores = self._retrieve_embedding_scores(task_description, all_available, top_m=k * 2)
+
+        # Compute RRF scores
+        rrf_scores: Dict[int, float] = {}
+        for i, (skill, bm25_score) in enumerate(bm25_scores):
+            idx = id(skill)
+            rank = i + 1  # 1-indexed
+            if idx not in rrf_scores:
+                rrf_scores[idx] = 0.0
+            rrf_scores[idx] += 1.0 / (rrf_k + rank)
+
+        for i, (skill, emb_score) in enumerate(emb_scores):
+            idx = id(skill)
+            rank = i + 1  # 1-indexed
+            if idx not in rrf_scores:
+                rrf_scores[idx] = 0.0
+            rrf_scores[idx] += 1.0 / (rrf_k + rank)
+
+        # Sort by RRF score and return top-k
+        sorted_indices = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)
+        result = []
+        seen_names = set()
+        for idx in sorted_indices:
+            # Find the skill with this id
+            for skill in all_available:
+                skill_name = skill.get('name', '')
+                if id(skill) == idx and skill_name not in seen_names:
+                    result.append(skill)
+                    seen_names.add(skill_name)
+                    break
+            if len(result) >= k:
+                break
+
+        return result
+
+    def _retrieve_bm25(
+        self,
+        query: str,
+        skills: List[Dict[str, Any]],
+        top_m: int,
+    ) -> List[tuple]:
+        """BM25-based retrieval.
+
+        Args:
+            query: The query string (task description).
+            skills: List of skills to search.
+            top_m: Number of top results to return.
+
+        Returns:
+            List of (skill, score) tuples sorted by BM25 score.
+        """
+        if not skills:
+            return []
+
+        # Prepare corpus: tokenize skill descriptions
+        corpus = []
+        for skill in skills:
+            # Use name + description for BM25 indexing
+            text = f"{skill.get('name', '')} {skill.get('description', '')}"
+            # Simple tokenization: lowercase and split on whitespace/punctuation
+            tokens = re.findall(r'\w+', text.lower())
+            corpus.append(tokens)
+
+        if not corpus or BM25Okapi is None:
+            # Fallback: simple word overlap scoring
+            return self._bm25_fallback(query, skills, top_m)
+
+        # Build BM25 index
+        bm25 = BM25Okapi(corpus)
+
+        # Tokenize query
+        query_tokens = re.findall(r'\w+', query.lower())
+
+        # Get scores
+        scores = bm25.get_scores(query_tokens)
+
+        # Combine with skills and sort
+        scored = [(skill, score) for skill, score in zip(skills, scores)]
+        scored.sort(key=lambda x: x[1], reverse=True)
+
+        return scored[:top_m]
+
+    def _bm25_fallback(
+        self,
+        query: str,
+        skills: List[Dict[str, Any]],
+        top_m: int,
+    ) -> List[tuple]:
+        """Fallback BM25-like scoring when rank_bm25 is unavailable.
+
+        Uses simple TF-based scoring with length normalization.
+        """
+        query_words = set(re.findall(r'\w+', query.lower()))
+
+        scored = []
+        for skill in skills:
+            text = f"{skill.get('name', '')} {skill.get('description', '')}"
+            text_words = re.findall(r'\w+', text.lower())
+
+            if not text_words:
+                scored.append((skill, 0.0))
+                continue
+
+            # Count query word frequency in text
+            text_word_count = {}
+            for w in text_words:
+                w_lower = w.lower()
+                text_word_count[w_lower] = text_word_count.get(w_lower, 0) + 1
+
+            # Compute score (similar to BM25 with k1=1.5, b=0.75)
+            score = 0.0
+            avg_len = len(text_words)
+            for word in query_words:
+                if word in text_word_count:
+                    tf = text_word_count[word]
+                    # Simplified BM25 formula
+                    score += tf / (1.0 + 0.5 * (len(text_words) / max(avg_len, 1) - 1))
+
+            scored.append((skill, score))
+
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return scored[:top_m]
+
+    def _retrieve_embedding_scores(
+        self,
+        query: str,
+        skills: List[Dict[str, Any]],
+        top_m: int,
+    ) -> List[tuple]:
+        """Embedding-based retrieval with similarity scoring.
+
+        Args:
+            query: The query string (task description).
+            skills: List of skills to search.
+            top_m: Number of top results to return.
+
+        Returns:
+            List of (skill, score) tuples sorted by embedding similarity.
+        """
+        if not skills or not self.embedder:
+            return [(skill, 0.0) for skill in skills[:top_m]]
+
+        # Sync embedding cache first
+        all_skills_with_cat = [(None, skill) for skill in skills]
+        self._sync_embedding_cache(all_skills_with_cat)
+
+        # Encode query
+        query_embedding = self.embedder.embed([query])
+
+        # Compute similarity for each skill
+        scored = []
+        for skill in skills:
+            name = skill.get("name", "")
+            if name in self._embedding_cache:
+                emb = self._embedding_cache[name]
+                sim = self._cosine_similarity(query_embedding[0], emb)
+            else:
+                sim = 0.0
+            scored.append((skill, sim))
+
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return scored[:top_m]
 
     def _keyword_prefilter(
         self,

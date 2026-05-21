@@ -164,3 +164,26 @@ rl_config:  # RL/value-driven knobs used by MemoryService and runners.
   q_min_threshold: -0.8        # Minimum Q threshold (used by some selectors).
   weight_sim: 0.5              # Weight for similarity in combined score.
   weight_q: 0.5                # Weight for Q-value in combined score.
+
+# Skill layer configuration
+skill:
+  enabled: true
+  storage_dir: "skills/llb"
+  benchmark: "llb"
+  retrieval_method: "template"
+  extract_interval: 10
+  retrieve_general: 1
+  retrieve_task_specific: 1
+  retrieve_common_mistakes: 1
+  auto_extract: true
+  value_alpha: 0.5
+  value_lambda: 0.5
+  summarize_task_description: false
+  enable_culling: false
+  max_skills: 50
+  cull_threshold: 0.3
+  cull_batch_size: 5
+  cull_min_usage: 3
+  enable_merging: false
+  merge_similarity_threshold: 0.85
+  rrf_k: 60.0

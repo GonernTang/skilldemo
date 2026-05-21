@@ -44,6 +44,8 @@ def create_skill_integrator(
     cull_min_usage = skill_config.get("cull_min_usage", 3)
     enable_merging = skill_config.get("enable_merging", False)
     merge_similarity_threshold = skill_config.get("merge_similarity_threshold", 0.85)
+    rrf_k = skill_config.get("rrf_k", 60.0)
+    benchmark = skill_config.get("benchmark", "markdown")
 
     return BatchSkillIntegrator(
         llm=llm,
@@ -51,6 +53,7 @@ def create_skill_integrator(
         extract_interval=extract_interval,
         trajectory_dir="trajectories",
         skills_dir=storage_dir,
+        benchmark=benchmark,
         retrieval_method=retrieval_method,
         value_alpha=value_alpha,
         value_lambda=value_lambda,
@@ -65,4 +68,5 @@ def create_skill_integrator(
         cull_min_usage=cull_min_usage,
         enable_merging=enable_merging,
         merge_similarity_threshold=merge_similarity_threshold,
+        rrf_k=rrf_k,
     )

@@ -525,3 +525,141 @@ skill:
   enable_merging: true
   merge_similarity_threshold: 0.85
 ```
+
+---
+
+## 2026-05-20 - HLE/LLB Skill Layer 适配 + Hybrid 检索改进
+
+### 概述
+
+1. 适配 HLE 和 LLB 两个 benchmark 的 skill layer
+2. 重写 hybrid 检索模式，使用 BM25 + Embedding + RRF 融合
+3. 添加 benchmark 过滤和 rrf_k 可配置参数
+
+### 修改的文件
+
+#### 1. `qskill/skills/batch_integration.py`
+
+**HLE/LLB task_type 关键词添加**：
+```python
+# HLE task types
+"hle/cs": ["Computer Science", "AI", "machine learning", ...]
+"hle/math": ["math", "equation", "calculus", ...]
+"hle/biology": ["biology", "bio", "cell", ...]
+"hle/physics": ["physics", "force", "energy", ...]
+"hle/chemistry": ["chemistry", "chemical", "molecule", ...]
+"hle/engineering": ["engineering", "circuit", "signal", ...]
+"hle/humanities": ["humanities", "history", "philosophy", ...]
+"hle/other": [],  # Default
+
+# LLB task types
+"llb/db": ["sql", "database", "query", ...]
+"llb/os": ["shell", "bash", "command", "file", ...]
+"llb/kg": ["knowledge graph", "sparql", "rdf", ...]
+```
+
+**Hybrid 检索重写** (`_retrieve_hybrid`):
+- 新流程：BM25 检索 → Embedding 检索 → RRF 融合
+- 使用 `rank_bm25` 库进行 BM25 索引
+- Embedding 检索复用已有的 `_embedding_cache`
+- RRF 公式：`score = 1/(k+bm25_rank) + 1/(k+emb_rank)`
+- 添加 `_retrieve_bm25()`, `_bm25_fallback()`, `_retrieve_embedding_scores()` 方法
+
+**Bug 修复**：
+- 修复 `_detect_task_type()` 中空关键词列表导致的 IndexError
+
+**新增参数**：
+- `rrf_k: float = 60.0` - RRF 融合的 k 参数
+
+#### 2. `qskill/skills/integration.py`
+- 添加 `rrf_k` 参数传递到 `BatchSkillIntegrator`
+
+#### 3. `run/run_hle.py`
+- 导入 `create_skill_integrator`
+- 添加 `--disable_skills` CLI 参数
+- 创建 `skill_integrator` 并传递给 `HLERunner`
+
+#### 4. `qskill/run/hle_runner.py`
+- 导入 `BatchSkillIntegrator` 和 `copy`
+- `__init__` 添加 `skill_integrator` 参数
+- `_evaluate_row()` 中集成技能检索、更新、提取
+- 新增 `_inject_skill_context()` 方法
+
+#### 5. `run/run_llb.py`
+- 导入 `create_skill_integrator`
+- 添加 `--disable_skills` CLI 参数
+- 创建 `skill_integrator` 并传递给 `LLBRunner`
+
+#### 6. `qskill/run/llb_rl_runner.py`
+- 导入 `BatchSkillIntegrator`
+- `__init__` 添加 `skill_integrator` 参数
+- `_sample_one()` 中集成技能检索、更新、提取
+
+#### 7. `configs/rl_hle_config.yaml`
+- 添加 `skill` section（与 BCB/ALFWorld 一致）
+
+#### 8. `configs/rl_llb_config.yaml`
+- 添加 `skill` section
+
+#### 9. `configs/rl_alf_config.yaml`
+- 更新 `retrieval_method: "hybrid"`
+- 添加 `rrf_k: 60.0`
+
+#### 10. `requirements.txt`
+- 添加 `rank-bm25==0.2.2`
+
+### Hybrid 检索流程
+
+```
+task_description
+       │
+       ▼
+┌──────────────────────────┐
+│ 1. BM25 检索 (top-m)   │
+│    - rank_bm25 库       │
+│    - name + description  │
+└──────────────────────────┘
+       │
+       ▼
+┌──────────────────────────┐
+│ 2. Embedding 检索      │
+│    - query embedding    │
+│    - cosine similarity  │
+└──────────────────────────┘
+       │
+       ▼
+┌──────────────────────────┐
+│ 3. RRF 融合             │
+│    score = 1/(k+r1) +   │
+│          1/(k+r2)        │
+│    k=60 (可配置)        │
+└──────────────────────────┘
+       │
+       ▼
+   返回 top-k
+```
+
+### Benchmark 适配状态
+
+| Benchmark | Runner | Skill Layer | 状态 |
+|-----------|--------|-------------|------|
+| ALFWorld | `run_alfworld.py` | ✅ | 已适配 |
+| BCB | `run_bcb.py` | ✅ | 已适配 |
+| HLE | `run_hle.py` | ✅ | 已适配 |
+| LLB | `run/run_llb.py` | ✅ | 已适配 |
+
+### 运行方式
+
+```bash
+# HLE with skills
+python run/run_hle.py --config configs/rl_hle_config.yaml --train data.h5
+
+# LLB with skills
+python run/run_llb.py --config configs/rl_llb_config.yaml
+
+# ALFWorld with hybrid retrieval
+python run/run_alfworld.py --config configs/rl_alf_config.yaml
+
+# 禁用 skill layer
+python run/run_alfworld.py --config configs/rl_alf_config.yaml --disable_skills
+```
