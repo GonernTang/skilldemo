@@ -32,6 +32,7 @@ def create_skill_integrator(
     retrieval_method = skill_config.get("retrieval_method", "template")
     storage_dir = skill_config.get("storage_dir", "skills")
     value_alpha = skill_config.get("value_alpha", 0.5)
+    value_beta = skill_config.get("value_beta", 0.0)
     value_lambda = skill_config.get("value_lambda", 0.5)
     retrieve_general = skill_config.get("retrieve_general", 1)
     retrieve_task_specific = skill_config.get("retrieve_task_specific", 1)
@@ -56,6 +57,7 @@ def create_skill_integrator(
         benchmark=benchmark,
         retrieval_method=retrieval_method,
         value_alpha=value_alpha,
+        value_beta=value_beta,
         value_lambda=value_lambda,
         retrieve_general=retrieve_general,
         retrieve_task_specific=retrieve_task_specific,

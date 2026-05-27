@@ -124,6 +124,7 @@ skill:
   retrieve_common_mistakes: 1
   auto_extract: true
   value_alpha: 0.5
+  value_beta: 0.0
   value_lambda: 0.5
   summarize_task_description: false
   enable_culling: false

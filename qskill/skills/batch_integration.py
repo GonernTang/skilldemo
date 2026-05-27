@@ -85,6 +85,7 @@ class BatchSkillIntegrator:
         benchmark: str = "markdown",
         retrieval_method: str = "template",
         value_alpha: float = 0.5,
+        value_beta: float = 0.0,
         value_lambda: float = 0.5,
         retrieve_general: int = 1,
         retrieve_task_specific: int = 1,
@@ -111,6 +112,7 @@ class BatchSkillIntegrator:
                 Defaults to "markdown" for backward compatibility.
             retrieval_method: Method for retrieval - "template", "embedding", or "hybrid".
             value_alpha: Learning rate for skill value Q-learning update.
+            value_beta: Weight for learning reward in LQRL (0 = standard Q-learning).
             value_lambda: Weight for skill value in hybrid retrieval score.
             retrieve_general: Number of general skills to retrieve.
             retrieve_task_specific: Number of task-specific skills to retrieve.
@@ -131,6 +133,7 @@ class BatchSkillIntegrator:
         self.embedder = embedder
         self.retrieval_method = retrieval_method
         self.value_alpha = value_alpha
+        self.value_beta = value_beta
         self.value_lambda = value_lambda
         self.retrieve_general = retrieve_general
         self.retrieve_task_specific = retrieve_task_specific
@@ -1629,7 +1632,7 @@ class BatchSkillIntegrator:
         success: bool,
         alpha: Optional[float] = None,
         r_learning: float = 0.0,
-        beta: float = 0.3,
+        beta: Optional[float] = None,
     ) -> bool:
         """Update skill value (Q-value) for a skill by name using Layered Q-Learning.
 
@@ -1653,6 +1656,7 @@ class BatchSkillIntegrator:
             True if skill was found and updated, False otherwise.
         """
         alpha = alpha if alpha is not None else self.value_alpha
+        beta = beta if beta is not None else self.value_beta
         all_skills = self.get_all_skills()
 
         # Search in general_skills
