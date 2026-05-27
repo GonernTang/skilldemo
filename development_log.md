@@ -855,3 +855,50 @@ integrator.update_skill_value_by_name(
 
 ### 提交
 - `qskill/skills/batch_integration.py`: 添加 failure_scenario 管理逻辑 (96c300f0)
+
+---
+
+## 2026-05-27 - LQRL 集成到 Runner
+
+### 集成内容
+
+1. **BCB Runner** (`qskill/run/bcb_runner.py`)
+2. **HLE Runner** (`qskill/run/hle_runner.py`)
+3. **ALFWorld Runner** (`qskill/run/alfworld_rl_runner.py`)
+4. **LLB Runner** (`qskill/run/llb_rl_runner.py`)
+
+### 新增方法
+
+**`BatchSkillIntegrator.process_task_failure_and_update()`**
+- 主集成方法，连接整个 LQRL 流程
+- 构造 failure_scenario
+- 调用 LLM 评估质量获取 r_learning
+- 使用 LQRL 公式更新 Q 值
+
+**`BatchSkillIntegrator._construct_failure_scenario()`**
+- 将错误字符串转换为结构化的 failure_scenario dict
+- 基于错误类型推断 reason (assertion_failure, type_error 等)
+
+### Runner 更新逻辑
+
+```python
+if success:
+    # 成功：标准 Q-learning
+    update_skill_value_by_name(skill_name, success=True)
+else:
+    # 失败：LQRL + r_learning 评估
+    actual_error = eval_res.get("error", "")
+    result = process_task_failure_and_update(
+        skill_name=skill_name,
+        actual_error=actual_error,
+        task_context=task_description,
+    )
+    # result 包含 r_learning, quality, action 等信息
+```
+
+### 提交
+- `qskill/skills/batch_integration.py`: 新增 `process_task_failure_and_update()`, `_construct_failure_scenario()`
+- `qskill/run/bcb_runner.py`: LQRL 集成
+- `qskill/run/hle_runner.py`: LQRL 集成
+- `qskill/run/alfworld_rl_runner.py`: LQRL 集成
+- `qskill/run/llb_rl_runner.py`: LQRL 集成
