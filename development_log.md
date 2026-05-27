@@ -820,3 +820,38 @@ integrator.update_skill_value_by_name(
 
 ### 提交
 - `qskill/skills/batch_integration.py`: 添加 `evaluate_failure_scenario()` 方法 (145e1bc2)
+
+---
+
+## 2026-05-27 - Failure Scenario 管理实现
+
+### 设计决策
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| max_failure_scenarios | 10 | 每个技能最多 failure_scenarios 数量 |
+| min_failure_scenario_quality | 0.1 | 拒绝加入的质量阈值 |
+| failure_scenario_merge_threshold | 0.8 | 触发合并的相似度阈值 |
+
+### r_learning 返回值计算
+
+| 情况 | r_learning |
+|------|------------|
+| 质量 < 阈值 | 0.0 |
+| 太相似（skip）| 0.0 |
+| 合并到已有 | merged_quality × 0.5 |
+| 添加新场景 | quality |
+| 替换最低质量 | quality - lowest_quality |
+
+### 新增方法
+
+1. `process_failure_scenario()`: 主入口，包含质量控制
+2. `_find_skill_by_name()`: 跨类别查找技能
+3. `_check_failure_scenario_similarity()`: 相似度检查和决策
+4. `_fs_to_text()`: failure_scenario 转文本
+5. `_compute_text_similarity()`: 文本/embedding 相似度计算
+6. `_estimate_fs_quality()`: 无 LLM 的质量估算
+7. `_estimate_merged_quality()`: 合并场景质量估算
+
+### 提交
+- `qskill/skills/batch_integration.py`: 添加 failure_scenario 管理逻辑 (96c300f0)
