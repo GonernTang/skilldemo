@@ -1589,6 +1589,82 @@ class BatchSkillIntegrator:
             self._cached_skill_names.discard(name)
         self._save_embedding_cache()
 
+    def evaluate_failure_scenario(
+        self,
+        failure_scenario: Dict[str, Any],
+        actual_error: str,
+        task_context: str = "",
+    ) -> float:
+        """Evaluate the quality of a failure_scenario using LLM.
+
+        This evaluates whether a failure_scenario is genuinely useful for
+        avoiding similar failures, and returns an r_learning value.
+
+        Args:
+            failure_scenario: The failure scenario dict to evaluate.
+            actual_error: The actual error that occurred during task execution.
+            task_context: Optional context about the task for better evaluation.
+
+        Returns:
+            r_learning value between 0.0 and 0.5:
+            - 0.0: failure_scenario is useless or misleading
+            - 0.25: partially useful (describes error but advice imprecise)
+            - 0.5: highly useful (accurately describes error with effective advice)
+        """
+        if not self.llm:
+            return 0.0
+
+        prompt = f"""You are a skill quality evaluator for AI agents.
+
+## Task Error (what actually happened)
+{actual_error}
+
+## Extracted Failure Scenario
+{failure_scenario}
+
+## Task Context (if available)
+{task_context if task_context else "No additional context provided."}
+
+## Evaluation Criteria
+Evaluate whether this failure_scenario is genuinely valuable:
+
+1. **Relevance**: Does the failure_scenario accurately describe the error condition that caused the failure?
+2. **Actionability**: Can the advice/solution help avoid similar failures?
+3. **Non-redundancy**: Does the failure_scenario contain NEW information, not just obvious common sense?
+4. **Correctness**: Is the suggested approach actually correct and effective?
+
+## Important Notes
+- A failure_scenario that merely restates obvious behavior (e.g., "don't use wrong parameters") is NOT useful
+- A failure_scenario that misidentifies the cause of failure is HARMFUL (return 0.0)
+- A failure_scenario that precisely pinpoints the error condition AND provides effective advice is HIGHLY USEFUL (return 0.5)
+
+## Output Format
+Return ONLY a number between 0.0 and 0.5 (use one decimal place if needed):
+- 0.0 = useless or misleading
+- 0.25 = partially useful
+- 0.5 = highly useful
+
+Do not include any explanation, just output the number."""
+
+        try:
+            response = self.llm.generate([{"role": "user", "content": prompt}])
+            # Parse the response to extract a number
+            response = response.strip()
+            # Try to extract a number from the response
+            import re
+            numbers = re.findall(r'0?\.\d+', response)
+            if numbers:
+                score = float(numbers[0])
+                # Clamp to [0.0, 0.5]
+                return max(0.0, min(0.5, score))
+            # If no number found, try integer
+            if response in ['0', '0.0', '0.5', '0.25']:
+                return float(response)
+            # Default to 0.0 if parsing fails
+            return 0.0
+        except Exception:
+            return 0.0
+
     def update_skill_embedding(self, skill: Dict[str, Any]) -> None:
         """Immediately compute and update embedding for a single skill.
 
