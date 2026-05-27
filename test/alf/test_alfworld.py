@@ -17,7 +17,7 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 
 # Add project root to path
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 import textworld
@@ -419,19 +419,36 @@ class TestRunner:
                     print(f"{'='*40}")
                     break
 
-            # Update skill values based on task outcome
+            # Update skill values based on task outcome using LQRL
             if self.skill_integrator and result.retrieved_skills:
                 skill_value_changes = {}
                 # Record skill values before update
                 all_skills_before = self.skill_integrator.get_all_skills()
                 for skill_name in result.retrieved_skills:
                     skill_value_changes[skill_name] = {"before": self._get_skill_value(all_skills_before, skill_name)}
-                # Update skill values
-                for skill_name in result.retrieved_skills:
-                    self.skill_integrator.update_skill_value_by_name(
-                        skill_name=skill_name,
-                        success=result.success,
-                    )
+
+                if result.success:
+                    # Task succeeded - standard Q-learning update
+                    for skill_name in result.retrieved_skills:
+                        self.skill_integrator.update_skill_value_by_name(
+                            skill_name=skill_name,
+                            success=True,
+                        )
+                else:
+                    # Task failed - use LQRL with r_learning evaluation
+                    # Get last observation as error context
+                    last_obs = result.trajectory[-1].get("observation", "")[-500:] if result.trajectory else "ALFWorld task failed"
+                    actual_error = f"ALFWorld task failed: {last_obs}"
+                    for skill_name in result.retrieved_skills:
+                        lqrl_result = self.skill_integrator.process_task_failure_and_update(
+                            skill_name=skill_name,
+                            actual_error=actual_error,
+                            task_context=task_desc[:500] if task_desc else "",
+                        )
+                        skill_value_changes[skill_name]["r_learning"] = lqrl_result.get("r_learning", 0.0)
+                        skill_value_changes[skill_name]["quality"] = lqrl_result.get("quality", 0.0)
+                        skill_value_changes[skill_name]["action"] = lqrl_result.get("action", "unknown")
+
                 # Record skill values after update
                 all_skills_after = self.skill_integrator.get_all_skills()
                 for skill_name in result.retrieved_skills:

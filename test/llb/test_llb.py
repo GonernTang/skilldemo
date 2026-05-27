@@ -181,8 +181,14 @@ class LLBTestRunner:
         with open(self.split_file, "r") as f:
             data = json.load(f)
 
-        print(f"\nLoaded {len(data)} LLB tasks")
-        return data
+        # Handle both dict and list formats
+        if isinstance(data, dict):
+            tasks = list(data.values())
+        else:
+            tasks = data
+
+        print(f"\nLoaded {len(tasks)} LLB tasks")
+        return tasks
 
     def _detect_task_type(self, instruction: str) -> str:
         """Detect task type from instruction keywords."""
@@ -294,14 +300,30 @@ class LLBTestRunner:
             print(f"Task {'SUCCEEDED' if result.success else 'FAILED'}")
             print(f"{'='*40}")
 
-            # Update skill values
+            # Update skill values using LQRL
             if self.skill_integrator and result.retrieved_skills:
                 skill_value_changes = {}
                 all_skills_before = self.skill_integrator.get_all_skills()
                 for skill_name in result.retrieved_skills:
                     skill_value_changes[skill_name] = {"before": self._get_skill_value(all_skills_before, skill_name)}
-                for skill_name in result.retrieved_skills:
-                    self.skill_integrator.update_skill_value_by_name(skill_name, result.success)
+
+                if result.success:
+                    # Task succeeded - standard Q-learning update
+                    for skill_name in result.retrieved_skills:
+                        self.skill_integrator.update_skill_value_by_name(skill_name, success=True)
+                else:
+                    # Task failed - use LQRL with r_learning evaluation
+                    actual_error = f"LLB task failed with exit code {result.exit_code}" if hasattr(result, 'exit_code') else "LLB task failed"
+                    for skill_name in result.retrieved_skills:
+                        lqrl_result = self.skill_integrator.process_task_failure_and_update(
+                            skill_name=skill_name,
+                            actual_error=actual_error,
+                            task_context=instruction[:500] if instruction else "",
+                        )
+                        skill_value_changes[skill_name]["r_learning"] = lqrl_result.get("r_learning", 0.0)
+                        skill_value_changes[skill_name]["quality"] = lqrl_result.get("quality", 0.0)
+                        skill_value_changes[skill_name]["action"] = lqrl_result.get("action", "unknown")
+
                 all_skills_after = self.skill_integrator.get_all_skills()
                 for skill_name in result.retrieved_skills:
                     skill_value_changes[skill_name]["after"] = self._get_skill_value(all_skills_after, skill_name)
