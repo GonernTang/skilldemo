@@ -727,3 +727,43 @@ skill.update_skill_value(success=False, alpha=0.5, r_learning=0.5, beta=0.3)
 1. 在 runner 中集成 r_learning 的自动评估逻辑
 2. 运行 β=0 vs β=0.3 对比实验
 3. 验证 Q 值熵是否如预期保持更高
+
+---
+
+## 2026-05-27 - β Ablation Experiment
+
+### 准备
+- 添加 `value_beta` 参数到 `BatchSkillIntegrator.__init__()` 和 `create_skill_integrator()`
+- 更新 `configs/rl_bcb_config.yaml` 添加 `value_beta: 0.0`
+- 创建 `results/ablation/config_beta_0.yaml` 和 `config_beta_0.3.yaml`
+
+### 实验配置
+- Benchmark: BigCodeBench (5 随机任务, seed=42)
+- α (learning rate): 0.5
+- r_learning: 0.0 (默认，尚无内容改进追踪)
+
+### 实验结果
+
+| β Value | Success Rate | Success/Total |
+|---------|-------------|---------------|
+| β=0 (baseline) | 40% | 2/5 |
+| β=0.3 (LQRL) | 60% | 3/5 |
+
+### 关键发现
+
+1. Task 2 (BigCodeBench/609, DataFrame 行删除) 在 β=0.3 时通过，β=0 时失败
+2. 样本量太小 (5 tasks)，结果可能有随机性
+
+### 重要说明
+
+当前 r_learning=0（默认），因此 LQRL 公式在失败时：
+- β=0: r_total = 0 → Q 下降 α×Q
+- β=0.3: r_total = 0.7×0 + 0.3×0 = 0 → Q 下降相同量
+
+**改进可能来自 LLM 响应的随机变化，而非 LQRL 机制本身**
+
+### 下一步
+
+1. 实现 r_learning 评估逻辑（检测 failure_scenarios 是否被添加）
+2. 设置 r_learning > 0 当技能内容改进时
+3. 重新运行更大样本量的消融实验
