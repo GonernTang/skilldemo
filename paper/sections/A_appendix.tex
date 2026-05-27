@@ -1,0 +1,61 @@
+% A_appendix.tex
+\appendix
+\section*{Appendix}
+
+\subsection{Full Proofs}
+
+This appendix contains the full proofs of the theoretical results stated in the main text.
+
+\begin{theorem}[LQRL Reduces Q-Penalty for Improving Skills]
+Let a skill $s$ fail a task ($r_{\text{task}} = 0$) but improve its content such that $r_{\text{learning}} = q > 0$. Under the LQRL update with learning rate $\alpha$ and layering weight $\beta$, the Q-value change is:
+\begin{equation}
+    \Delta Q = \alpha \cdot \beta \cdot q
+\end{equation}
+Under standard Q-learning ($\beta = 0$), the Q-value change is $\Delta Q_{\text{std}} = -\alpha \cdot Q_{\text{old}} \leq 0$.
+\end{theorem}
+
+\begin{proof}
+From \cref{eq:lqrl} with $r_{\text{task}} = 0$ and $r_{\text{learning}} = q$:
+\begin{align}
+    Q_{\text{new}} &= Q_{\text{old}} + \alpha \cdot [(1-\beta) \cdot 0 + \beta \cdot q] \\
+    &= Q_{\text{old}} + \alpha \cdot \beta \cdot q
+\end{align}
+Thus $\Delta Q = \alpha \beta q > 0$ when $q > 0$ and $\beta > 0$.
+
+For standard Q-learning with $r_{\text{task}} = 0$:
+\begin{align}
+    Q_{\text{new}}^{\text{std}} &= Q_{\text{old}} + \alpha \cdot (0 - Q_{\text{old}}) \\
+    &= (1 - \alpha) \cdot Q_{\text{old}}
+\end{align}
+Thus $\Delta Q_{\text{std}} = -\alpha \cdot Q_{\text{old}} \leq 0$ since $Q_{\text{old}} \geq 0$ and $\alpha > 0$.
+\end{proof}
+
+\begin{prop}[Optimal $\beta$ Bound]
+For a failed task with content improvement quality $q$, the Q-value under LQRL exceeds that under standard Q-learning when $\beta > \frac{Q_{\text{old}}}{q}$.
+\end{prop}
+
+\begin{proof}
+LQRL Q-value after failure with improvement: $Q_{\text{LQRL}} = Q_{\text{old}} + \alpha \beta q$.
+Standard Q-learning: $Q_{\text{std}} = (1-\alpha) Q_{\text{old}}$.
+
+We want $Q_{\text{LQRL}} > Q_{\text{std}}$:
+\begin{align}
+    Q_{\text{old}} + \alpha \beta q &> (1-\alpha) Q_{\text{old}} \\
+    \alpha \beta q &> Q_{\text{old}} - \alpha Q_{\text{old}} \\
+    \beta &> \frac{Q_{\text{old}}(1 - \alpha)}{\alpha q}
+\end{align}
+For small $\alpha$, this approximates $\beta > \frac{Q_{\text{old}}}{q}$.
+\end{proof}
+
+\subsection{Implementation Details}
+
+The LQRL implementation extends the BatchSkillIntegrator in the qskill framework. When a task fails, the system:
+\begin{enumerate}
+    \item Constructs a failure scenario from the error trace
+    \item Evaluates the failure scenario quality using an LLM judge
+    \item Updates the skill's failure scenarios with quality control (cap at 10, merge similar)
+    \item Computes $r_{\text{learning}}$ based on whether content was added/merged
+    \item Applies the LQRL update rule with the computed rewards
+\end{enumerate}
+
+The LLM judge prompt asks: ``Did the skill content improve, degrade, or stay the same after this task?'' with criteria for relevance, actionability, non-redundancy, and correctness.

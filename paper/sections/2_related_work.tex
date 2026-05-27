@@ -1,0 +1,20 @@
+% 2_related_work.tex
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Non-Parametric Skill Systems}
+
+Non-parametric skill systems store skills as explicit knowledge that can be retrieved and modified at runtime. \citet{memrl} introduced the concept of episodic memory with Q-value metadata for skill retrieval, where skills are ranked by both semantic similarity and learned utility. \citet{memskill} extended this with a memory-skill co-design pipeline that extracts skills from successful trajectories. \citet{skillclaw} proposed collective skill evolution where skills co-evolve through experience. These systems all use Q-values to guide skill selection, but update Q-values only based on task success or failure.
+
+%\paragraph{Skill Content Evolution}
+The key distinction in our work is that we update skill Q-values based not only on task outcomes but also on whether the skill's content improved. In contrast, prior systems treat skill content and skill utility as separate concerns.
+
+\subsection{Reward Decomposition in RL}
+
+Reward decomposition has been studied in the context of option frameworks~\citep{options}, hierarchical RL~\citep{hiroptions}, and hindsight experience replay (HER)~\citep{her}. HER re-labels failed trajectories as successful by substituting the achieved goal with the actual outcome, but it does not assess whether the skill's procedural knowledge improved. In contrast, LQRL evaluates whether the skill's content (failure scenarios, constraints, trigger conditions) was refined through the failure experience.
+
+Our approach is most similar to \citet{sparse reward rl}, who decomposed rewards into task completion and exploration components. However, their approach operates at the action level, while LQRL operates at the skill level, assessing whether the skill's knowledge base was enriched.
+
+\subsection{Skill Memory and Retrieval}
+
+\citet{skillos} proposed an OS-style skill management system with lifecycle versioning, but did not address the reward update problem. \citet{skillrouter} learned skill routing at scale but focused on retrieval rather than update. LQRL complements these approaches by providing a principled way to update skill values when content evolves through experience.

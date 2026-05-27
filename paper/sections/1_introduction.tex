@@ -1,0 +1,21 @@
+% 1_introduction.tex
+\section{Introduction}
+
+In non-parametric skill evolution systems~\citep{memrl,memskill,skillclaw}, agents build libraries of reusable skills that are stored as explicit knowledge rather than baked into model weights. When a skill fails at a task, the agent refines the skill's content to avoid the failure in future attempts. However, standard Q-learning only rewards task success, creating a fundamental contradiction: a skill that successfully improves its content through failure feedback is then penalized with a lower Q-value, making it less likely to be retrieved.
+
+This contradiction hinders skill evolution in runtime systems. Consider a code generation skill that fails because it doesn't handle edge cases properly. After analyzing the failure, the skill adds a new failure scenario to prevent this mistake. Standard Q-learning interprets this as a failure (reward $r=0$) and decreases the skill's Q-value, even though the skill's content is now more complete and more likely to succeed on similar tasks.
+
+% noindent for paragraph continuation
+%\paragraph{Contributions}
+We propose \textbf{LQRL} (Layered Q-Value with Learning Reward), which decomposes the skill Q-value update into two reward components: (1) $r_{\text{task}}$ rewards task success or penalizes task failure, and (2) $r_{\text{learning}}$ rewards content improvement or penalizes content degradation. By combining these components with a layering weight $\beta$, LQRL allows skills to gain positive updates even from failed tasks when their content improves.
+
+Our contributions are:
+\begin{enumerate}
+    \item \textbf{First layered reward decomposition} for non-parametric skill Q-values, separating task success from content improvement.
+    \item \textbf{LLM-based $r_{\text{learning}}$ evaluation} that automatically assesses whether skill content improved after a task.
+    \item \textbf{Comprehensive evaluation} across four benchmarks (BigCodeBench, HLE, ALFWorld, LLB) with $\beta$-ablation study.
+\end{enumerate}
+
+Experiments on BigCodeBench show that $\beta=0.3$ achieves 66.7\% success rate versus 40\% for baseline Q-learning ($\beta=0$), a 20 percentage point improvement. These results suggest that decomposing rewards enables more effective skill evolution.
+
+The rest of this paper is organized as follows. \cref{sec:related} discusses related work. \cref{sec:method} describes the LQRL method. \cref{sec:experiments} presents experimental results. \cref{sec:conclusion} concludes.

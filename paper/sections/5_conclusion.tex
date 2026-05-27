@@ -1,0 +1,15 @@
+% 5_conclusion.tex
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented LQRL, a layered Q-value update rule for non-parametric skill evolution that decomposes rewards into task success and content improvement components. By evaluating skill content improvement with an LLM judge, LQRL allows skills to receive positive updates even when they fail at tasks, resolving the contradiction in standard Q-learning where improving skills are penalized.
+
+Our preliminary experiments on BigCodeBench show promising results: $\beta=0.3$ achieves 66.7\% success rate versus 40\% for baseline Q-learning. This suggests that layered rewards enable more effective skill evolution.
+
+\subsection{Limitations}
+
+The current evaluation is limited by small sample sizes due to compute constraints. The LLM-based content evaluation adds inference overhead, and the quality of $r_{\text{learning}}$ depends on the LLM's judgment capabilities.
+
+\subsection{Future Work}
+
+Future directions include: (1) larger-scale ablation studies with statistical significance, (2) theoretical analysis of convergence properties, (3) learned reward evaluation for better content assessment, and (4) cross-domain skill transfer using improved skill representations.
