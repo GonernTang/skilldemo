@@ -1920,7 +1920,7 @@ Do not include any explanation, just output the number."""
         beta = beta if beta is not None else self.value_beta
 
         # Find the skill and get its current state
-        skill = self._find_skill_by_name(skill_name)
+        skill, source_path = self._find_skill_by_name(skill_name)
         if not skill:
             return {
                 "r_learning": 0.0,
@@ -1962,18 +1962,18 @@ Do not include any explanation, just output the number."""
         # Get skill value before update
         skill_value_before = skill.get("skill_value", 0.0)
 
-        # Update skill value using LQRL (task failed, so r_task = 0)
-        # Q_new = Q_old + α × [β × r_learning] when r_task = 0
-        self.update_skill_value_by_name(
-            skill_name=skill_name,
-            success=False,
-            r_learning=r_learning,
-            beta=beta,
-        )
+        # Update skill value using LQRL directly (task failed, so r_task = 0)
+        # Q_new = Q_old + α × [(1-β) × r_task + β × r_learning] when r_task = 0
+        alpha = self.value_alpha
+        r_task = 0.0  # failure
+        r_total = (1 - beta) * r_task + beta * r_learning
+        skill["skill_value"] = skill.get("skill_value", 0.0) + alpha * (r_total - skill.get("skill_value", 0.0))
+
+        # Save to the correct path (where we found the skill)
+        self._save_skill_to_path(skill, source_path)
 
         # Get skill value after update
-        updated_skill = self._find_skill_by_name(skill_name)
-        skill_value_after = updated_skill.get("skill_value", 0.0) if updated_skill else None
+        skill_value_after = skill.get("skill_value", 0.0)
 
         # Evaluate quality for reporting (without caching)
         quality = self.evaluate_failure_scenario(
@@ -2033,8 +2033,10 @@ Do not include any explanation, just output the number."""
             "lesson": lesson,
         }
 
-    def _find_skill_by_name(self, skill_name: str) -> Optional[Dict[str, Any]]:
-        """Find a skill by name across all categories and storage locations.
+    def _find_skill_by_name(
+        self, skill_name: str
+    ) -> tuple[Optional[Dict[str, Any]], Optional[Path]]:
+        """Find a skill by name and return it with its source path.
 
         Searches in:
         1. Main batch_skills_index.json (general_skills, task_specific_skills, common_mistakes)
@@ -2044,22 +2046,23 @@ Do not include any explanation, just output the number."""
             skill_name: Name of the skill to find.
 
         Returns:
-            The skill dict if found, None otherwise.
+            Tuple of (skill_dict, source_path). source_path is None if not found.
+            The source_path indicates where the skill should be saved after modification.
         """
         all_skills = self.get_all_skills()
 
         for skill in all_skills.get("general_skills", []):
             if skill.get("name") == skill_name:
-                return skill
+                return skill, self.batch_extractor.index_path
 
         for skills in all_skills.get("task_specific_skills", {}).values():
             for skill in skills:
                 if skill.get("name") == skill_name:
-                    return skill
+                    return skill, self.batch_extractor.index_path
 
         for skill in all_skills.get("common_mistakes", []):
             if skill.get("name") == skill_name:
-                return skill
+                return skill, self.batch_extractor.index_path
 
         # Also search in markdown subdirectory's batch_skills_index.json
         markdown_index_path = self._skills_dir / "markdown" / "batch_skills_index.json"
@@ -2069,11 +2072,11 @@ Do not include any explanation, just output the number."""
                     data = json.load(f)
                     for skill in data.get("general_skills", []):
                         if skill.get("name") == skill_name:
-                            return skill
+                            return skill, markdown_index_path
             except Exception:
                 pass
 
-        return None
+        return None, None
 
     def _check_failure_scenario_similarity(
         self,
@@ -2262,5 +2265,47 @@ Do not include any explanation, just output the number."""
         try:
             with open(index_path, 'w') as f:
                 json.dump(index, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass  # Ignore save errors
+
+    def _save_skill_to_path(self, skill: Dict[str, Any], index_path: Optional[Path]) -> None:
+        """Save a skill to a specific index path.
+
+        Args:
+            skill: The skill dict to save (with updated values).
+            index_path: Path to the index file to save to.
+        """
+        if index_path is None:
+            return
+
+        try:
+            if not index_path.exists():
+                return
+
+            with open(index_path, 'r') as f:
+                data = json.load(f)
+
+            # Find and replace the skill in the appropriate category
+            for i, s in enumerate(data.get("general_skills", [])):
+                if s.get("name") == skill.get("name"):
+                    data["general_skills"][i] = skill
+                    with open(index_path, 'w') as f:
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                    return
+
+            for task_type, skills in data.get("task_specific_skills", {}).items():
+                for i, s in enumerate(skills):
+                    if s.get("name") == skill.get("name"):
+                        data["task_specific_skills"][task_type][i] = skill
+                        with open(index_path, 'w') as f:
+                            json.dump(data, f, ensure_ascii=False, indent=2)
+                        return
+
+            for i, s in enumerate(data.get("common_mistakes", [])):
+                if s.get("name") == skill.get("name"):
+                    data["common_mistakes"][i] = skill
+                    with open(index_path, 'w') as f:
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                    return
         except Exception:
             pass  # Ignore save errors
