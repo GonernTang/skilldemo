@@ -99,6 +99,9 @@ class BatchSkillIntegrator:
         enable_merging: bool = False,
         merge_similarity_threshold: float = 0.85,
         rrf_k: float = 60.0,
+        max_failure_scenarios: int = 10,
+        min_failure_scenario_quality: float = 0.1,
+        failure_scenario_merge_threshold: float = 0.8,
     ):
         """Initialize the batch skill integrator.
 
@@ -148,6 +151,10 @@ class BatchSkillIntegrator:
         self.merge_similarity_threshold = merge_similarity_threshold
         self.rrf_k = rrf_k
         self.benchmark = benchmark
+        # Failure scenario management parameters
+        self.max_failure_scenarios = max_failure_scenarios
+        self.min_failure_scenario_quality = min_failure_scenario_quality
+        self.failure_scenario_merge_threshold = failure_scenario_merge_threshold
 
         # Initialize components
         self.trajectory_buffer = TrajectoryBuffer(storage_dir=trajectory_dir)
@@ -1811,6 +1818,278 @@ Do not include any explanation, just output the number."""
         """
         for name in skill_names:
             self.increment_skill_usage_count(name)
+
+    def process_failure_scenario(
+        self,
+        skill_name: str,
+        new_failure_scenario: Dict[str, Any],
+        actual_error: str,
+        task_context: str = "",
+    ) -> float:
+        """Process a new failure_scenario for a skill with quality control.
+
+        This method handles the decision of whether to add, merge, or skip
+        a new failure_scenario based on quality and similarity checks.
+
+        Args:
+            skill_name: Name of the skill to update.
+            new_failure_scenario: The new failure scenario to process.
+            actual_error: The actual error that occurred.
+            task_context: Optional task context for better evaluation.
+
+        Returns:
+            r_learning value based on the action taken:
+            - 0.0: skipped (too similar or quality too low)
+            - 0.5 * merged_quality: merged into existing scenario
+            - quality: added as new scenario
+            - quality - lowest_quality: replaced existing low-quality scenario
+        """
+        # 1. Evaluate quality of new failure scenario
+        quality = self.evaluate_failure_scenario(
+            new_failure_scenario, actual_error, task_context
+        )
+
+        # Quality check: reject if below threshold
+        if quality < self.min_failure_scenario_quality:
+            return 0.0
+
+        # 2. Find the skill
+        skill = self._find_skill_by_name(skill_name)
+        if not skill:
+            return 0.0
+
+        existing_fs = skill.get("failure_scenarios", [])
+
+        # 3. Check similarity with existing failure scenarios
+        similarity_result = self._check_failure_scenario_similarity(
+            new_failure_scenario, existing_fs
+        )
+
+        if similarity_result["action"] == "skip":
+            return 0.0
+
+        if similarity_result["action"] == "merge":
+            # Merge with existing - discounted reward
+            merged_quality = similarity_result["merged_quality"]
+            return merged_quality * 0.5
+
+        # 4. Action is "add"
+        if len(existing_fs) >= self.max_failure_scenarios:
+            # At capacity - check if we should replace lowest quality
+            lowest_idx = similarity_result.get("lowest_idx", -1)
+            if lowest_idx >= 0:
+                # Estimate quality of lowest
+                lowest_quality = similarity_result.get("lowest_quality", 0.0)
+                if quality > lowest_quality:
+                    # Replace - return net gain
+                    return quality - lowest_quality
+                else:
+                    return 0.0  # New one isn't better
+
+        return quality
+
+    def _find_skill_by_name(self, skill_name: str) -> Optional[Dict[str, Any]]:
+        """Find a skill by name across all categories.
+
+        Args:
+            skill_name: Name of the skill to find.
+
+        Returns:
+            The skill dict if found, None otherwise.
+        """
+        all_skills = self.get_all_skills()
+
+        for skill in all_skills.get("general_skills", []):
+            if skill.get("name") == skill_name:
+                return skill
+
+        for skills in all_skills.get("task_specific_skills", {}).values():
+            for skill in skills:
+                if skill.get("name") == skill_name:
+                    return skill
+
+        for skill in all_skills.get("common_mistakes", []):
+            if skill.get("name") == skill_name:
+                return skill
+
+        return None
+
+    def _check_failure_scenario_similarity(
+        self,
+        new_fs: Dict[str, Any],
+        existing_fs: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Check similarity of new failure_scenario against existing ones.
+
+        Args:
+            new_fs: The new failure scenario to check.
+            existing_fs: List of existing failure scenarios.
+
+        Returns:
+            Dict with action and details:
+            - action: "add", "merge", or "skip"
+            - merge_target: index of scenario to merge with (if action == "merge")
+            - lowest_idx: index of lowest quality scenario (if at capacity)
+            - lowest_quality: estimated quality of lowest scenario
+            - merged_quality: quality of merged scenario
+        """
+        new_text = self._fs_to_text(new_fs)
+
+        # If no existing scenarios, can add
+        if not existing_fs:
+            return {"action": "add"}
+
+        best_similarity = 0.0
+        best_idx = -1
+
+        for i, existing in enumerate(existing_fs):
+            existing_text = self._fs_to_text(existing)
+            similarity = self._compute_text_similarity(new_text, existing_text)
+
+            if similarity > best_similarity:
+                best_similarity = similarity
+                best_idx = i
+
+        # Check if similar enough to merge
+        if best_similarity >= self.failure_scenario_merge_threshold:
+            # Check if can merge (same reason type)
+            if existing_fs[best_idx].get("reason") == new_fs.get("reason"):
+                merged_quality = self._estimate_merged_quality(
+                    new_fs, existing_fs[best_idx]
+                )
+                return {
+                    "action": "merge",
+                    "merge_target": best_idx,
+                    "merged_quality": merged_quality,
+                }
+            else:
+                # Different reason types - skip to avoid confusion
+                return {"action": "skip"}
+
+        # Not similar enough to merge, check if can add
+        if len(existing_fs) >= self.max_failure_scenarios:
+            # At capacity - find lowest quality scenario
+            lowest_idx = 0
+            lowest_quality = self._estimate_fs_quality(existing_fs[0])
+
+            for i, fs in enumerate(existing_fs):
+                quality = self._estimate_fs_quality(fs)
+                if quality < lowest_quality:
+                    lowest_quality = quality
+                    lowest_idx = i
+
+            return {
+                "action": "add",
+                "lowest_idx": lowest_idx,
+                "lowest_quality": lowest_quality,
+            }
+
+        return {"action": "add"}
+
+    def _fs_to_text(self, fs: Dict[str, Any]) -> str:
+        """Convert a failure_scenario to text for similarity comparison."""
+        parts = []
+        if fs.get("reason"):
+            parts.append(f"reason: {fs['reason']}")
+        if fs.get("detail"):
+            parts.append(f"detail: {fs['detail']}")
+        if fs.get("lesson"):
+            parts.append(f"lesson: {fs['lesson']}")
+        if fs.get("correct_approach"):
+            parts.append(f"solution: {fs['correct_approach']}")
+        return " ".join(parts)
+
+    def _compute_text_similarity(self, text1: str, text2: str) -> float:
+        """Compute similarity between two texts.
+
+        Uses word overlap (Jaccard similarity) as fallback when no embedder.
+        Uses embedding similarity when embedder is available.
+
+        Args:
+            text1: First text.
+            text2: Second text.
+
+        Returns:
+            Similarity score between 0.0 and 1.0.
+        """
+        # Simple word-based similarity (Jaccard)
+        words1 = set(text1.lower().split())
+        words2 = set(text2.lower().split())
+
+        if not words1 or not words2:
+            return 0.0
+
+        intersection = words1 & words2
+        union = words1 | words2
+
+        jaccard = len(intersection) / len(union) if union else 0.0
+
+        # If embedder available, also compute embedding similarity
+        if self.embedder and len(words1) > 0 and len(words2) > 0:
+            try:
+                emb1 = self.embedder.embed([text1])[0]
+                emb2 = self.embedder.embed([text2])[0]
+                cosine = self._cosine_similarity(emb1, emb2)
+                # Combine Jaccard and cosine (weighted average)
+                return 0.4 * jaccard + 0.6 * cosine
+            except Exception:
+                pass
+
+        return jaccard
+
+    def _estimate_fs_quality(self, fs: Dict[str, Any]) -> float:
+        """Estimate the quality of a failure_scenario based on its content.
+
+        This is a heuristic-based estimation without LLM call.
+
+        Args:
+            fs: Failure scenario dict.
+
+        Returns:
+            Estimated quality between 0.0 and 0.5.
+        """
+        score = 0.0
+
+        # Has detail - more specific is better
+        if fs.get("detail") and len(fs.get("detail", "")) > 20:
+            score += 0.15
+
+        # Has correct_approach - actionable advice
+        if fs.get("correct_approach"):
+            score += 0.15
+
+        # Has lesson - learned insight
+        if fs.get("lesson"):
+            score += 0.1
+
+        # Has specific reason (not generic)
+        reason = fs.get("reason", "")
+        if reason and reason not in ["error", "wrong", "fail"]:
+            score += 0.1
+
+        return min(0.5, score)
+
+    def _estimate_merged_quality(
+        self, new_fs: Dict[str, Any], existing_fs: Dict[str, Any]
+    ) -> float:
+        """Estimate the quality of a merged failure_scenario.
+
+        Args:
+            new_fs: New failure scenario.
+            existing_fs: Existing failure scenario to merge into.
+
+        Returns:
+            Estimated merged quality between 0.0 and 0.5.
+        """
+        # Take the better of the two
+        new_quality = self._estimate_fs_quality(new_fs)
+        existing_quality = self._estimate_fs_quality(existing_fs)
+
+        # Merged quality is weighted average, biased toward better one
+        max_quality = max(new_quality, existing_quality)
+        avg_quality = (new_quality + existing_quality) / 2
+
+        return (max_quality + avg_quality) / 2
 
     def _save_updated_index(self, index: Dict[str, Any]) -> None:
         """Save updated skills index to disk.
