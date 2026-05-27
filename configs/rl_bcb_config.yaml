@@ -13,10 +13,10 @@
 
 llm:
   provider: "openai"
-  api_key: "sk-8df0848b28d94066a0f03ea5b388e74c"
-  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  api_key: "sk-329274673d3b4e6d9032c7037a2c60e7"
+  base_url: "https://api.deepseek.com"
   api_version: null
-  model: "qwen3.5-flash"
+  model: "deepseek-v4-flash"
   temperature: 0.0
   max_tokens: 12800
 

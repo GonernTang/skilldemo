@@ -186,19 +186,34 @@ class Skill:
             # Original rate is weighted by previous usage count
             self.success_rate = (self.success_rate * (self.usage_count - 1) + (1.0 if success else 0.0)) / self.usage_count
 
-    def update_skill_value(self, success: bool, alpha: float = 0.5) -> None:
-        """Update skill value (Q-value) using Q-learning formula.
+    def update_skill_value(
+        self,
+        success: bool,
+        alpha: float = 0.5,
+        r_learning: float = 0.0,
+        beta: float = 0.3,
+    ) -> None:
+        """Update skill value (Q-value) using Layered Q-Learning.
 
-        Q_new <- Q_old + alpha * (r - Q_old)
+        LQRL formula: Q_new <- Q_old + alpha * [(1-beta)*r_task + beta*r_learning]
 
-        Where r = 1.0 for success, r = 0.0 for failure.
+        Where:
+        - r_task = 1.0 for success, 0.0 for failure
+        - r_learning = content improvement reward (+0.5 improved, -0.5 degraded, 0 unchanged)
+        - beta = weight balancing task reward vs learning reward (default: 0.3)
+
+        When beta=0, this reduces to standard Q-learning.
+        When beta>0, skills are rewarded for content improvement even on task failure.
 
         Args:
             success: Whether the skill execution was successful.
             alpha: Learning rate for Q-value update (default: 0.5).
+            r_learning: Learning reward for content improvement (default: 0.0).
+            beta: Weight for learning reward channel (default: 0.3).
         """
-        r = 1.0 if success else 0.0
-        self.skill_value = self.skill_value + alpha * (r - self.skill_value)
+        r_task = 1.0 if success else 0.0
+        r_total = (1 - beta) * r_task + beta * r_learning
+        self.skill_value = self.skill_value + alpha * (r_total - self.skill_value)
 
 
 @dataclass

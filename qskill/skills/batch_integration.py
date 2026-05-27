@@ -1628,16 +1628,26 @@ class BatchSkillIntegrator:
         skill_name: str,
         success: bool,
         alpha: Optional[float] = None,
+        r_learning: float = 0.0,
+        beta: float = 0.3,
     ) -> bool:
-        """Update skill value (Q-value) for a skill by name.
+        """Update skill value (Q-value) for a skill by name using Layered Q-Learning.
 
-        Q_new <- Q_old + alpha * (r - Q_old)
-        Where r = 1.0 for success, r = 0.0 for failure.
+        LQRL formula: Q_new <- Q_old + alpha * [(1-beta)*r_task + beta*r_learning]
+
+        Where:
+        - r_task = 1.0 for success, 0.0 for failure
+        - r_learning = content improvement reward (+0.5 improved, -0.5 degraded, 0 unchanged)
+        - beta = weight balancing task reward vs learning reward (default: 0.3)
+
+        When beta=0, this reduces to standard Q-learning.
 
         Args:
             skill_name: Name of the skill to update.
             success: Whether the skill execution was successful.
             alpha: Learning rate (uses instance default if not provided).
+            r_learning: Learning reward for content improvement (default: 0.0).
+            beta: Weight for learning reward channel (default: 0.3).
 
         Returns:
             True if skill was found and updated, False otherwise.
@@ -1649,8 +1659,9 @@ class BatchSkillIntegrator:
         for skill in all_skills.get("general_skills", []):
             if skill.get("name") == skill_name:
                 skill["skill_value"] = skill.get("skill_value", 0.0)
-                r = 1.0 if success else 0.0
-                skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                r_task = 1.0 if success else 0.0
+                r_total = (1 - beta) * r_task + beta * r_learning
+                skill["skill_value"] = skill["skill_value"] + alpha * (r_total - skill["skill_value"])
                 self._save_updated_index(all_skills)
                 return True
 
@@ -1659,8 +1670,9 @@ class BatchSkillIntegrator:
             for skill in skills:
                 if skill.get("name") == skill_name:
                     skill["skill_value"] = skill.get("skill_value", 0.0)
-                    r = 1.0 if success else 0.0
-                    skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                    r_task = 1.0 if success else 0.0
+                    r_total = (1 - beta) * r_task + beta * r_learning
+                    skill["skill_value"] = skill["skill_value"] + alpha * (r_total - skill["skill_value"])
                     self._save_updated_index(all_skills)
                     return True
 
@@ -1668,8 +1680,9 @@ class BatchSkillIntegrator:
         for skill in all_skills.get("common_mistakes", []):
             if skill.get("name") == skill_name:
                 skill["skill_value"] = skill.get("skill_value", 0.0)
-                r = 1.0 if success else 0.0
-                skill["skill_value"] = skill["skill_value"] + alpha * (r - skill["skill_value"])
+                r_task = 1.0 if success else 0.0
+                r_total = (1 - beta) * r_task + beta * r_learning
+                skill["skill_value"] = skill["skill_value"] + alpha * (r_total - skill["skill_value"])
                 self._save_updated_index(all_skills)
                 return True
 

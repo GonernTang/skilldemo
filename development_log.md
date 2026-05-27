@@ -663,3 +663,67 @@ python run/run_alfworld.py --config configs/rl_alf_config.yaml
 # 禁用 skill layer
 python run/run_alfworld.py --config configs/rl_alf_config.yaml --disable_skills
 ```
+
+---
+
+## 2026-05-27 - LQRL 实现 (Layered Q-Value with Learning Reward)
+
+### 背景
+
+在非参数化技能演化系统中，技能的 Q 值仅在任务成功/失败时更新。当技能内容通过失败反馈改进时（如添加 failure_scenario），Q 值反而下降（任务失败），导致该技能被检索的概率降低，造成矛盾。
+
+### LQRL 公式
+
+```
+Q_new = Q_old + α × [(1-β) × r_task + β × r_learning]
+```
+
+其中：
+- `r_task` = 任务成功奖励（成功=1.0，失败=0.0）
+- `r_learning` = 内容改进奖励（改进=+0.5，退化=-0.5，无变化=0）
+- `β` = 平衡任务奖励与学习奖励的权重（默认=0.3）
+
+当 β=0 时，退化为标准 Q-learning。
+
+### 修改的文件
+
+#### 1. `qskill/skills/skill.py`
+- `Skill.update_skill_value()` 添加 `r_learning` 和 `beta` 参数
+- 实现 LQRL 公式
+
+#### 2. `qskill/skills/batch_integration.py`
+- `BatchSkillIntegrator.update_skill_value_by_name()` 添加 `r_learning` 和 `beta` 参数
+- 实现 LQRL 公式
+
+### 使用方式
+
+```python
+# 标准 Q-learning（β=0，与原来相同）
+skill.update_skill_value(success=True, alpha=0.5, r_learning=0.0, beta=0.0)
+
+# LQRL（β=0.3）
+# 任务成功，r_task=1.0，r_learning=0.0
+skill.update_skill_value(success=True, alpha=0.5, r_learning=0.0, beta=0.3)
+# r_total = 0.7*1.0 + 0.3*0.0 = 0.7
+
+# 任务失败但内容改进，r_task=0.0，r_learning=0.5
+skill.update_skill_value(success=False, alpha=0.5, r_learning=0.5, beta=0.3)
+# r_total = 0.7*0.0 + 0.3*0.5 = 0.15
+# Q 值不会像标准 Q-learning 那样大幅下降
+```
+
+### 效果验证
+
+| 场景 | β=0 (标准) | β=0.3, r_learning=0.5 |
+|------|-----------|----------------------|
+| 成功 | Q ↑ | Q ↑ (略小) |
+| 失败+内容改进 | Q ↓↓ | Q ↓ (减小) |
+| 失败+无改进 | Q ↓↓ | Q ↓↓ |
+
+通过引入 r_learning 通道，即使任务失败，只要技能内容得到改进，Q 值也不会大幅下降，从而避免内容改进的技能被惩罚。
+
+### 下一步
+
+1. 在 runner 中集成 r_learning 的自动评估逻辑
+2. 运行 β=0 vs β=0.3 对比实验
+3. 验证 Q 值熵是否如预期保持更高
