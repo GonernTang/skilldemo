@@ -2034,7 +2034,11 @@ Do not include any explanation, just output the number."""
         }
 
     def _find_skill_by_name(self, skill_name: str) -> Optional[Dict[str, Any]]:
-        """Find a skill by name across all categories.
+        """Find a skill by name across all categories and storage locations.
+
+        Searches in:
+        1. Main batch_skills_index.json (general_skills, task_specific_skills, common_mistakes)
+        2. Markdown subdirectory's batch_skills_index.json (for backward compatibility)
 
         Args:
             skill_name: Name of the skill to find.
@@ -2056,6 +2060,18 @@ Do not include any explanation, just output the number."""
         for skill in all_skills.get("common_mistakes", []):
             if skill.get("name") == skill_name:
                 return skill
+
+        # Also search in markdown subdirectory's batch_skills_index.json
+        markdown_index_path = self._skills_dir / "markdown" / "batch_skills_index.json"
+        if markdown_index_path.exists():
+            try:
+                with open(markdown_index_path, 'r') as f:
+                    data = json.load(f)
+                    for skill in data.get("general_skills", []):
+                        if skill.get("name") == skill_name:
+                            return skill
+            except Exception:
+                pass
 
         return None
 
