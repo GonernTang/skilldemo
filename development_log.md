@@ -767,3 +767,56 @@ skill.update_skill_value(success=False, alpha=0.5, r_learning=0.5, beta=0.3)
 1. 实现 r_learning 评估逻辑（检测 failure_scenarios 是否被添加）
 2. 设置 r_learning > 0 当技能内容改进时
 3. 重新运行更大样本量的消融实验
+
+---
+
+## 2026-05-27 - r_learning 评估实现 (方案2: LLM 评估)
+
+### 背景
+用户指出单纯计数 failure_scenarios 增加来评估 r_learning 不合理，需要考虑 failure_scenario 是否真的有用。
+
+### 实现方案
+使用 LLM 在 failure_scenario 加入技能内容时评估其质量。
+
+### 新增方法
+`BatchSkillIntegrator.evaluate_failure_scenario()`:
+```python
+def evaluate_failure_scenario(
+    self,
+    failure_scenario: Dict[str, Any],
+    actual_error: str,
+    task_context: str = "",
+) -> float:
+    """
+    Returns:
+    - 0.0: useless or misleading
+    - 0.25: partially useful  
+    - 0.5: highly useful
+    """
+```
+
+### LLM Prompt 设计
+评估标准：
+1. **相关性**：failure_scenario 是否准确描述了错误条件？
+2. **可操作性**：建议是否能帮助避免类似失败？
+3. **非冗余**：是否包含新信息而非常识？
+4. **正确性**：建议的解决方案是否正确有效？
+
+### 使用方式
+```python
+# 在更新技能值时
+r_learning = integrator.evaluate_failure_scenario(
+    failure_scenario=fs,
+    actual_error=task_error,
+    task_context=task_description
+)
+integrator.update_skill_value_by_name(
+    skill_name, 
+    success=False, 
+    r_learning=r_learning,
+    beta=0.3
+)
+```
+
+### 提交
+- `qskill/skills/batch_integration.py`: 添加 `evaluate_failure_scenario()` 方法 (145e1bc2)
