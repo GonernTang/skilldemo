@@ -605,8 +605,28 @@ class BCBRunner:
             # Update skill values based on task outcome
             if self.skill_integrator is not None and retrieved_skill_names:
                 try:
-                    for skill_name in retrieved_skill_names:
-                        self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(ok))
+                    if ok:
+                        # Task succeeded - standard Q-learning update
+                        for skill_name in retrieved_skill_names:
+                            self.skill_integrator.update_skill_value_by_name(
+                                skill_name, success=True
+                            )
+                    else:
+                        # Task failed - use LQRL with r_learning evaluation
+                        actual_error = str(eval_res.get("error", ""))[:1000]
+                        for skill_name in retrieved_skill_names:
+                            result = self.skill_integrator.process_task_failure_and_update(
+                                skill_name=skill_name,
+                                actual_error=actual_error,
+                                task_context=prompt[:500],
+                            )
+                            logger.debug(
+                                "BCB LQRL update for %s: r_learning=%.3f, quality=%.3f, action=%s",
+                                skill_name,
+                                result.get("r_learning", 0.0),
+                                result.get("quality", 0.0),
+                                result.get("action", "unknown"),
+                            )
                 except Exception:
                     logger.debug("BCB skill value update failed for %s", task_id, exc_info=True)
 

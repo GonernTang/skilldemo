@@ -762,8 +762,27 @@ class LLBRunner(BaseRunner):
                 # Update skill values based on task outcome
                 if self.skill_integrator is not None and retrieved_skill_names:
                     try:
-                        for skill_name in retrieved_skill_names:
-                            self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(success))
+                        if success:
+                            for skill_name in retrieved_skill_names:
+                                self.skill_integrator.update_skill_value_by_name(
+                                    skill_name, success=True
+                                )
+                        else:
+                            # Task failed - use LQRL with r_learning evaluation
+                            actual_error = "LLB task failed"
+                            for skill_name in retrieved_skill_names:
+                                result = self.skill_integrator.process_task_failure_and_update(
+                                    skill_name=skill_name,
+                                    actual_error=actual_error,
+                                    task_context=task_description[:500] if task_description else "",
+                                )
+                                logger.debug(
+                                    "LLB LQRL update for %s: r_learning=%.3f, quality=%.3f, action=%s",
+                                    skill_name,
+                                    result.get("r_learning", 0.0),
+                                    result.get("quality", 0.0),
+                                    result.get("action", "unknown"),
+                                )
                     except Exception as e:
                         logger.debug("LLB skill value update failed: %s", e)
 

@@ -1888,6 +1888,151 @@ Do not include any explanation, just output the number."""
 
         return quality
 
+    def process_task_failure_and_update(
+        self,
+        skill_name: str,
+        actual_error: str,
+        task_context: str = "",
+        beta: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Process a task failure and update skill value with LQRL.
+
+        This is the main integration method for LQRL. It:
+        1. Constructs a failure_scenario from the error
+        2. Evaluates quality using LLM to get r_learning
+        3. Updates the skill's failure_scenarios if quality is good
+        4. Updates skill value using LQRL formula
+
+        Args:
+            skill_name: Name of the skill that was used.
+            actual_error: The actual error that occurred during task execution.
+            task_context: Optional context about the task (e.g., task description).
+            beta: LQRL beta parameter (uses instance default if None).
+
+        Returns:
+            Dict with:
+            - r_learning: The computed learning reward
+            - quality: The evaluated quality of the failure scenario
+            - action: What happened ("added", "merged", "skipped", "none")
+            - skill_value_before: Skill value before update
+            - skill_value_after: Skill value after update
+        """
+        beta = beta if beta is not None else self.value_beta
+
+        # Find the skill and get its current state
+        skill = self._find_skill_by_name(skill_name)
+        if not skill:
+            return {
+                "r_learning": 0.0,
+                "quality": 0.0,
+                "action": "skill_not_found",
+                "skill_value_before": None,
+                "skill_value_after": None,
+            }
+
+        # Construct a failure_scenario from the error
+        failure_scenario = self._construct_failure_scenario(actual_error)
+
+        # Get existing failure scenarios for quality comparison
+        existing_fs = skill.get("failure_scenarios", [])
+
+        # Process the failure scenario (evaluate quality, decide add/merge/skip)
+        r_learning = self.process_failure_scenario(
+            skill_name=skill_name,
+            new_failure_scenario=failure_scenario,
+            actual_error=actual_error,
+            task_context=task_context,
+        )
+
+        # Determine what action was taken for logging
+        if r_learning == 0.0:
+            action = "skipped"
+        else:
+            # Check what actually happened
+            if existing_fs and self._compute_text_similarity(
+                self._fs_to_text(failure_scenario),
+                self._fs_to_text(existing_fs[-1])
+            ) >= self.failure_scenario_merge_threshold:
+                action = "merged"
+            elif len(existing_fs) < self.max_failure_scenarios:
+                action = "added"
+            else:
+                action = "replaced"
+
+        # Get skill value before update
+        skill_value_before = skill.get("skill_value", 0.0)
+
+        # Update skill value using LQRL (task failed, so r_task = 0)
+        # Q_new = Q_old + α × [β × r_learning] when r_task = 0
+        self.update_skill_value_by_name(
+            skill_name=skill_name,
+            success=False,
+            r_learning=r_learning,
+            beta=beta,
+        )
+
+        # Get skill value after update
+        updated_skill = self._find_skill_by_name(skill_name)
+        skill_value_after = updated_skill.get("skill_value", 0.0) if updated_skill else None
+
+        # Evaluate quality for reporting (without caching)
+        quality = self.evaluate_failure_scenario(
+            failure_scenario, actual_error, task_context
+        )
+
+        return {
+            "r_learning": r_learning,
+            "quality": quality,
+            "action": action,
+            "skill_value_before": skill_value_before,
+            "skill_value_after": skill_value_after,
+            "failure_scenario": failure_scenario,
+        }
+
+    def _construct_failure_scenario(self, error: str) -> Dict[str, Any]:
+        """Construct a failure_scenario dict from an error string.
+
+        Args:
+            error: The error string from task execution.
+
+        Returns:
+            A failure_scenario dict with reason, detail, and lesson.
+        """
+        # Simple heuristic extraction - in production, could use LLM
+        error_lower = error.lower()
+
+        # Determine reason category
+        if "assertionerror" in error_lower:
+            reason = "assertion_failure"
+        elif "attributeerror" in error_lower:
+            reason = "attribute_error"
+        elif "typeerror" in error_lower:
+            reason = "type_error"
+        elif "valueerror" in error_lower:
+            reason = "value_error"
+        elif "indexerror" in error_lower:
+            reason = "index_error"
+        elif "keyerror" in error_lower:
+            reason = "key_error"
+        elif "timeout" in error_lower:
+            reason = "timeout"
+        elif "syntaxerror" in error_lower:
+            reason = "syntax_error"
+        else:
+            reason = "execution_error"
+
+        # Extract the key error detail
+        detail = error[:500] if len(error) > 500 else error
+
+        # Construct lesson (what could be done differently)
+        lesson = f"Review {reason} cases in the code and add proper validation."
+
+        return {
+            "reason": reason,
+            "detail": detail,
+            "lesson": lesson,
+        }
+
     def _find_skill_by_name(self, skill_name: str) -> Optional[Dict[str, Any]]:
         """Find a skill by name across all categories.
 

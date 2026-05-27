@@ -962,11 +962,25 @@ class AlfworldRunner(BaseRunner):
                             skill_value = self._get_skill_value(all_skills, skill_name)
                             skill_value_changes[skill_name] = {"before": skill_value}
                         # Update skill values
-                        for skill_name in retrieved_skill_names:
-                            self.skill_integrator.update_skill_value_by_name(
-                                skill_name=skill_name,
-                                success=success,
-                            )
+                        if success:
+                            for skill_name in retrieved_skill_names:
+                                self.skill_integrator.update_skill_value_by_name(
+                                    skill_name=skill_name,
+                                    success=True,
+                                )
+                        else:
+                            # Task failed - use LQRL with r_learning evaluation
+                            # Get the last observation as error context
+                            actual_error = last_obs[:1000] if last_obs else "Task failed"
+                            for skill_name in retrieved_skill_names:
+                                result = self.skill_integrator.process_task_failure_and_update(
+                                    skill_name=skill_name,
+                                    actual_error=actual_error,
+                                    task_context=current_task_descs[i][:500] if current_task_descs[i] else "",
+                                )
+                                skill_value_changes[skill_name]["r_learning"] = result.get("r_learning", 0.0)
+                                skill_value_changes[skill_name]["quality"] = result.get("quality", 0.0)
+                                skill_value_changes[skill_name]["action"] = result.get("action", "unknown")
                         # Record skill values after update
                         all_skills_after = self.skill_integrator.get_all_skills()
                         for skill_name in retrieved_skill_names:

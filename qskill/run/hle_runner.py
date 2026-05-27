@@ -877,8 +877,30 @@ class HLERunner(BaseRunner):
         # Update skill values based on task outcome
         if self.skill_integrator is not None and retrieved_skill_names:
             try:
-                for skill_name in retrieved_skill_names:
-                    self.skill_integrator.update_skill_value_by_name(skill_name, success=bool(correct))
+                if correct:
+                    # Task succeeded - standard Q-learning update
+                    for skill_name in retrieved_skill_names:
+                        self.skill_integrator.update_skill_value_by_name(
+                            skill_name, success=True
+                        )
+                else:
+                    # Task failed - use LQRL with r_learning evaluation
+                    actual_error = str(judge_res.get("feedback", ""))[:1000]
+                    if not actual_error and gen_error:
+                        actual_error = str(gen_error)[:1000]
+                    for skill_name in retrieved_skill_names:
+                        result = self.skill_integrator.process_task_failure_and_update(
+                            skill_name=skill_name,
+                            actual_error=actual_error or "Task failed",
+                            task_context=q[:500],
+                        )
+                        logger.debug(
+                            "HLE LQRL update for %s: r_learning=%.3f, quality=%.3f, action=%s",
+                            skill_name,
+                            result.get("r_learning", 0.0),
+                            result.get("quality", 0.0),
+                            result.get("action", "unknown"),
+                        )
             except Exception as e:
                 logger.debug("HLE skill value update failed: %s", e)
 
